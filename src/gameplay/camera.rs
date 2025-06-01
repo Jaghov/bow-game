@@ -1,4 +1,7 @@
-use bevy::{color::palettes::tailwind::SKY_300, prelude::*, render::view::RenderLayers};
+use bevy::{
+    color::palettes::tailwind::SKY_300, core_pipeline::tonemapping::Tonemapping, prelude::*,
+    render::view::RenderLayers,
+};
 
 use crate::camera::{CameraOrder, RenderLayer};
 
@@ -19,8 +22,10 @@ fn spawn_world_camera(mut commands: Commands) {
         Camera {
             order: CameraOrder::World.into(),
             clear_color: ClearColorConfig::Custom(SKY_300.into()),
+            //hdr: true,
             ..default()
         },
+        Tonemapping::TonyMcMapface, // 2. Using a tonemapper that desaturates to white is recommended
         Transform::from_xyz(0., 0., CAMERA_OFFSET).looking_at(Vec3::ZERO, Vec3::Y),
         MeshPickingCamera,
         Projection::from(PerspectiveProjection {

@@ -48,18 +48,7 @@ pub struct Bow;
 fn spawn_bow(mut commands: Commands, assets: Res<BowAssets>) {
     info!("Spawning bow");
     commands
-        .spawn((
-            Bow,
-            SceneRoot(assets.scene.clone()),
-            children![(
-                DirectionalLight {
-                    illuminance: light_consts::lux::CLEAR_SUNRISE,
-                    shadows_enabled: true,
-                    ..default()
-                },
-                Transform::from_xyz(0., 0., 5.).looking_at(Vec3::ZERO, Vec3::Y),
-            )],
-        ))
+        .spawn((Bow, SceneRoot(assets.scene.clone())))
         .observe(animation::setup_animations);
 }
 

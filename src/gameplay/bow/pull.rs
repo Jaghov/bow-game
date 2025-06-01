@@ -13,6 +13,9 @@ use crate::gameplay::{
 
 use super::{Bow, EPS};
 
+/// how far from the bow the player must draw bow
+const MAX_RADIUS: f32 = 10.;
+
 pub(super) fn plugin(app: &mut App) {
     app.add_systems(Update, update_pull_strength.in_set(ArrowSet::ProcessInput))
         .add_systems(Update, update_pull_rotation.in_set(ArrowSet::UpdateBow))
@@ -82,8 +85,6 @@ fn update_pull_strength(
     mut bow: Query<(&mut PullStrength, &Transform), With<Pulling>>,
     cursor: Res<CursorPosition>,
 ) {
-    /// how far from the bow the player must draw bow
-    const MAX_RADIUS: f32 = 20.;
     let Some(cursor_position) = cursor.last() else {
         return;
     };
