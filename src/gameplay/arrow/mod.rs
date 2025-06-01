@@ -1,5 +1,9 @@
 use std::f32::consts::FRAC_PI_2;
 
+mod canceled;
+pub use canceled::*;
+
+use avian3d::prelude::*;
 use bevy::prelude::*;
 
 use crate::asset_tracking::LoadResource;
@@ -13,14 +17,15 @@ pub(super) fn plugin(app: &mut App) {
     app.register_type::<ArrowAssets>()
         .load_resource::<ArrowAssets>();
 
+    app.add_plugins((canceled::plugin));
+
     app.add_systems(OnEnter(GameLoadState::Loaded), spawn_debug_arrows)
         .add_systems(
             Update,
             update_unfired_arrow_transform.in_set(ArrowSet::UpdateArrow),
         )
         .add_observer(spawn_arrow)
-        .add_observer(fire_arrow)
-        .add_observer(cancel_arrow);
+        .add_observer(fire_arrow);
     //todo
 }
 
@@ -55,20 +60,16 @@ fn spawn_debug_arrows(mut commands: Commands, assets: Res<ArrowAssets>) {
 pub struct ReadyArrow;
 
 #[derive(Event)]
-pub struct CancelArrow;
-
-#[derive(Event)]
 pub struct FireArrow;
 
 #[derive(Component)]
+#[require(RigidBody = RigidBody::Dynamic)]
+#[require(Collider = Collider::capsule(0.1, 3.5))]
+#[require(GravityScale = GravityScale(0.))]
 pub struct Arrow;
 
 fn spawn_arrow(_: Trigger<ReadyArrow>, mut commands: Commands, assets: Res<ArrowAssets>) {
-    commands.spawn((
-        Arrow,
-        SceneRoot(assets.glowing.clone()),
-        Transform::default(),
-    ));
+    commands.spawn((Arrow, SceneRoot(assets.glowing.clone())));
     //todo
 }
 fn fire_arrow(
@@ -81,18 +82,9 @@ fn fire_arrow(
     }
 }
 
-fn cancel_arrow(
-    _: Trigger<CancelArrow>,
-    mut commands: Commands,
-    arrows: Query<Entity, (With<Arrow>, Without<Fired>)>,
-) {
-    for arrow in arrows {
-        commands.entity(arrow).despawn();
-    }
-}
-
 #[derive(Component)]
 pub struct Fired;
+
 fn update_unfired_arrow_transform(
     mut arrows: Query<&mut Transform, (With<Arrow>, Without<Fired>)>,
     bow: Query<(&Transform, &PullStrength), (With<Bow>, Without<Arrow>)>,

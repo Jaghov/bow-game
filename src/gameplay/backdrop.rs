@@ -1,7 +1,5 @@
-use bevy::{
-    color::palettes::tailwind::{GREEN_400, GREEN_500},
-    prelude::*,
-};
+use avian3d::prelude::{Collider, RigidBody};
+use bevy::{color::palettes::tailwind::GREEN_400, prelude::*};
 
 use crate::gameplay::GAME_PLANE;
 
@@ -41,6 +39,8 @@ fn spawn_backdrop(
             commands.spawn((
                 MeshMaterial3d(material.clone()),
                 Mesh3d(mesh.clone()),
+                RigidBody::Static,
+                Collider::cuboid(BL, BL, BL),
                 Transform::from_xyz(x, y, z),
             ));
         }
