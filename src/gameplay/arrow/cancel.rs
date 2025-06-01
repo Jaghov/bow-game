@@ -17,7 +17,7 @@ const REMOVE_IN: Duration = Duration::from_secs(5);
 pub struct CancelArrow;
 
 #[derive(Component)]
-pub struct Canceled(Instant);
+pub(super) struct Canceled(pub Instant);
 
 fn cancel_arrow(
     _: Trigger<CancelArrow>,

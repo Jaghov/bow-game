@@ -1,7 +1,10 @@
 use std::f32::consts::FRAC_PI_2;
 
-mod canceled;
-pub use canceled::*;
+mod cancel;
+pub use cancel::*;
+
+mod fire;
+pub use fire::*;
 
 use avian3d::prelude::*;
 use bevy::prelude::*;
@@ -17,16 +20,14 @@ pub(super) fn plugin(app: &mut App) {
     app.register_type::<ArrowAssets>()
         .load_resource::<ArrowAssets>();
 
-    app.add_plugins((canceled::plugin));
+    app.add_plugins((fire::plugin, cancel::plugin));
 
     app.add_systems(OnEnter(GameLoadState::Loaded), spawn_debug_arrows)
         .add_systems(
             Update,
             update_unfired_arrow_transform.in_set(ArrowSet::UpdateArrow),
         )
-        .add_observer(spawn_arrow)
-        .add_observer(fire_arrow);
-    //todo
+        .add_observer(spawn_arrow);
 }
 
 #[derive(Resource, Asset, Reflect, Clone)]
@@ -59,18 +60,6 @@ fn spawn_debug_arrows(mut commands: Commands, assets: Res<ArrowAssets>) {
 #[derive(Event)]
 pub struct ReadyArrow;
 
-#[derive(Event)]
-pub struct FireArrow(f32);
-
-const STRENGTH_MULT: f32 = 60.;
-
-impl FireArrow {
-    // takes in a value 0, 1
-    pub fn new(pull_strength: f32) -> Self {
-        Self(pull_strength.powi(2) * STRENGTH_MULT)
-    }
-}
-
 #[derive(Component)]
 #[require(RigidBody = RigidBody::Dynamic)]
 #[require(Collider = Collider::capsule(0.1, 3.5))]
@@ -79,23 +68,7 @@ pub struct Arrow;
 
 fn spawn_arrow(_: Trigger<ReadyArrow>, mut commands: Commands, assets: Res<ArrowAssets>) {
     commands.spawn((Arrow, SceneRoot(assets.glowing.clone())));
-    //todo
 }
-fn fire_arrow(
-    trigger: Trigger<FireArrow>,
-    mut commands: Commands,
-    mut arrows: Query<(Entity, &Rotation, &mut LinearVelocity), (With<Arrow>, Without<Fired>)>,
-) {
-    let strength = trigger.event().0;
-    for (arrow, rotation, mut lvel) in &mut arrows {
-        let velocity = rotation.0 * Vec3::new(0., strength, 0.);
-        lvel.0 = velocity;
-        commands.entity(arrow).insert(Fired);
-    }
-}
-
-#[derive(Component)]
-pub struct Fired;
 
 fn update_unfired_arrow_transform(
     mut arrows: Query<&mut Transform, (With<Arrow>, Without<Fired>)>,
