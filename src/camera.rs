@@ -77,6 +77,7 @@ fn spawn_world_camera(mut commands: Commands) {
             order: CameraOrder::World.into(),
             ..default()
         },
+        Transform::from_xyz(0., 0., 5.).looking_at(Vec3::ZERO, Vec3::Y),
         MeshPickingCamera,
         Projection::from(PerspectiveProjection {
             fov: 45.0_f32.to_radians(),

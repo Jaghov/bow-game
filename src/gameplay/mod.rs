@@ -1,5 +1,8 @@
 use bevy::prelude::*;
 
+mod bow;
+mod loading;
+
 use crate::Screen;
 
 /// This for the initial load.
@@ -47,4 +50,6 @@ pub fn plugin(app: &mut App) {
             .chain()
             .run_if(in_state(GameState::Playing)),
     );
+
+    app.add_plugins((loading::plugin, bow::plugin));
 }
