@@ -6,7 +6,7 @@ mod loading;
 
 use crate::Screen;
 
-/// This is the plane everything is placed on and should travel on
+/// This is the z-plane that everything should sit on
 pub const GAME_PLANE: f32 = 0.;
 
 /// This for the initial load.
