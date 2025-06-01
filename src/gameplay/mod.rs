@@ -6,11 +6,8 @@ pub mod bow;
 pub mod camera;
 pub mod cursor;
 mod loading;
-<<<<<<< HEAD
 mod physics;
-=======
 mod targets;
->>>>>>> d44d6a7 (feat: added targets)
 
 use crate::Screen;
 
