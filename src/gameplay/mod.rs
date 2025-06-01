@@ -42,6 +42,9 @@ pub enum GameSet {
     TickTimers,
     /// Record player input
     RecordInput,
+    /// Interactions based on input
+    /// that must be processed before everything else
+    ProcessInput,
     /// do everything else
     Update,
 }
@@ -54,7 +57,12 @@ pub fn plugin(app: &mut App) {
 
     app.configure_sets(
         Update,
-        (GameSet::TickTimers, GameSet::RecordInput, GameSet::Update)
+        (
+            GameSet::TickTimers,
+            GameSet::RecordInput,
+            GameSet::ProcessInput,
+            GameSet::Update,
+        )
             .chain()
             .run_if(in_state(GameState::Playing)),
     );

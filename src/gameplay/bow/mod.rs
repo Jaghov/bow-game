@@ -1,7 +1,7 @@
 use std::collections::VecDeque;
 
 use bevy::prelude::*;
-use pull::PullStrength;
+use pull::{PullStrength, Pulling};
 
 use crate::asset_tracking::LoadResource;
 
@@ -10,6 +10,8 @@ use super::{GameLoadState, GameSet, cursor::CursorPosition};
 mod animation;
 mod pull;
 
+const EPS: f32 = 1e-3;
+
 pub(super) fn plugin(app: &mut App) {
     app.register_type::<BowAssets>()
         .load_resource::<BowAssets>();
@@ -17,7 +19,10 @@ pub(super) fn plugin(app: &mut App) {
     app.add_plugins((pull::plugin, animation::plugin));
 
     app.add_systems(OnEnter(GameLoadState::Loaded), spawn_bow)
-        .add_systems(Update, update_bow_transform.in_set(GameSet::Update));
+        .add_systems(
+            Update,
+            (update_bow_transform, update_bow_rotation_not_pulling).in_set(GameSet::Update),
+        );
 }
 #[derive(Resource, Asset, Reflect, Clone)]
 struct BowAssets {
@@ -60,7 +65,20 @@ fn spawn_bow(mut commands: Commands, assets: Res<BowAssets>) {
 
 fn update_bow_transform(
     cursor: Res<CursorPosition>,
-    mut bow: Query<&mut Transform, With<Bow>>,
+    mut bow: Query<&mut Transform, (With<Bow>, Without<Pulling>)>,
+) {
+    let Ok(mut bow) = bow.single_mut() else {
+        return;
+    };
+    let Some(position) = cursor.current() else {
+        return;
+    };
+    bow.translation = position;
+}
+
+fn update_bow_rotation_not_pulling(
+    cursor: Res<CursorPosition>,
+    mut bow: Query<&mut Transform, (With<Bow>, Without<Pulling>)>,
     mut last_positions: Local<VecDeque<Vec3>>,
     mut bow_should_rotation: Local<Quat>,
 ) {
@@ -68,6 +86,7 @@ fn update_bow_transform(
     const NUM_POS_TO_TRACK: usize = 5;
     const CURSOR_POS_THRESHOLD: f32 = 3.;
     const ROTATION_SPEED: f32 = 0.15;
+
     let Some(position) = cursor.current() else {
         return;
     };
@@ -104,7 +123,7 @@ fn update_bow_transform(
             total_weight += weight;
         }
 
-        if total_weight > 0.0 && weighted_direction.length() > CURSOR_POS_THRESHOLD {
+        if total_weight > 0.0 && weighted_direction.length() > EPS {
             weighted_direction /= total_weight;
             let angle = weighted_direction.y.atan2(weighted_direction.x);
             *bow_should_rotation = Quat::from_rotation_z(angle);
@@ -117,5 +136,4 @@ fn update_bow_transform(
 
     // Smoothly interpolate to the target rotation
     bow.rotation = bow.rotation.slerp(*bow_should_rotation, ROTATION_SPEED);
-    bow.translation = position;
 }

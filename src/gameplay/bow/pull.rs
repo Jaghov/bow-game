@@ -1,10 +1,39 @@
-use bevy::prelude::*;
+use std::{collections::VecDeque, f32::consts::PI};
 
-use crate::gameplay::GameSet;
+use bevy::{
+    input::common_conditions::{input_just_pressed, input_just_released},
+    prelude::*,
+};
+
+use crate::gameplay::{GameSet, cursor::CursorPosition};
+
+use super::{Bow, EPS};
 
 pub(super) fn plugin(app: &mut App) {
-    app.add_systems(Update, update_pull_strength.in_set(GameSet::RecordInput));
+    app.add_systems(Update, update_pull_strength.in_set(GameSet::ProcessInput))
+        .add_systems(Update, update_pull_rotation.in_set(GameSet::Update))
+        .add_systems(
+            Update,
+            on_mouse_down
+                .in_set(GameSet::RecordInput)
+                .run_if(input_just_pressed(MouseButton::Left)),
+        )
+        .add_systems(
+            Update,
+            on_mouse_up
+                .in_set(GameSet::RecordInput)
+                .run_if(input_just_released(MouseButton::Left)),
+        )
+        .add_systems(
+            Update,
+            on_mouse_cancel
+                .in_set(GameSet::RecordInput)
+                .run_if(input_just_pressed(MouseButton::Right)),
+        );
 }
+
+#[derive(Component)]
+pub struct Pulling;
 
 #[derive(Component, Default)]
 pub struct PullStrength(f32);
@@ -20,11 +49,61 @@ impl PullStrength {
     }
 }
 
-fn update_pull_strength(mut strengths: Query<&mut PullStrength>, time: Res<Time>) {
-    for mut strength in &mut strengths {
-        // repeat every two seconds
-        let repeat = 2.;
-        let initial_strength = time.elapsed_secs() % repeat;
-        strength.set_strength(initial_strength);
+fn on_mouse_down(mut commands: Commands, bow: Query<Entity, With<Bow>>) {
+    let Ok(bow) = bow.single() else {
+        return;
+    };
+    commands.entity(bow).insert(Pulling);
+}
+fn on_mouse_cancel(mut commands: Commands, bow: Query<Entity, With<Bow>>) {
+    let Ok(bow) = bow.single() else {
+        return;
+    };
+    commands.entity(bow).remove::<Pulling>();
+}
+
+fn on_mouse_up(mut commands: Commands, bow: Query<Entity, With<Bow>>) {
+    let Ok(bow) = bow.single() else {
+        return;
+    };
+    commands.entity(bow).remove::<Pulling>();
+}
+
+fn update_pull_strength(
+    mut bow: Query<(&mut PullStrength, &Transform), With<Pulling>>,
+    cursor: Res<CursorPosition>,
+) {
+    /// how far from the bow the player must draw bow
+    const MAX_RADIUS: f32 = 20.;
+    let Some(cursor_position) = cursor.last() else {
+        return;
+    };
+    let Ok((mut strength, transform)) = bow.single_mut() else {
+        return;
+    };
+    let pull_start = transform.translation;
+    let distance = (cursor_position - pull_start).length();
+
+    // this will get clamped if the distance is greater than the max radius
+    let pull_strength = distance / MAX_RADIUS;
+
+    strength.set_strength(pull_strength);
+}
+
+fn update_pull_rotation(
+    mut bow: Query<&mut Transform, (With<Bow>, With<Pulling>)>,
+    cursor: Res<CursorPosition>,
+) {
+    let Ok(mut bow) = bow.single_mut() else {
+        return;
+    };
+    let Some(current_position) = cursor.current() else {
+        return;
+    };
+    let direction = bow.translation - current_position;
+    if direction.length_squared() < EPS {
+        return;
     }
+    let angle = direction.y.atan2(direction.x);
+    bow.rotation = Quat::from_rotation_z(angle + PI);
 }
