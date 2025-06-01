@@ -15,7 +15,7 @@ pub(super) fn plugin(app: &mut App) {
     app.add_plugins((pull::plugin, animation::plugin));
 
     app.add_systems(OnEnter(GameLoadState::Loaded), spawn_bow)
-        .add_systems(Update, move_bow.in_set(GameSet::Update));
+        .add_systems(Update, update_bow_transform.in_set(GameSet::Update));
 }
 #[derive(Resource, Asset, Reflect, Clone)]
 struct BowAssets {
@@ -28,8 +28,8 @@ impl FromWorld for BowAssets {
     fn from_world(world: &mut World) -> Self {
         let assets = world.resource::<AssetServer>();
         Self {
-            scene: assets.load("models/Bow.glb#Scene0"),
-            pull_string: assets.load("models/Bow.glb#Animation0"),
+            scene: assets.load("models/BowFix.glb#Scene0"),
+            pull_string: assets.load("models/BowFix.glb#Animation0"),
         }
     }
 }
@@ -55,7 +55,7 @@ fn spawn_bow(mut commands: Commands, assets: Res<BowAssets>) {
         ))
         .observe(animation::setup_animations);
 }
-fn move_bow(cursor: Res<CursorPosition>, mut bow: Query<&mut Transform, With<Bow>>) {
+fn update_bow_transform(cursor: Res<CursorPosition>, mut bow: Query<&mut Transform, With<Bow>>) {
     let Ok(mut bow) = bow.single_mut() else {
         return;
     };

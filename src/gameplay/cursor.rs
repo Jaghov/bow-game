@@ -12,8 +12,10 @@ pub(super) fn plugin(app: &mut App) {
 #[derive(Resource, Reflect, Default)]
 #[reflect(Resource)]
 pub struct CursorPosition {
+    /// this is the curren position
     /// returns Y, Z
     current: Option<Vec2>,
+    /// this is the value prior to the current value.
     /// returns Y, Z
     last: Option<Vec2>,
 }

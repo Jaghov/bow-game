@@ -1,5 +1,3 @@
-use std::iter;
-
 use bevy::{animation::RepeatAnimation, prelude::*, scene::SceneInstanceReady};
 
 use crate::gameplay::GameSet;
@@ -63,10 +61,15 @@ fn update_bow_pull(
         warn!("Not playing animation");
         let pull_animation = anim_player.play(anim_props.index);
         pull_animation
-            .set_repeat(RepeatAnimation::Forever)
+            .set_repeat(RepeatAnimation::Never)
             .set_speed(0.);
     }
 
     let pull_animation = anim_player.animation_mut(anim_props.index).unwrap();
-    pull_animation.seek_to(pull_strength.0);
+    //the animation is at max at 0.83. This may be an off-by-one interp problem.
+
+    const MAX: f32 = 0.83;
+
+    let strength = pull_strength.strength() * MAX;
+    pull_animation.seek_to(strength);
 }

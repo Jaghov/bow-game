@@ -7,10 +7,24 @@ pub(super) fn plugin(app: &mut App) {
 }
 
 #[derive(Component, Default)]
-pub struct PullStrength(pub f32);
+pub struct PullStrength(f32);
+
+impl PullStrength {
+    /// Returns a value from 0. to 1.
+    pub fn strength(&self) -> f32 {
+        self.0
+    }
+    /// clamps a set value from 0 to 1
+    pub fn set_strength(&mut self, val: f32) {
+        self.0 = val.clamp(0., 1.)
+    }
+}
 
 fn update_pull_strength(mut strengths: Query<&mut PullStrength>, time: Res<Time>) {
     for mut strength in &mut strengths {
-        strength.0 = time.elapsed_secs() % 1.;
+        // repeat every two seconds
+        let repeat = 2.;
+        let initial_strength = time.elapsed_secs() % repeat;
+        strength.set_strength(initial_strength);
     }
 }
