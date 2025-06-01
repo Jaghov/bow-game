@@ -1,5 +1,4 @@
 use bevy::prelude::*;
-use bevy_gltf_animation::prelude::*;
 use pull::PullStrength;
 
 use crate::asset_tracking::LoadResource;
