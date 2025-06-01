@@ -37,11 +37,11 @@ fn spawn_world_camera(mut commands: Commands) {
 
     commands.spawn((
         DirectionalLight {
-            illuminance: light_consts::lux::CLEAR_SUNRISE,
+            illuminance: light_consts::lux::OVERCAST_DAY,
             shadows_enabled: true,
             ..default()
         },
-        Transform::from_xyz(0., 0., CAMERA_OFFSET + 5.).looking_at(Vec3::ZERO, Vec3::Y),
+        Transform::from_xyz(0., 50., CAMERA_OFFSET + 5.).looking_at(Vec3::ZERO, Vec3::Y),
     ));
 
     // commands.spawn((

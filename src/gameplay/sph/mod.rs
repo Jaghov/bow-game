@@ -1,0 +1,139 @@
+use bevy::{
+    color::palettes::{
+        css::{RED, WHITE},
+        tailwind::{BLUE_200, BLUE_400},
+    },
+    prelude::*,
+};
+
+use crate::asset_tracking::LoadResource;
+
+use super::{GAME_PLANE, GameLoadState};
+
+pub(super) fn plugin(app: &mut App) {
+    app.register_type::<SphereAssets>()
+        .load_resource::<SphereAssets>();
+
+    app.add_systems(
+        OnEnter(GameLoadState::Loaded),
+        (spawn_sample_level, spawn_debug_sphere),
+    )
+    .add_observer(spawn_sphere);
+}
+
+#[derive(Resource, Asset, Reflect, Clone)]
+struct SphereAssets {
+    #[dependency]
+    model: Handle<Scene>,
+    #[dependency]
+    mesh: Handle<Mesh>,
+    normal: Handle<StandardMaterial>,
+    multiplier: Handle<StandardMaterial>,
+    time_freeze: Handle<StandardMaterial>,
+}
+
+impl FromWorld for SphereAssets {
+    fn from_world(world: &mut World) -> Self {
+        let assets = world.resource::<AssetServer>();
+        let model = assets.load("models/sph.glb#Scene0");
+        let mesh = assets.load("models/sph.glb#Mesh0/Primitive0");
+        let mut materials = world.resource_mut::<Assets<StandardMaterial>>();
+        let normal = materials.add(StandardMaterial {
+            base_color: Color::srgb(0.7, 0.7, 1.0),
+            // specular_tint: Color::from(Srgba::RED),
+            reflectance: 0.3,
+            specular_transmission: 0.95,
+            diffuse_transmission: 1.0,
+            thickness: 0.6,
+            ior: 1.5,
+            perceptual_roughness: 0.12,
+            ..Default::default()
+        });
+
+        let multiplier = materials.add(StandardMaterial {
+            base_color: RED.into(),
+            ..default()
+        });
+        let time_freeze = materials.add(StandardMaterial {
+            base_color: BLUE_400.into(),
+            ..default()
+        });
+
+        Self {
+            model,
+            mesh,
+            normal,
+            multiplier,
+            time_freeze,
+        }
+    }
+}
+
+#[derive(Event)]
+pub struct SpawnSphere {
+    location: Vec2,
+    sphere_type: SphereType,
+}
+impl SpawnSphere {
+    pub fn new(location: Vec2, sphere_type: SphereType) -> Self {
+        Self {
+            location,
+            sphere_type,
+        }
+    }
+}
+
+pub enum SphereType {
+    Normal,
+    Multiplier,
+    TimeFreeze,
+}
+#[derive(Component)]
+struct Sphere;
+#[derive(Component)]
+struct Normal;
+#[derive(Component)]
+struct Multiplier;
+#[derive(Component)]
+struct TimeFreeze;
+
+fn spawn_debug_sphere(mut commands: Commands, assets: Res<SphereAssets>) {
+    commands.spawn((
+        Name::new("Debug Sphere"),
+        Transform::from_xyz(10., 0., GAME_PLANE),
+        Mesh3d(assets.mesh.clone()),
+        MeshMaterial3d(assets.normal.clone()),
+    ));
+}
+
+fn spawn_sample_level(mut commands: Commands) {
+    commands.trigger(SpawnSphere::new(Vec2::new(4., 5.), SphereType::Normal));
+    commands.trigger(SpawnSphere::new(Vec2::new(0., 5.), SphereType::Multiplier));
+    commands.trigger(SpawnSphere::new(Vec2::new(-4., 5.), SphereType::TimeFreeze));
+}
+
+fn spawn_sphere(trigger: Trigger<SpawnSphere>, mut commands: Commands, assets: Res<SphereAssets>) {
+    let event = trigger.event();
+    let transform = Transform::from_xyz(event.location.x, event.location.y, GAME_PLANE);
+
+    let bundle = (Sphere, transform, Mesh3d(assets.mesh.clone()));
+
+    match event.sphere_type {
+        SphereType::Normal => {
+            commands.spawn((bundle, (Normal, MeshMaterial3d(assets.normal.clone()))));
+        }
+        SphereType::Multiplier => {
+            commands.spawn((
+                bundle,
+                (Multiplier, MeshMaterial3d(assets.multiplier.clone())),
+            ));
+            //todo
+        }
+        SphereType::TimeFreeze => {
+            commands.spawn((
+                bundle,
+                (TimeFreeze, MeshMaterial3d(assets.time_freeze.clone())),
+            ));
+        }
+    }
+}
