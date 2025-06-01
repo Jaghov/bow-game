@@ -58,7 +58,6 @@ fn spawn_bow(mut commands: Commands, assets: Res<BowAssets>) {
         .observe(animation::setup_animations);
 }
 
-const EPS: f32 = 1e-3;
 fn update_bow_transform(
     cursor: Res<CursorPosition>,
     mut bow: Query<&mut Transform, With<Bow>>,
@@ -66,7 +65,9 @@ fn update_bow_transform(
     mut bow_should_rotation: Local<Quat>,
 ) {
     //number of positions to keep track of
-    const RECORD: usize = 5;
+    const NUM_POS_TO_TRACK: usize = 5;
+    const CURSOR_POS_THRESHOLD: f32 = 3.;
+    const ROTATION_SPEED: f32 = 0.15;
     let Some(position) = cursor.current() else {
         return;
     };
@@ -75,26 +76,46 @@ fn update_bow_transform(
     if positions == 5, determine if
     */
     let mut adjust_should_rot = false;
-    if last_positions.len() < 5 {
+    if last_positions.len() < NUM_POS_TO_TRACK {
         last_positions.push_back(position);
         adjust_should_rot = true;
-    } else if last_positions
-        .back()
-        .is_some_and(|lp| (lp.x - position.x).abs() > EPS && (lp.y - position.y) > EPS)
-    {
+    } else if last_positions.back().is_some_and(|lp| {
+        (lp.x - position.x).abs() > CURSOR_POS_THRESHOLD
+            || (lp.y - position.y).abs() > CURSOR_POS_THRESHOLD
+    }) {
         last_positions.pop_front();
         last_positions.push_back(position);
         adjust_should_rot = true;
     }
 
-    if adjust_should_rot {
+    if adjust_should_rot && last_positions.len() >= 2 {
+        let mut weighted_direction = Vec3::ZERO;
+        let mut total_weight = 0.0;
 
-        //*bow_should_rotation = Quat::from_rotation_z(angle)
+        // Calculate weighted direction from consecutive position pairs
+        for i in 1..last_positions.len() {
+            let prev_pos = last_positions[i - 1];
+            let curr_pos = last_positions[i];
+            let direction = curr_pos - prev_pos;
+
+            // Give more weight to recent movements
+            let weight = i as f32;
+            weighted_direction += direction * weight;
+            total_weight += weight;
+        }
+
+        if total_weight > 0.0 && weighted_direction.length() > CURSOR_POS_THRESHOLD {
+            weighted_direction /= total_weight;
+            let angle = weighted_direction.y.atan2(weighted_direction.x);
+            *bow_should_rotation = Quat::from_rotation_z(angle);
+        }
     }
 
     let Ok(mut bow) = bow.single_mut() else {
         return;
     };
 
+    // Smoothly interpolate to the target rotation
+    bow.rotation = bow.rotation.slerp(*bow_should_rotation, ROTATION_SPEED);
     bow.translation = position;
 }
