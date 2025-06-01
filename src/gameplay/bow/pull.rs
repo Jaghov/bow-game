@@ -49,24 +49,26 @@ impl PullStrength {
     }
 }
 
-fn on_mouse_down(mut commands: Commands, bow: Query<Entity, With<Bow>>) {
-    let Ok(bow) = bow.single() else {
+fn on_mouse_down(mut commands: Commands, mut bow: Query<Entity, With<Bow>>) {
+    let Ok(bow) = bow.single_mut() else {
         return;
     };
     commands.entity(bow).insert(Pulling);
 }
-fn on_mouse_cancel(mut commands: Commands, bow: Query<Entity, With<Bow>>) {
-    let Ok(bow) = bow.single() else {
+fn on_mouse_cancel(mut commands: Commands, mut bow: Query<(Entity, &mut PullStrength), With<Bow>>) {
+    let Ok((bow, mut pull_strength)) = bow.single_mut() else {
         return;
     };
     commands.entity(bow).remove::<Pulling>();
+    pull_strength.set_strength(0.);
 }
 
-fn on_mouse_up(mut commands: Commands, bow: Query<Entity, With<Bow>>) {
-    let Ok(bow) = bow.single() else {
+fn on_mouse_up(mut commands: Commands, mut bow: Query<(Entity, &mut PullStrength), With<Bow>>) {
+    let Ok((bow, mut pull_strength)) = bow.single_mut() else {
         return;
     };
     commands.entity(bow).remove::<Pulling>();
+    pull_strength.set_strength(0.);
 }
 
 fn update_pull_strength(

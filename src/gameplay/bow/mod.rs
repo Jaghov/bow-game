@@ -1,4 +1,4 @@
-use std::collections::VecDeque;
+use std::{collections::VecDeque, f32::consts::PI};
 
 use bevy::prelude::*;
 use pull::{PullStrength, Pulling};
@@ -126,7 +126,7 @@ fn update_bow_rotation_not_pulling(
         if total_weight > 0.0 && weighted_direction.length() > EPS {
             weighted_direction /= total_weight;
             let angle = weighted_direction.y.atan2(weighted_direction.x);
-            *bow_should_rotation = Quat::from_rotation_z(angle);
+            *bow_should_rotation = Quat::from_rotation_z(angle + PI);
         }
     }
 
