@@ -13,16 +13,8 @@ mod title;
 
 const UI_RENDER_LAYER: usize = 2;
 
-fn main() {
+fn main() -> AppExit {
     let mut app = App::new();
-    app.register_type::<AppSet>()
-        .register_type::<Screen>()
-        .init_state::<Screen>();
-
-    app.configure_sets(
-        Update,
-        (AppSet::TickTimers, AppSet::RecordInput, AppSet::Update).chain(),
-    );
 
     app.add_plugins((
         DefaultPlugins
@@ -53,6 +45,15 @@ fn main() {
         ..default()
     });
 
+    app.register_type::<AppSet>()
+        .register_type::<Screen>()
+        .init_state::<Screen>();
+
+    app.configure_sets(
+        Update,
+        (AppSet::TickTimers, AppSet::RecordInput, AppSet::Update).chain(),
+    );
+
     //other plugins
     app.add_plugins((
         third_party::plugin,
@@ -65,6 +66,8 @@ fn main() {
         credits::plugin,
         camera::plugin,
     ));
+
+    app.run()
 }
 
 #[derive(States, Debug, Hash, PartialEq, Eq, Clone, Copy, Default, Reflect)]
