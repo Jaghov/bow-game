@@ -72,6 +72,7 @@ fn main() {
 }
 
 #[derive(States, Debug, Hash, PartialEq, Eq, Clone, Copy, Default, Reflect)]
+#[states(scoped_entities)]
 pub enum Screen {
     #[default]
     Splash,
