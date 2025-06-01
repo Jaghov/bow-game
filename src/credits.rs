@@ -2,7 +2,7 @@
 
 use bevy::{ecs::spawn::SpawnIter, prelude::*, ui::Val::*};
 
-use crate::{screens::Screen, theme::widgets};
+use crate::{Screen, theme::widgets};
 
 pub(super) fn plugin(app: &mut App) {
     app.add_systems(OnEnter(Screen::Credits), spawn_credits_screen);

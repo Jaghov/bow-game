@@ -1,19 +1,22 @@
 use bevy::{asset::AssetMetaCheck, prelude::*, render::view::RenderLayers, window::WindowMode};
 use bitflags::bitflags;
-use level::LevelPlugin;
 
 mod asset_tracking;
+mod credits;
 mod gameplay;
-mod level;
-mod screens;
+mod loading;
+mod splash;
 mod theme;
 mod third_party;
+mod title;
 
 const UI_RENDER_LAYER: usize = 2;
 
 fn main() {
     let mut app = App::new();
-    app.register_type::<AppSet>();
+    app.register_type::<AppSet>()
+        .register_type::<Screen>()
+        .init_state::<Screen>();
 
     app.configure_sets(
         Update,
@@ -54,7 +57,11 @@ fn main() {
         third_party::plugin,
         asset_tracking::plugin,
         theme::plugin,
-        screens::plugin,
+        splash::plugin,
+        loading::plugin,
+        title::plugin,
+        gameplay::plugin,
+        credits::plugin,
     ));
 
     //spawn ui camera. should always exist
@@ -62,6 +69,16 @@ fn main() {
 
     // Bevy should rotate gltf coordinates to properly work in the system
     //app.add_observer(fix_gltf_coordinates);
+}
+
+#[derive(States, Debug, Hash, PartialEq, Eq, Clone, Copy, Default, Reflect)]
+pub enum Screen {
+    #[default]
+    Splash,
+    Loading,
+    Title,
+    Credits,
+    Gameplay,
 }
 
 /// High level groups of systems in the "Update" schedule.
