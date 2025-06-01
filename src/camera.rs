@@ -2,7 +2,7 @@ use bevy::{prelude::*, render::view::RenderLayers};
 use bitflags::bitflags;
 
 pub(super) fn plugin(app: &mut App) {
-    app.add_systems(Startup, (spawn_ui_camera, spawn_world_camera));
+    app.add_systems(Startup, (spawn_ui_camera));
 }
 
 impl From<CameraOrder> for isize {
@@ -27,7 +27,7 @@ fn spawn_ui_camera(mut commands: Commands) {
 /// This enum is converted to an `isize` to be used as a camera's order.
 /// Since we have three cameras, we use three enum variants.
 /// This ordering here mean UI > ViewModel > World.
-enum CameraOrder {
+pub enum CameraOrder {
     World,
     Ui,
 }
@@ -62,38 +62,4 @@ impl From<RenderLayer> for RenderLayers {
         // Bevy's default render layer is 0, so we need to subtract 1 from our bitfalgs to get the correct value.
         RenderLayers::from_iter(layer.iter().map(|l| l.bits() as usize - 1))
     }
-}
-
-#[derive(Component, Reflect)]
-#[reflect(Component)]
-pub struct WorldCamera;
-
-fn spawn_world_camera(mut commands: Commands) {
-    commands.spawn((
-        Name::new("World Camera"),
-        Camera3d::default(),
-        WorldCamera,
-        Camera {
-            order: CameraOrder::World.into(),
-            ..default()
-        },
-        Transform::from_xyz(0., 0., 5.).looking_at(Vec3::ZERO, Vec3::Y),
-        MeshPickingCamera,
-        Projection::from(PerspectiveProjection {
-            fov: 45.0_f32.to_radians(),
-            ..default()
-        }),
-        RenderLayers::from(RenderLayer::DEFAULT | RenderLayer::PARTICLES | RenderLayer::GIZMO3),
-    ));
-
-    commands.spawn((
-        PointLight {
-            shadows_enabled: true,
-            intensity: 10_000_000.,
-            range: 100.0,
-            shadow_depth_bias: 0.2,
-            ..default()
-        },
-        Transform::from_xyz(0.0, 16.0, 0.0),
-    ));
 }
