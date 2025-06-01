@@ -1,3 +1,5 @@
+use std::collections::VecDeque;
+
 use bevy::prelude::*;
 use pull::PullStrength;
 
@@ -55,11 +57,42 @@ fn spawn_bow(mut commands: Commands, assets: Res<BowAssets>) {
         ))
         .observe(animation::setup_animations);
 }
-fn update_bow_transform(cursor: Res<CursorPosition>, mut bow: Query<&mut Transform, With<Bow>>) {
-    let Ok(mut bow) = bow.single_mut() else {
+
+const EPS: f32 = 1e-3;
+fn update_bow_transform(
+    cursor: Res<CursorPosition>,
+    mut bow: Query<&mut Transform, With<Bow>>,
+    mut last_positions: Local<VecDeque<Vec3>>,
+    mut bow_should_rotation: Local<Quat>,
+) {
+    //number of positions to keep track of
+    const RECORD: usize = 5;
+    let Some(position) = cursor.current() else {
         return;
     };
-    let Some(position) = cursor.current() else {
+    /*
+    if the number of positions is < 5, push regardless.
+    if positions == 5, determine if
+    */
+    let mut adjust_should_rot = false;
+    if last_positions.len() < 5 {
+        last_positions.push_back(position);
+        adjust_should_rot = true;
+    } else if last_positions
+        .back()
+        .is_some_and(|lp| (lp.x - position.x).abs() > EPS && (lp.y - position.y) > EPS)
+    {
+        last_positions.pop_front();
+        last_positions.push_back(position);
+        adjust_should_rot = true;
+    }
+
+    if adjust_should_rot {
+
+        //*bow_should_rotation = Quat::from_rotation_z(angle)
+    }
+
+    let Ok(mut bow) = bow.single_mut() else {
         return;
     };
 
