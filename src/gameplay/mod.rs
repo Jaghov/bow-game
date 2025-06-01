@@ -6,6 +6,7 @@ pub mod bow;
 pub mod camera;
 pub mod cursor;
 mod loading;
+mod physics;
 
 use crate::Screen;
 

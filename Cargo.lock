@@ -412,17 +412,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "avian_pickup"
-version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fc77dbbc2a334640d9ecbf165cb8737db0654b3b813b96b6526dc4aa452f0c5d"
-dependencies = [
- "avian3d",
- "bevy",
- "rand 0.8.5",
-]
-
-[[package]]
 name = "avif-serialize"
 version = "0.8.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1722,7 +1711,6 @@ name = "bow-game"
 version = "0.1.0"
 dependencies = [
  "avian3d",
- "avian_pickup",
  "bevy",
  "bevy-inspector-egui",
  "bevy_gltf_animation",

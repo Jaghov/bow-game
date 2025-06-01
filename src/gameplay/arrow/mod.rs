@@ -1,4 +1,4 @@
-use std::f32::consts::{FRAC_PI_2, PI};
+use std::f32::consts::FRAC_PI_2;
 
 use bevy::prelude::*;
 
@@ -77,7 +77,7 @@ fn fire_arrow(
     arrows: Query<Entity, (With<Arrow>, Without<Fired>)>,
 ) {
     for arrow in arrows {
-        commands.entity(arrow).despawn();
+        commands.entity(arrow).insert(Fired);
     }
 }
 
@@ -102,14 +102,12 @@ fn update_unfired_arrow_transform(
     };
 
     for mut arrow in &mut arrows {
-        let mut translation = bow.translation;
-        const MULT: f32 = 3.;
+        // since the strength is from 0, 1, that scales from 0 to this number
+        const STRENGTH_MULTIPLIER: f32 = 3.;
         /// this is how far to translate the arrow to sit on the bow string
         const STRING_OFFSET: f32 = -1.5;
-        let sv = pull_strength.strength() * MULT;
-
+        let sv = pull_strength.strength() * STRENGTH_MULTIPLIER;
         let strength_vec = bow.rotation * Vec3::new(sv + STRING_OFFSET, 0., 0.);
-
         arrow.translation = bow.translation + strength_vec;
         let (z, _, _) = bow.rotation.to_euler(EulerRot::ZXY);
         arrow.rotation = Quat::from_rotation_z(z + FRAC_PI_2);
