@@ -47,6 +47,7 @@ bevy_enhanced_input = "0.11.0"
 bevy = { version = "0.16", default-features = false, features = [
     "animation",
     "bevy_asset",
+    "bevy_audio",
     "bevy_animation",
     "bevy_color",
     "bevy_core_pipeline",
@@ -73,10 +74,6 @@ bevy_trauma_shake = "0.5.0"
 bevy-inspector-egui = { version = "0.31.0", optional = true }
 egui_dock = { version = "0.16.0", optional = true }
 transform-gizmo-egui = { version = "0.5", optional = true }
-bevy_kira_audio = {version = "0.23.0", features = [
-    "mp3",
-    "wav"
-]}
 
 [target.x86_64-unknown-linux-gnu.dependencies]
 bevy = { version = "0.16.1", default-features = false, features = [
