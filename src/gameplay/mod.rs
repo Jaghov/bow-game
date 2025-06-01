@@ -6,6 +6,7 @@ pub mod bow;
 pub mod camera;
 pub mod cursor;
 mod loading;
+mod particles;
 mod physics;
 mod sph;
 mod targets;
@@ -87,6 +88,7 @@ pub fn plugin(app: &mut App) {
     );
 
     app.add_plugins((
+        particles::plugin,
         loading::plugin,
         backdrop::plugin,
         cursor::plugin,

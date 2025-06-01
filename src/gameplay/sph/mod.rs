@@ -1,4 +1,7 @@
-use avian3d::prelude::{Collider, GravityScale, LockedAxes, RigidBody};
+use avian3d::prelude::{
+    Collider, CollidingEntities, CollisionStarted, GravityScale, LockedAxes, OnCollisionStart,
+    RigidBody,
+};
 use bevy::{
     color::palettes::{
         css::{RED, WHITE},
@@ -6,10 +9,11 @@ use bevy::{
     },
     prelude::*,
 };
+use bevy_hanabi::ParticleEffect;
 
 use crate::asset_tracking::LoadResource;
 
-use super::{GAME_PLANE, GameLoadState};
+use super::{GAME_PLANE, GameLoadState, particles::ExampleParticles};
 
 pub(super) fn plugin(app: &mut App) {
     app.register_type::<SphereAssets>()
@@ -113,24 +117,37 @@ fn spawn_sphere(trigger: Trigger<SpawnSphere>, mut commands: Commands, assets: R
         RigidBody::Dynamic,
         LockedAxes::default().lock_translation_z(),
         GravityScale(0.),
+        CollidingEntities::default(),
     );
 
     match event.sphere_type {
         SphereType::Normal => {
-            commands.spawn((bundle, (Normal, MeshMaterial3d(assets.normal.clone()))));
+            commands.spawn((bundle, (Normal, MeshMaterial3d(assets.normal.clone()))))
         }
-        SphereType::Multiplier => {
-            commands.spawn((
-                bundle,
-                (Multiplier, MeshMaterial3d(assets.multiplier.clone())),
-            ));
-            //todo
-        }
-        SphereType::TimeFreeze => {
-            commands.spawn((
-                bundle,
-                (TimeFreeze, MeshMaterial3d(assets.time_freeze.clone())),
-            ));
-        }
+        SphereType::Multiplier => commands.spawn((
+            bundle,
+            (Multiplier, MeshMaterial3d(assets.multiplier.clone())),
+        )),
+        SphereType::TimeFreeze => commands.spawn((
+            bundle,
+            (TimeFreeze, MeshMaterial3d(assets.time_freeze.clone())),
+        )),
     }
+    .observe(particles_on_collision);
+}
+
+fn particles_on_collision(
+    trigger: Trigger<OnCollisionStart>,
+    transforms: Query<&Transform>,
+    assets: Res<ExampleParticles>,
+    mut commands: Commands,
+) {
+    let event = trigger.event();
+    //let t1 = transforms.get(trigger.target()).unwrap();
+    let t2 = transforms.get(event.body.unwrap()).unwrap();
+    //let avg = (t1.translation + t2.translation);
+
+    commands.spawn((ParticleEffect::new(assets.0.clone()), *t2));
+
+    //todo
 }
