@@ -7,6 +7,7 @@ pub mod camera;
 pub mod cursor;
 mod loading;
 mod physics;
+mod sphere;
 
 use crate::Screen;
 
@@ -91,5 +92,6 @@ pub fn plugin(app: &mut App) {
         bow::plugin,
         camera::plugin,
         arrow::plugin,
+        sphere::plugin,
     ));
 }
