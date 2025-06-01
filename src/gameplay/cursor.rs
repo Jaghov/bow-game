@@ -37,7 +37,6 @@ fn set_cursor_position(
     windows: Query<&Window>,
     mut cursor_position: ResMut<CursorPosition>,
 ) {
-    info!("Cursor position");
     let Ok((camera, camera_transform)) = camera.single() else {
         warn!("Camera does not exist for setting the cursor position on the floor!");
         return;
@@ -49,7 +48,6 @@ fn set_cursor_position(
 
     let Some(window_cursor_position) = window.cursor_position() else {
         // can happen if cursor ain't around rn
-        warn!("no window cursor position");
         cursor_position.current = None;
         return;
     };
@@ -71,7 +69,6 @@ fn set_cursor_position(
     let point = ray.get_point(distance);
 
     let point2d = Vec2::new(point.x, point.y);
-    warn!("point: {:?}, point2d: {:?}", point, point2d);
 
     cursor_position.current = Some(point2d);
     cursor_position.last = Some(point2d);
