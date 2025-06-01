@@ -3,4 +3,153 @@ name = "bow-game"
 version = "0.1.0"
 edition = "2024"
 
+[features]
+# use this to spin up brp
+dev = [
+    "avian3d/debug-plugin",
+    "avian3d/bevy_diagnostic",
+    "avian3d/diagnostic_ui",
+    "bevy/async_executor",
+    "bevy_skein/default",
+    "bevy/bevy_gizmos",
+    "bevy/bevy_log",
+    "bevy/bevy_dev_tools",
+    "bevy/track_location",
+    "dep:bevy-inspector-egui",
+    "dep:egui_dock",
+    "dep:transform-gizmo-egui",
+]
+dynamic_linking = ["bevy/dynamic_linking"]
+web = ["bevy/webgl2"]
+native = [
+    "avian3d/simd",
+    "avian3d/parallel",
+    "bevy/ktx2",
+    "bevy/hdr",
+    "bevy/smaa_luts",
+    "bevy/sysinfo_plugin",
+    "bevy/multi_threaded", # not useful for web
+]
+
 [dependencies]
+avian3d = { version = "0.2.0", default-features = false, features = [
+    "3d",
+    "f32",
+    "parry-f32",
+    "bevy_scene",
+    "default-collider",
+    "simd",
+    "collider-from-mesh",
+] }
+bevy-tnua = { version = "0.23" }
+bevy-tnua-avian3d = { version = "0.5" }
+bevy_enhanced_input = "0.11.0"
+bevy = { version = "0.16", default-features = false, features = [
+    "animation",
+    "bevy_asset",
+    "bevy_animation",
+    "bevy_color",
+    "bevy_core_pipeline",
+    "bevy_gltf",
+    "bevy_winit",
+    "bevy_input_focus",
+    "bevy_picking",
+    "bevy_ui_picking_backend",
+    "bevy_pbr",
+    "bevy_render",
+    "bevy_scene",
+    "bevy_state",
+    "bevy_text",
+    "bevy_ui",
+    "bevy_window",
+    "default_font",            # we should remove this
+    "std",
+] }
+bevy_skein = { version = "0.2.0", default-features = false }
+avian_pickup = { version = "0.2.0-dev" }
+bitflags = "2.9.0"
+bevy_dog = { git = "https://github.com/arne-berner/bevy_dog", branch = "main" }
+bevy_trauma_shake = "0.5.0"
+bevy-inspector-egui = { version = "0.31.0", optional = true }
+egui_dock = { version = "0.16.0", optional = true }
+transform-gizmo-egui = { version = "0.5", optional = true }
+bevy_kira_audio = {version = "0.23.0", features = [
+    "mp3",
+    "wav"
+]}
+
+[target.x86_64-unknown-linux-gnu.dependencies]
+bevy = { version = "0.16.1", default-features = false, features = [
+    "animation",
+    "bevy_asset",
+    "bevy_animation",
+    "bevy_color",
+    "bevy_core_pipeline",
+    "bevy_gilrs",
+    "bevy_gizmos",
+    "bevy_gltf",
+    "bevy_input_focus",
+    "bevy_mesh_picking_backend",
+    "bevy_pbr",
+    "bevy_picking",
+    "bevy_render",
+    "bevy_scene",
+    "bevy_sprite",
+    "bevy_sprite_picking_backend",
+    "bevy_state",
+    "bevy_text",
+    "bevy_ui",
+    "bevy_ui_picking_backend",
+    "bevy_window",
+    "bevy_winit",
+    "custom_cursor",
+    "default_font",
+    "hdr",
+    "ktx2",
+    "multi_threaded",
+    "png",
+    "smaa_luts",
+    "std",
+    "sysinfo_plugin",
+    "tonemapping_luts",
+    "webgl2",
+    "wayland",
+] }
+
+
+[profile.dev]
+opt-level = 1
+
+[profile.dev.package."*"]
+opt-level = 3
+
+[lints.clippy]
+type-complexity = "allow"
+too-many-arguments = "allow"
+double-parens = "allow"
+
+[lints.rust]
+unused_parens = "allow"
+
+# Also, no wasm-opt performed by trunk if not the release profile
+[profile.release]
+opt-level = "z"
+# lto = true
+# codegen-units = 1
+# strip = false
+
+# this is what `release` should be
+[profile.release-dist]
+inherits = "release"
+# opt-level = 3
+# lto = "fat"
+# codegen-units = 1
+# strip = true
+
+
+[patch.crates-io]
+avian3d = { git = "https://github.com/Jondolf/avian.git", branch = "main" }
+bevy-tnua = { git = "https://github.com/dsgallups/bevy-tnua", branch = "bevy-0.16" }
+bevy-tnua-avian3d = { git = "https://github.com/dsgallups/bevy-tnua", branch = "bevy-0.16" }
+avian_pickup = { git = "https://github.com/janhohenheim/avian_pickup", branch = "main" }
+# bevy_dither_post_process = { git = "https://github.com/Jaghov/bevy_dither_post_process", branch = "main" }
