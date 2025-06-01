@@ -18,6 +18,7 @@ fn spawn_world_camera(mut commands: Commands) {
         WorldCamera,
         Camera {
             order: CameraOrder::World.into(),
+            clear_color: ClearColorConfig::Custom(Color::srgba(0.05, 0.05, 0.05, 1.)),
             ..default()
         },
         Transform::from_xyz(0., 0., CAMERA_OFFSET).looking_at(Vec3::ZERO, Vec3::Y),
@@ -30,13 +31,22 @@ fn spawn_world_camera(mut commands: Commands) {
     ));
 
     commands.spawn((
-        PointLight {
+        DirectionalLight {
+            illuminance: light_consts::lux::CLEAR_SUNRISE,
             shadows_enabled: true,
-            intensity: 10_000_000.,
-            range: 100.0,
-            shadow_depth_bias: 0.2,
             ..default()
         },
-        Transform::from_xyz(0.0, 16.0, 0.0),
+        Transform::from_xyz(0., 0., CAMERA_OFFSET + 5.).looking_at(Vec3::ZERO, Vec3::Y),
     ));
+
+    // commands.spawn((
+    //     PointLight {
+    //         shadows_enabled: true,
+    //         intensity: 10_000_000.,
+    //         range: 100.0,
+    //         shadow_depth_bias: 0.2,
+    //         ..default()
+    //     },
+    //     Transform::from_xyz(0.0, 16.0, 0.0),
+    // ));
 }

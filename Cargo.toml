@@ -105,6 +105,7 @@ bevy = { version = "0.16.1", default-features = false, features = [
     "sysinfo_plugin",
     "tonemapping_luts",
     "webgl2",
+    "x11",
     "wayland",
 ] }
 
