@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 
 mod bow;
+pub mod camera;
 pub mod cursor;
 mod loading;
 
@@ -8,6 +9,9 @@ use crate::Screen;
 
 /// This is the z-plane that everything should sit on
 pub const GAME_PLANE: f32 = 0.;
+
+/// camera z-offset from plane
+pub const CAMERA_OFFSET: f32 = 10.;
 
 /// This for the initial load.
 #[derive(Debug, Clone, Copy, Default, Eq, PartialEq, Hash, SubStates)]
@@ -55,5 +59,5 @@ pub fn plugin(app: &mut App) {
             .run_if(in_state(GameState::Playing)),
     );
 
-    app.add_plugins((loading::plugin, cursor::plugin, bow::plugin));
+    app.add_plugins((loading::plugin, cursor::plugin, bow::plugin, camera::plugin));
 }
