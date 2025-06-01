@@ -14,7 +14,7 @@ use crate::Screen;
 pub const GAME_PLANE: f32 = 0.;
 
 /// camera z-offset from plane
-pub const CAMERA_OFFSET: f32 = 40.;
+pub const CAMERA_OFFSET: f32 = 70.;
 
 /// This for the initial load.
 #[derive(Debug, Clone, Copy, Default, Eq, PartialEq, Hash, SubStates)]
