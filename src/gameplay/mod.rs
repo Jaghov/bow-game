@@ -1,9 +1,12 @@
 use bevy::prelude::*;
 
-mod bow;
+mod arrow;
+mod backdrop;
+pub mod bow;
 pub mod camera;
 pub mod cursor;
 mod loading;
+mod physics;
 
 use crate::Screen;
 
@@ -11,7 +14,7 @@ use crate::Screen;
 pub const GAME_PLANE: f32 = 0.;
 
 /// camera z-offset from plane
-pub const CAMERA_OFFSET: f32 = 10.;
+pub const CAMERA_OFFSET: f32 = 40.;
 
 /// This for the initial load.
 #[derive(Debug, Clone, Copy, Default, Eq, PartialEq, Hash, SubStates)]
@@ -46,6 +49,13 @@ pub enum GameSet {
     Update,
 }
 
+#[derive(SystemSet, Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Reflect)]
+pub enum ArrowSet {
+    ProcessInput,
+    UpdateBow,
+    UpdateArrow,
+}
+
 pub fn plugin(app: &mut App) {
     app.add_sub_state::<GameLoadState>()
         .add_sub_state::<GameState>()
@@ -54,10 +64,32 @@ pub fn plugin(app: &mut App) {
 
     app.configure_sets(
         Update,
-        (GameSet::TickTimers, GameSet::RecordInput, GameSet::Update)
+        (
+            GameSet::TickTimers,
+            GameSet::RecordInput,
+            ArrowSet::ProcessInput,
+            GameSet::Update,
+        )
+            .chain()
+            .run_if(in_state(GameState::Playing)),
+    );
+    app.configure_sets(
+        Update,
+        (
+            ArrowSet::ProcessInput,
+            ArrowSet::UpdateBow,
+            ArrowSet::UpdateArrow,
+        )
             .chain()
             .run_if(in_state(GameState::Playing)),
     );
 
-    app.add_plugins((loading::plugin, cursor::plugin, bow::plugin, camera::plugin));
+    app.add_plugins((
+        loading::plugin,
+        backdrop::plugin,
+        cursor::plugin,
+        bow::plugin,
+        camera::plugin,
+        arrow::plugin,
+    ));
 }
