@@ -13,40 +13,39 @@ pub(super) fn plugin(app: &mut App) {
 struct TargetAssets {
     #[dependency]
     model: Handle<Mesh>,
+    material: Handle<StandardMaterial>,
 }
 impl FromWorld for TargetAssets {
     fn from_world(world: &mut World) -> Self {
         let assets = world.resource::<AssetServer>();
-        Self {
-            model: assets.load(
-                GltfAssetLabel::Primitive {
-                    mesh: 0,
-                    primitive: 0,
-                }
-                .from_asset("models/sphere.glb"),
-            ),
-        }
-    }
-}
+        let model = assets.load(
+            GltfAssetLabel::Primitive {
+                mesh: 0,
+                primitive: 0,
+            }
+            .from_asset("models/sphere.glb"),
+        );
+        let mut materials = world.resource_mut::<Assets<StandardMaterial>>();
 
-fn spawn_target(
-    mut commands: Commands,
-    assets: Res<TargetAssets>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
-) {
-    info!("Spawning Target");
-    commands.spawn((
-        Mesh3d(assets.model.clone()),
-        MeshMaterial3d(materials.add(StandardMaterial {
-            base_color: Color::srgb(0.7, 0.7, 1.0),
-            // specular_tint: Color::from(Srgba::RED),
+        let material = materials.add(StandardMaterial {
+            base_color: Color::WHITE,
             reflectance: 0.3,
-            specular_transmission: 0.95,
+            specular_transmission: 0.9,
             diffuse_transmission: 1.0,
-            thickness: 0.6,
+            thickness: 1.6,
             ior: 1.5,
             perceptual_roughness: 0.12,
             ..Default::default()
-        })),
+        });
+
+        Self { model, material }
+    }
+}
+
+fn spawn_target(mut commands: Commands, assets: Res<TargetAssets>) {
+    info!("Spawning Target");
+    commands.spawn((
+        Mesh3d(assets.model.clone()),
+        MeshMaterial3d(assets.material.clone()),
     ));
 }
