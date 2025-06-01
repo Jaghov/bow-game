@@ -1,4 +1,4 @@
-use std::{collections::VecDeque, f32::consts::PI};
+use std::f32::consts::PI;
 
 use bevy::{
     input::common_conditions::{input_just_pressed, input_just_released},

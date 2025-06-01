@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 
+mod arrow;
 mod bow;
 pub mod camera;
 pub mod cursor;
@@ -67,5 +68,11 @@ pub fn plugin(app: &mut App) {
             .run_if(in_state(GameState::Playing)),
     );
 
-    app.add_plugins((loading::plugin, cursor::plugin, bow::plugin, camera::plugin));
+    app.add_plugins((
+        loading::plugin,
+        cursor::plugin,
+        bow::plugin,
+        camera::plugin,
+        arrow::plugin,
+    ));
 }
