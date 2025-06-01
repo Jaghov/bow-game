@@ -1,10 +1,12 @@
-use bevy::{asset::AssetMetaCheck, prelude::*, render::view::RenderLayers, window::WindowMode};
-use bitflags::bitflags;
+use bevy::{asset::AssetMetaCheck, prelude::*, window::WindowMode};
 
 mod asset_tracking;
 mod camera;
 mod credits;
+#[cfg(feature = "dev")]
+mod dev;
 mod gameplay;
+mod keybinds;
 mod loading;
 mod splash;
 mod theme;
@@ -45,13 +47,19 @@ fn main() -> AppExit {
         ..default()
     });
 
-    app.register_type::<AppSet>()
+    app.register_type::<AppSystems>()
         .register_type::<Screen>()
         .init_state::<Screen>();
 
     app.configure_sets(
         Update,
-        (AppSet::TickTimers, AppSet::RecordInput, AppSet::Update).chain(),
+        (
+            AppSystems::TickTimers,
+            AppSystems::ChangeUi,
+            AppSystems::RecordInput,
+            AppSystems::Update,
+        )
+            .chain(),
     );
 
     //other plugins
@@ -59,6 +67,7 @@ fn main() -> AppExit {
         third_party::plugin,
         asset_tracking::plugin,
         theme::plugin,
+        keybinds::plugin,
         splash::plugin,
         loading::plugin,
         title::plugin,
@@ -66,6 +75,9 @@ fn main() -> AppExit {
         credits::plugin,
         camera::plugin,
     ));
+
+    #[cfg(feature = "dev")]
+    app.add_plugins(dev::plugin);
 
     app.run()
 }
@@ -85,9 +97,11 @@ pub enum Screen {
 ///
 /// Following the justifications of foxtrot, thought it would be nice to have now rather than later
 #[derive(SystemSet, Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Reflect)]
-enum AppSet {
+enum AppSystems {
     /// Tick timers
     TickTimers,
+    /// Update UI stuff before doing anything with input
+    ChangeUi,
     /// Record player input
     RecordInput,
     /// do everything else

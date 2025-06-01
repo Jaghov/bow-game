@@ -71,6 +71,7 @@ pub struct WorldCamera;
 fn spawn_world_camera(mut commands: Commands) {
     commands.spawn((
         Name::new("World Camera"),
+        Camera3d::default(),
         WorldCamera,
         Camera {
             order: CameraOrder::World.into(),

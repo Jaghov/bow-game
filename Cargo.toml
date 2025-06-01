@@ -4,7 +4,6 @@ version = "0.1.0"
 edition = "2024"
 
 [features]
-# use this to spin up brp
 dev = [
     "avian3d/debug-plugin",
     "avian3d/bevy_diagnostic",
@@ -12,6 +11,7 @@ dev = [
     "bevy/async_executor",
     "bevy/bevy_gizmos",
     "bevy/bevy_log",
+    "bevy/bevy_ui_debug",
     "bevy/bevy_dev_tools",
     "bevy/track_location",
     "dep:bevy-inspector-egui",
