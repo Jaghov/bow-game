@@ -920,6 +920,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "bevy_gltf_animation"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f4b2b6e8daa4960149c92a426387c8dd6890db782a00e41fcfc842ffeb6239de"
+dependencies = [
+ "bevy",
+ "bevy_gltf",
+]
+
+[[package]]
 name = "bevy_heavy"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1715,6 +1725,7 @@ dependencies = [
  "avian_pickup",
  "bevy",
  "bevy-inspector-egui",
+ "bevy_gltf_animation",
  "bevy_trauma_shake",
  "bitflags 2.9.1",
  "egui_dock",
