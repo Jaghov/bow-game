@@ -3,7 +3,7 @@
 use bevy::prelude::*;
 
 use crate::{
-    screens::Screen,
+    Screen,
     theme::{interaction::OnPress, widgets},
 };
 
@@ -36,7 +36,7 @@ fn spawn_title_screen(mut commands: Commands) {
 }
 
 fn enter_gameplay_screen(_trigger: Trigger<OnPress>, mut next_screen: ResMut<NextState<Screen>>) {
-    next_screen.set(Screen::SpawnLevel);
+    next_screen.set(Screen::Gameplay);
 }
 
 fn enter_credits_screen(_trigger: Trigger<OnPress>, mut next_screen: ResMut<NextState<Screen>>) {

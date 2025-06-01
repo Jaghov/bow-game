@@ -5,7 +5,7 @@ use bevy::{
     render::view::RenderLayers,
 };
 
-use crate::{AppSet, UI_RENDER_LAYER, screens::Screen, theme::widgets};
+use crate::{AppSet, Screen, UI_RENDER_LAYER, theme::widgets};
 
 const SPLASH_BACKGROUND_COLOR: Color = Color::srgb(0.157, 0.157, 0.157);
 const SPLASH_DURATION_SECS: f32 = 1.8;
