@@ -1,9 +1,13 @@
 use bevy::prelude::*;
 
 mod bow;
+pub mod cursor;
 mod loading;
 
 use crate::Screen;
+
+/// This is the plane everything is placed on and should travel on
+pub const GAME_PLANE: f32 = 0.;
 
 /// This for the initial load.
 #[derive(Debug, Clone, Copy, Default, Eq, PartialEq, Hash, SubStates)]
@@ -29,7 +33,7 @@ pub enum GameState {
 ///
 /// Following the justifications of foxtrot, thought it would be nice to have now rather than later
 #[derive(SystemSet, Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Reflect)]
-enum GameSet {
+pub enum GameSet {
     /// Tick timers
     TickTimers,
     /// Record player input
@@ -51,5 +55,5 @@ pub fn plugin(app: &mut App) {
             .run_if(in_state(GameState::Playing)),
     );
 
-    app.add_plugins((loading::plugin, bow::plugin));
+    app.add_plugins((loading::plugin, cursor::plugin, bow::plugin));
 }
