@@ -1,3 +1,4 @@
+use avian3d::prelude::{Collider, GravityScale, LockedAxes, RigidBody};
 use bevy::{
     color::palettes::{
         css::{RED, WHITE},
@@ -14,11 +15,8 @@ pub(super) fn plugin(app: &mut App) {
     app.register_type::<SphereAssets>()
         .load_resource::<SphereAssets>();
 
-    app.add_systems(
-        OnEnter(GameLoadState::Loaded),
-        (spawn_sample_level, spawn_debug_sphere),
-    )
-    .add_observer(spawn_sphere);
+    app.add_systems(OnEnter(GameLoadState::Loaded), (spawn_sample_level,))
+        .add_observer(spawn_sphere);
 }
 
 #[derive(Resource, Asset, Reflect, Clone)]
@@ -97,15 +95,6 @@ struct Multiplier;
 #[derive(Component)]
 struct TimeFreeze;
 
-fn spawn_debug_sphere(mut commands: Commands, assets: Res<SphereAssets>) {
-    commands.spawn((
-        Name::new("Debug Sphere"),
-        Transform::from_xyz(10., 0., GAME_PLANE),
-        Mesh3d(assets.mesh.clone()),
-        MeshMaterial3d(assets.normal.clone()),
-    ));
-}
-
 fn spawn_sample_level(mut commands: Commands) {
     commands.trigger(SpawnSphere::new(Vec2::new(4., 5.), SphereType::Normal));
     commands.trigger(SpawnSphere::new(Vec2::new(0., 5.), SphereType::Multiplier));
@@ -116,7 +105,15 @@ fn spawn_sphere(trigger: Trigger<SpawnSphere>, mut commands: Commands, assets: R
     let event = trigger.event();
     let transform = Transform::from_xyz(event.location.x, event.location.y, GAME_PLANE);
 
-    let bundle = (Sphere, transform, Mesh3d(assets.mesh.clone()));
+    let bundle = (
+        Sphere,
+        transform,
+        Mesh3d(assets.mesh.clone()),
+        Collider::sphere(1.),
+        RigidBody::Dynamic,
+        LockedAxes::default().lock_translation_z(),
+        GravityScale(0.),
+    );
 
     match event.sphere_type {
         SphereType::Normal => {
