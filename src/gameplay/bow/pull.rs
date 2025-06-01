@@ -74,7 +74,7 @@ fn on_mouse_up(mut commands: Commands, mut bow: Query<(Entity, &mut PullStrength
         return;
     };
     commands.entity(bow).remove::<Pulling>();
-    commands.trigger(FireArrow);
+    commands.trigger(FireArrow::new(pull_strength.strength()));
     pull_strength.set_strength(0.);
 }
 

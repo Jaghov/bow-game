@@ -60,7 +60,16 @@ fn spawn_debug_arrows(mut commands: Commands, assets: Res<ArrowAssets>) {
 pub struct ReadyArrow;
 
 #[derive(Event)]
-pub struct FireArrow;
+pub struct FireArrow(f32);
+
+const STRENGTH_MULT: f32 = 60.;
+
+impl FireArrow {
+    // takes in a value 0, 1
+    pub fn new(pull_strength: f32) -> Self {
+        Self(pull_strength.powi(2) * STRENGTH_MULT)
+    }
+}
 
 #[derive(Component)]
 #[require(RigidBody = RigidBody::Dynamic)]
@@ -73,11 +82,14 @@ fn spawn_arrow(_: Trigger<ReadyArrow>, mut commands: Commands, assets: Res<Arrow
     //todo
 }
 fn fire_arrow(
-    _: Trigger<FireArrow>,
+    trigger: Trigger<FireArrow>,
     mut commands: Commands,
-    arrows: Query<Entity, (With<Arrow>, Without<Fired>)>,
+    mut arrows: Query<(Entity, &Rotation, &mut LinearVelocity), (With<Arrow>, Without<Fired>)>,
 ) {
-    for arrow in arrows {
+    let strength = trigger.event().0;
+    for (arrow, rotation, mut lvel) in &mut arrows {
+        let velocity = rotation.0 * Vec3::new(0., strength, 0.);
+        lvel.0 = velocity;
         commands.entity(arrow).insert(Fired);
     }
 }
@@ -95,10 +107,10 @@ fn update_unfired_arrow_transform(
 
     for mut arrow in &mut arrows {
         // since the strength is from 0, 1, that scales from 0 to this number
-        const STRENGTH_MULTIPLIER: f32 = 3.;
+        const BOW_RIGIDITY: f32 = 3.;
         /// this is how far to translate the arrow to sit on the bow string
         const STRING_OFFSET: f32 = -1.5;
-        let sv = pull_strength.strength() * STRENGTH_MULTIPLIER;
+        let sv = pull_strength.strength() * BOW_RIGIDITY;
         let strength_vec = bow.rotation * Vec3::new(sv + STRING_OFFSET, 0., 0.);
         arrow.translation = bow.translation + strength_vec;
         let (z, _, _) = bow.rotation.to_euler(EulerRot::ZXY);
