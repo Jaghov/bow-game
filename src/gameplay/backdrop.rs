@@ -7,6 +7,15 @@ use super::GameLoadState;
 
 pub fn plugin(app: &mut App) {
     app.add_systems(OnEnter(GameLoadState::Loaded), spawn_backdrop);
+    //.add_systems(Update, update_backdrop_z.in_set(GameSet::Update));
+}
+
+const BACKDROP_OFFSET: f32 = 5.;
+const PERIOD: f32 = 0.3;
+
+#[derive(Component)]
+struct ZState {
+    time_offset: f32,
 }
 
 fn spawn_backdrop(
@@ -27,22 +36,42 @@ fn spawn_backdrop(
         for j in (-10..=10) {
             let x = i as f32 * BL;
             let y = j as f32 * BL;
-            let offset = 5.;
             let depth = BL / 2.;
-            let z = GAME_PLANE - offset - rand::random_range((0_f32..=depth)) - (BL * 0.5);
+            let z = GAME_PLANE - BACKDROP_OFFSET - rand::random_range((0_f32..=depth)) - (BL * 0.5);
 
             let spawn_here = rand::random_bool(0.9);
             if !spawn_here {
                 continue;
             }
-
+            const HALF_PERIOD: f32 = PERIOD * 0.5;
             commands.spawn((
                 MeshMaterial3d(material.clone()),
+                ZState {
+                    time_offset: rand::random_range((-HALF_PERIOD..=HALF_PERIOD)),
+                },
                 Mesh3d(mesh.clone()),
-                RigidBody::Static,
+                RigidBody::Kinematic,
                 Collider::cuboid(BL, BL, BL),
                 Transform::from_xyz(x, y, z),
             ));
         }
+    }
+}
+
+#[allow(dead_code)]
+fn update_backdrop_z(mut blocks: Query<(&mut Transform, &mut ZState)>, time: Res<Time>) {
+    const TRVL: f32 = BACKDROP_OFFSET * 0.5;
+
+    for (mut trns, zstate) in &mut blocks {
+        let progress_time = (time.elapsed_secs() + zstate.time_offset) % PERIOD;
+        if progress_time > PERIOD * 0.5 {
+            trns.translation.z += TRVL * time.delta_secs()
+            //forward
+        } else {
+            trns.translation.z -= TRVL * time.delta_secs()
+            //backward
+        }
+
+        //todo
     }
 }
