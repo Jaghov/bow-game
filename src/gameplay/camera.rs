@@ -1,4 +1,4 @@
-use bevy::{prelude::*, render::view::RenderLayers};
+use bevy::{color::palettes::tailwind::SKY_300, prelude::*, render::view::RenderLayers};
 
 use crate::camera::{CameraOrder, RenderLayer};
 
@@ -18,7 +18,7 @@ fn spawn_world_camera(mut commands: Commands) {
         WorldCamera,
         Camera {
             order: CameraOrder::World.into(),
-            clear_color: ClearColorConfig::Custom(Color::srgba(0.05, 0.05, 0.05, 1.)),
+            clear_color: ClearColorConfig::Custom(SKY_300.into()),
             ..default()
         },
         Transform::from_xyz(0., 0., CAMERA_OFFSET).looking_at(Vec3::ZERO, Vec3::Y),

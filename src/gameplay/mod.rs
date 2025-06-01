@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 
 mod arrow;
+mod backdrop;
 mod bow;
 pub mod camera;
 pub mod cursor;
@@ -70,6 +71,7 @@ pub fn plugin(app: &mut App) {
 
     app.add_plugins((
         loading::plugin,
+        backdrop::plugin,
         cursor::plugin,
         bow::plugin,
         camera::plugin,
