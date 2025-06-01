@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 mod arrow;
 mod backdrop;
-mod bow;
+pub mod bow;
 pub mod camera;
 pub mod cursor;
 mod loading;
@@ -44,11 +44,15 @@ pub enum GameSet {
     TickTimers,
     /// Record player input
     RecordInput,
-    /// Interactions based on input
-    /// that must be processed before everything else
-    ProcessInput,
     /// do everything else
     Update,
+}
+
+#[derive(SystemSet, Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Reflect)]
+pub enum ArrowSet {
+    ProcessInput,
+    UpdateBow,
+    UpdateArrow,
 }
 
 pub fn plugin(app: &mut App) {
@@ -62,8 +66,18 @@ pub fn plugin(app: &mut App) {
         (
             GameSet::TickTimers,
             GameSet::RecordInput,
-            GameSet::ProcessInput,
+            ArrowSet::ProcessInput,
             GameSet::Update,
+        )
+            .chain()
+            .run_if(in_state(GameState::Playing)),
+    );
+    app.configure_sets(
+        Update,
+        (
+            ArrowSet::ProcessInput,
+            ArrowSet::UpdateBow,
+            ArrowSet::UpdateArrow,
         )
             .chain()
             .run_if(in_state(GameState::Playing)),

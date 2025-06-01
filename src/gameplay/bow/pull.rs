@@ -5,13 +5,17 @@ use bevy::{
     prelude::*,
 };
 
-use crate::gameplay::{GameSet, cursor::CursorPosition};
+use crate::gameplay::{
+    ArrowSet, GameSet,
+    arrow::{CancelArrow, FireArrow, ReadyArrow},
+    cursor::CursorPosition,
+};
 
 use super::{Bow, EPS};
 
 pub(super) fn plugin(app: &mut App) {
-    app.add_systems(Update, update_pull_strength.in_set(GameSet::ProcessInput))
-        .add_systems(Update, update_pull_rotation.in_set(GameSet::Update))
+    app.add_systems(Update, update_pull_strength.in_set(ArrowSet::ProcessInput))
+        .add_systems(Update, update_pull_rotation.in_set(ArrowSet::UpdateBow))
         .add_systems(
             Update,
             on_mouse_down
@@ -54,12 +58,14 @@ fn on_mouse_down(mut commands: Commands, mut bow: Query<Entity, With<Bow>>) {
         return;
     };
     commands.entity(bow).insert(Pulling);
+    commands.trigger(ReadyArrow);
 }
 fn on_mouse_cancel(mut commands: Commands, mut bow: Query<(Entity, &mut PullStrength), With<Bow>>) {
     let Ok((bow, mut pull_strength)) = bow.single_mut() else {
         return;
     };
     commands.entity(bow).remove::<Pulling>();
+    commands.trigger(CancelArrow);
     pull_strength.set_strength(0.);
 }
 
@@ -68,6 +74,7 @@ fn on_mouse_up(mut commands: Commands, mut bow: Query<(Entity, &mut PullStrength
         return;
     };
     commands.entity(bow).remove::<Pulling>();
+    commands.trigger(FireArrow);
     pull_strength.set_strength(0.);
 }
 

@@ -8,7 +8,7 @@ use crate::asset_tracking::LoadResource;
 use super::{GameLoadState, GameSet, cursor::CursorPosition};
 
 mod animation;
-mod pull;
+pub mod pull;
 
 const EPS: f32 = 1e-3;
 
