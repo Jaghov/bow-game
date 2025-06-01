@@ -6,7 +6,6 @@ use bevy::prelude::*;
 mod credits;
 mod loading;
 mod lose;
-mod spawn_level;
 mod splash;
 mod title;
 mod win;
@@ -38,7 +37,6 @@ pub fn plugin(app: &mut App) {
         splash::plugin,
         loading::plugin,
         title::plugin,
-        spawn_level::plugin,
         gameplay::plugin,
         win::plugin,
         lose::plugin,

@@ -3,7 +3,6 @@ use bitflags::bitflags;
 use level::LevelPlugin;
 
 mod asset_tracking;
-mod audio;
 mod gameplay;
 mod level;
 mod screens;
@@ -29,7 +28,7 @@ fn main() {
             })
             .set(WindowPlugin {
                 primary_window: Window {
-                    title: "Rogue Time".to_string(),
+                    title: "RENAME ME".to_string(),
                     fit_canvas_to_parent: true,
                     canvas: Some("#bevy".to_owned()),
                     //resolution: WindowResolution::new(1920., 1080.),
@@ -55,11 +54,7 @@ fn main() {
         third_party::plugin,
         asset_tracking::plugin,
         theme::plugin,
-        audio::plugin,
         screens::plugin,
-        LevelPlugin {
-            load_level: self.load_level,
-        },
     ));
 
     //spawn ui camera. should always exist

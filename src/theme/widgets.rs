@@ -1,4 +1,3 @@
-#![allow(dead_code)]
 //! Helper functions for creating common widgets.
 
 use std::borrow::Cow;
@@ -9,10 +8,10 @@ use bevy::{
     ui::Val::*,
 };
 
-use crate::theme::palette::*;
+use crate::theme::{interaction::InteractionPalette, palette::*};
 
 /// A root UI node that fills the window and centers its content.
-pub(crate) fn ui_root(name: impl Into<Cow<'static, str>>) -> impl Bundle {
+pub fn ui_root(name: impl Into<Cow<'static, str>>) -> impl Bundle {
     (
         Name::new(name),
         Node {
@@ -25,44 +24,33 @@ pub(crate) fn ui_root(name: impl Into<Cow<'static, str>>) -> impl Bundle {
             row_gap: Px(20.0),
             ..default()
         },
-        BackgroundColor(FULL_TIME_COLOR.into()),
-        UsePaletteColor::dark(),
+        // Don't block picking events for other UI roots.
+        Pickable::IGNORE,
     )
 }
 
 /// A simple header label. Bigger than [`label`].
-pub(crate) fn header(text: impl Into<String>) -> impl Bundle {
+pub fn header(text: impl Into<String>) -> impl Bundle {
     (
         Name::new("Header"),
         Text(text.into()),
         TextFont::from_font_size(40.0),
-        TextColor(FULL_TIME_COLOR.into()),
-        UsePaletteColor::light(),
+        TextColor(HEADER_TEXT),
     )
 }
 
 /// A simple text label.
-pub(crate) fn label(text: impl Into<String>) -> impl Bundle {
-    label_base(text, 24.0)
-}
-
-pub(crate) fn label_small(text: impl Into<String>) -> impl Bundle {
-    label_base(text, 12.0)
-}
-
-/// A simple text label.
-fn label_base(text: impl Into<String>, font_size: f32) -> impl Bundle {
+pub fn label(text: impl Into<String>) -> impl Bundle {
     (
         Name::new("Label"),
         Text(text.into()),
-        TextFont::from_font_size(font_size),
-        TextColor(FULL_TIME_COLOR.into()),
-        UsePaletteColor::light(),
+        TextFont::from_font_size(24.0),
+        TextColor(LABEL_TEXT),
     )
 }
 
 /// A large rounded button with text and an action defined as an [`Observer`].
-pub(crate) fn button<E, B, M, I>(text: impl Into<String>, action: I) -> impl Bundle
+pub fn button<E, B, M, I>(text: impl Into<String>, action: I) -> impl Bundle
 where
     E: Event,
     B: Bundle,
@@ -85,7 +73,7 @@ where
 }
 
 /// A small square button with text and an action defined as an [`Observer`].
-pub(crate) fn button_small<E, B, M, I>(text: impl Into<String>, action: I) -> impl Bundle
+pub fn button_small<E, B, M, I>(text: impl Into<String>, action: I) -> impl Bundle
 where
     E: Event,
     B: Bundle,
@@ -125,14 +113,19 @@ where
                 .spawn((
                     Name::new("Button Inner"),
                     Button,
-                    BackgroundColor(Color::WHITE),
-                    UsePaletteColor::light(),
+                    BackgroundColor(BUTTON_BACKGROUND),
+                    InteractionPalette {
+                        none: BUTTON_BACKGROUND,
+                        hovered: BUTTON_HOVERED_BACKGROUND,
+                        pressed: BUTTON_PRESSED_BACKGROUND,
+                    },
                     children![(
                         Name::new("Button Text"),
                         Text(text),
                         TextFont::from_font_size(40.0),
-                        TextColor(FULL_TIME_COLOR.into()),
-                        UsePaletteColor::dark(),
+                        TextColor(BUTTON_TEXT),
+                        // Don't bubble picking events from the text up to the button.
+                        Pickable::IGNORE,
                     )],
                 ))
                 .insert(button_bundle)

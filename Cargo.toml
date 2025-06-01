@@ -10,7 +10,6 @@ dev = [
     "avian3d/bevy_diagnostic",
     "avian3d/diagnostic_ui",
     "bevy/async_executor",
-    "bevy_skein/default",
     "bevy/bevy_gizmos",
     "bevy/bevy_log",
     "bevy/bevy_dev_tools",
@@ -32,7 +31,7 @@ native = [
 ]
 
 [dependencies]
-avian3d = { version = "0.2.0", default-features = false, features = [
+avian3d = { version = "0.3", default-features = false, features = [
     "3d",
     "f32",
     "parry-f32",
@@ -41,9 +40,6 @@ avian3d = { version = "0.2.0", default-features = false, features = [
     "simd",
     "collider-from-mesh",
 ] }
-bevy-tnua = { version = "0.23" }
-bevy-tnua-avian3d = { version = "0.5" }
-bevy_enhanced_input = "0.11.0"
 bevy = { version = "0.16", default-features = false, features = [
     "animation",
     "bevy_asset",
@@ -66,10 +62,8 @@ bevy = { version = "0.16", default-features = false, features = [
     "default_font",            # we should remove this
     "std",
 ] }
-bevy_skein = { version = "0.2.0", default-features = false }
 avian_pickup = { version = "0.2.0-dev" }
 bitflags = "2.9.0"
-bevy_dog = { git = "https://github.com/arne-berner/bevy_dog", branch = "main" }
 bevy_trauma_shake = "0.5.0"
 bevy-inspector-egui = { version = "0.31.0", optional = true }
 egui_dock = { version = "0.16.0", optional = true }
@@ -142,11 +136,3 @@ inherits = "release"
 # lto = "fat"
 # codegen-units = 1
 # strip = true
-
-
-[patch.crates-io]
-avian3d = { git = "https://github.com/Jondolf/avian.git", branch = "main" }
-bevy-tnua = { git = "https://github.com/dsgallups/bevy-tnua", branch = "bevy-0.16" }
-bevy-tnua-avian3d = { git = "https://github.com/dsgallups/bevy-tnua", branch = "bevy-0.16" }
-avian_pickup = { git = "https://github.com/janhohenheim/avian_pickup", branch = "main" }
-# bevy_dither_post_process = { git = "https://github.com/Jaghov/bevy_dither_post_process", branch = "main" }
