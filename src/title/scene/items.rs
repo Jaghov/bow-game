@@ -79,6 +79,7 @@ fn set_locations(
     mut bow: Query<&mut Transform, (With<Bow>, Without<Sphere>)>,
     mut arrows: Query<(&mut Transform, &Arrow), (Without<Bow>, Without<Sphere>)>,
     mut spheres: Query<(&mut Transform, &Sphere), (Without<Bow>, Without<Arrow>)>,
+    time: Res<Time>,
 ) {
     let mut bow = bow.single_mut().unwrap();
 
@@ -112,11 +113,17 @@ fn set_locations(
     }
 
     for (mut trns, sphere) in &mut spheres {
+        use std::f32::consts::PI;
+
         let offset = sphere.0 as f32 * 1.2;
+
+        let time = 2. * (time.elapsed_secs() + (2. * PI * (sphere.0 as f32 + 1.) / 3.));
+        let z_offset = time.cos() * 0.05;
+
         *trns = Transform::from_xyz(
             BLOCK_LEN * 7. - 1.5 + offset,
             BLOCK_LEN * 4. + 2.5,
-            -1.65 - BACKDROP_OFFSET,
+            -1.65 - BACKDROP_OFFSET + z_offset,
         )
         .with_rotation(Quat::from_euler(
             EulerRot::XYX,
