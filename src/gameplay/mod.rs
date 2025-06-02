@@ -3,6 +3,7 @@ use bevy::prelude::*;
 pub mod arrow;
 pub mod bow;
 pub mod cursor;
+mod level;
 pub mod sph;
 mod targets;
 
@@ -72,6 +73,7 @@ pub fn plugin(app: &mut App) {
     app.add_plugins((
         bow::plugin,
         sph::plugin,
+        level::plugin,
         arrow::plugin,
         targets::plugin,
         cursor::plugin,
