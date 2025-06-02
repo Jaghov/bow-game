@@ -17,3 +17,5 @@ just kinda breaks
 crashes into other balls and breaks at the end of the turn
 - Gravity
 pulls balls close to it
+- Absorber Ball
+A bouncy ball that will absorb the other balls' capabilities on impact
