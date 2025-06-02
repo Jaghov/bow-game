@@ -24,6 +24,7 @@ impl FireArrow {
 }
 
 #[derive(Component)]
+#[require(CollisionEventsEnabled)]
 pub struct Fired;
 
 fn fire_arrow(

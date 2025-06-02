@@ -31,9 +31,9 @@ pub(super) fn plugin(app: &mut App) {
 }
 
 #[derive(Resource, Asset, Reflect, Clone)]
-struct ArrowAssets {
+pub struct ArrowAssets {
     #[dependency]
-    glowing: Handle<Scene>,
+    pub glowing: Handle<Scene>,
     #[dependency]
     normal: Handle<Scene>,
 }

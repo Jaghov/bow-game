@@ -1,7 +1,11 @@
-use avian3d::prelude::{
-    Collider, CollidingEntities, CollisionStarted, GravityScale, LockedAxes, OnCollisionStart,
-    RigidBody,
-};
+use avian3d::prelude::*;
+use bevy::prelude::*;
+use bevy_hanabi::ParticleEffect;
+
+use crate::asset_tracking::LoadResource;
+mod effects;
+
+use super::{GAME_PLANE, GameLoadState, particles::ExampleParticles};
 use bevy::{
     color::palettes::{
         css::{RED, WHITE},
@@ -9,48 +13,45 @@ use bevy::{
     },
     prelude::*,
 };
-use bevy_hanabi::ParticleEffect;
-
-use crate::asset_tracking::LoadResource;
-
-use super::{GAME_PLANE, GameLoadState, particles::ExampleParticles};
 
 pub(super) fn plugin(app: &mut App) {
-    app.register_type::<SphereAssets>()
-        .load_resource::<SphereAssets>();
-
+    app.register_type::<TargetAssets>()
+        .load_resource::<TargetAssets>();
     app.add_systems(OnEnter(GameLoadState::Loaded), (spawn_sample_level,))
-        .add_observer(spawn_sphere);
+        .add_observer(spawn_target);
+    app.add_plugins(effects::plugin);
 }
-
 #[derive(Resource, Asset, Reflect, Clone)]
-struct SphereAssets {
+struct TargetAssets {
     #[dependency]
-    model: Handle<Scene>,
-    #[dependency]
-    mesh: Handle<Mesh>,
+    model: Handle<Mesh>,
     normal: Handle<StandardMaterial>,
     multiplier: Handle<StandardMaterial>,
     time_freeze: Handle<StandardMaterial>,
 }
-
-impl FromWorld for SphereAssets {
+impl FromWorld for TargetAssets {
     fn from_world(world: &mut World) -> Self {
         let assets = world.resource::<AssetServer>();
-        let model = assets.load("models/sph.glb#Scene0");
-        let mesh = assets.load("models/sph.glb#Mesh0/Primitive0");
+        let model = assets.load(
+            GltfAssetLabel::Primitive {
+                mesh: 0,
+                primitive: 0,
+            }
+            .from_asset("models/sphere.glb"),
+        );
         let mut materials = world.resource_mut::<Assets<StandardMaterial>>();
         let normal_material = StandardMaterial {
             base_color: Color::srgb(0.7, 0.7, 1.0),
             // specular_tint: Color::from(Srgba::RED),
             reflectance: 0.3,
-            specular_transmission: 0.95,
+            specular_transmission: 0.9,
             diffuse_transmission: 1.0,
-            thickness: 0.6,
+            thickness: 1.6,
             ior: 1.5,
             perceptual_roughness: 0.12,
             ..Default::default()
         };
+
         let normal = materials.add(normal_material.clone());
 
         let multiplier = materials.add(StandardMaterial {
@@ -64,7 +65,6 @@ impl FromWorld for SphereAssets {
 
         Self {
             model,
-            mesh,
             normal,
             multiplier,
             time_freeze,
@@ -92,7 +92,7 @@ pub enum SphereType {
     TimeFreeze,
 }
 #[derive(Component)]
-struct Sphere;
+struct Target;
 #[derive(Component)]
 struct Normal;
 #[derive(Component)]
@@ -106,16 +106,16 @@ fn spawn_sample_level(mut commands: Commands) {
     commands.trigger(SpawnSphere::new(Vec2::new(-4., 5.), SphereType::TimeFreeze));
 }
 
-fn spawn_sphere(trigger: Trigger<SpawnSphere>, mut commands: Commands, assets: Res<SphereAssets>) {
+fn spawn_target(trigger: Trigger<SpawnSphere>, mut commands: Commands, assets: Res<TargetAssets>) {
     let event = trigger.event();
     let transform = Transform::from_xyz(event.location.x, event.location.y, GAME_PLANE);
 
     let bundle = (
-        Sphere,
+        Target,
         transform,
-        Mesh3d(assets.mesh.clone()),
+        Mesh3d(assets.model.clone()),
         Collider::sphere(1.),
-        RigidBody::Dynamic,
+        Sensor,
         LockedAxes::default().lock_translation_z(),
         GravityScale(0.),
         CollidingEntities::default(),

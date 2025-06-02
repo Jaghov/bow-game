@@ -8,7 +8,7 @@ pub mod cursor;
 mod loading;
 mod particles;
 mod physics;
-mod sph;
+// mod sph;
 mod targets;
 
 use crate::Screen;
@@ -93,7 +93,7 @@ pub fn plugin(app: &mut App) {
         backdrop::plugin,
         cursor::plugin,
         bow::plugin,
-        sph::plugin,
+        // sph::plugin,
         camera::plugin,
         arrow::plugin,
         targets::plugin,
