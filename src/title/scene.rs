@@ -1,8 +1,9 @@
-use bevy::{prelude::*, time::Stopwatch};
+use bevy::prelude::*;
 
 use crate::{
     Screen,
     camera::WorldCamera,
+    title::TitleStopwatch,
     transition::camera::CameraTracking,
     world::backdrop::{BACKDROP_OFFSET, BLOCK_LEN},
 };
@@ -22,33 +23,9 @@ const LOOK_AT: Vec3 = Vec3::new(
 const TITLE_SCREEN_CAM_TRANSFORM: Transform = Transform::from_translation(POS);
 
 pub(super) fn plugin(app: &mut App) {
-    app.add_systems(
-        OnEnter(Screen::Title),
-        (start_transition_timer, start_tracking_camera),
-    )
-    .add_systems(
-        OnExit(Screen::Title),
-        (remove_duration_timer, stop_tracking_camera),
-    )
-    .add_systems(
-        PreUpdate,
-        tick_duration_timer.run_if(in_state(Screen::Title)),
-    )
-    .add_systems(Update, set_camera_position.run_if(in_state(Screen::Title)));
-}
-
-#[derive(Resource, Default)]
-struct TitleStopwatch(Stopwatch);
-
-fn start_transition_timer(mut commands: Commands) {
-    commands.init_resource::<TitleStopwatch>();
-}
-fn remove_duration_timer(mut commands: Commands) {
-    commands.remove_resource::<TitleStopwatch>();
-}
-
-fn tick_duration_timer(mut timer: ResMut<TitleStopwatch>, time: Res<Time>) {
-    timer.0.tick(time.delta());
+    app.add_systems(OnEnter(Screen::Title), start_tracking_camera)
+        .add_systems(OnExit(Screen::Title), stop_tracking_camera)
+        .add_systems(Update, set_camera_position.run_if(in_state(Screen::Title)));
 }
 
 fn start_tracking_camera(mut commands: Commands, camera: Query<&Transform, With<WorldCamera>>) {

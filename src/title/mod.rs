@@ -1,29 +1,32 @@
 //! The title screen that appears when the game starts.
 
-use bevy::prelude::*;
+use bevy::{prelude::*, time::Stopwatch};
+
+use crate::Screen;
 
 mod scene;
 mod ui;
 
 pub(super) fn plugin(app: &mut App) {
-    app.add_plugins((scene::plugin, ui::plugin));
-    //.add_systems(OnEnter(Screen::Title), init_ui_delay)
-    //.add_systems(OnExit(Screen::Title), cleanup);
+    app.add_plugins((scene::plugin, ui::plugin))
+        .add_systems(OnEnter(Screen::Title), start_transition_timer)
+        .add_systems(OnExit(Screen::Title), remove_duration_timer)
+        .add_systems(
+            PreUpdate,
+            tick_duration_timer.run_if(in_state(Screen::Title)),
+        );
 }
 
-// #[derive(Resource)]
-// struct UiDelay(Timer);
+#[derive(Resource, Default)]
+struct TitleStopwatch(Stopwatch);
 
-// impl Default for UiDelay {
-//     fn default() -> Self {
-//         Self(Timer::new(Duration::from_millis(2000), TimerMode::Once))
-//     }
-// }
+fn start_transition_timer(mut commands: Commands) {
+    commands.init_resource::<TitleStopwatch>();
+}
+fn remove_duration_timer(mut commands: Commands) {
+    commands.remove_resource::<TitleStopwatch>();
+}
 
-// fn init_ui_delay(mut commands: Commands) {
-//     commands.init_resource::<UiDelay>();
-// }
-
-// fn cleanup(mut commands: Commands) {
-//     commands.remove_resource::<UiDelay>();
-// }
+fn tick_duration_timer(mut timer: ResMut<TitleStopwatch>, time: Res<Time>) {
+    timer.0.tick(time.delta());
+}

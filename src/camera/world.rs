@@ -1,7 +1,6 @@
 use bevy::{
     color::palettes::tailwind::SKY_300,
     core_pipeline::{bloom::Bloom, tonemapping::Tonemapping},
-    math::VectorSpace,
     prelude::*,
     render::view::RenderLayers,
 };

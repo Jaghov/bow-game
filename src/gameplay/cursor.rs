@@ -19,6 +19,7 @@ pub struct CursorPosition {
     /// returns Y, Z
     last: Option<Vec2>,
 }
+#[allow(dead_code)]
 impl CursorPosition {
     pub fn xy(&self) -> Option<Vec2> {
         self.current
