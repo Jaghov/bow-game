@@ -14,14 +14,14 @@ pub(super) fn plugin(app: &mut App) {
 }
 
 #[derive(Resource, Asset, Reflect, Clone)]
-struct SphereAssets {
+pub struct SphereAssets {
     #[dependency]
-    model: Handle<Scene>,
+    pub model: Handle<Scene>,
     #[dependency]
-    mesh: Handle<Mesh>,
-    normal: Handle<StandardMaterial>,
-    multiplier: Handle<StandardMaterial>,
-    time_freeze: Handle<StandardMaterial>,
+    pub mesh: Handle<Mesh>,
+    pub normal: Handle<StandardMaterial>,
+    pub multiplier: Handle<StandardMaterial>,
+    pub time_freeze: Handle<StandardMaterial>,
 }
 
 impl FromWorld for SphereAssets {

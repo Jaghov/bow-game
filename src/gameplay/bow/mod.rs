@@ -25,9 +25,9 @@ pub(super) fn plugin(app: &mut App) {
         );
 }
 #[derive(Resource, Asset, Reflect, Clone)]
-struct BowAssets {
+pub struct BowAssets {
     #[dependency]
-    scene: Handle<Scene>,
+    pub scene: Handle<Scene>,
     #[dependency]
     pull_string: Handle<AnimationClip>,
 }

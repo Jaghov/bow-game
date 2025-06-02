@@ -1,10 +1,9 @@
 use bevy::prelude::*;
 
-mod arrow;
+pub mod arrow;
 pub mod bow;
-//mod particles;
 pub mod cursor;
-mod sph;
+pub mod sph;
 mod targets;
 
 use crate::{Screen, camera::WorldCamera};
@@ -71,7 +70,6 @@ pub fn plugin(app: &mut App) {
     );
 
     app.add_plugins((
-        //particles::plugin,
         bow::plugin,
         sph::plugin,
         arrow::plugin,
