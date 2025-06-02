@@ -64,6 +64,32 @@ impl FromWorld for SphereAssets {
     }
 }
 
+pub enum SphereType {
+    Normal,
+    Multiplier,
+    TimeFreeze,
+    Exploder,
+    Bouncy,
+    Gravity,
+    Absorber,
+}
+#[derive(Component)]
+struct Sphere;
+#[derive(Component)]
+struct Normal;
+#[derive(Component)]
+struct Multiplier;
+#[derive(Component)]
+struct TimeFreeze;
+#[derive(Component)]
+struct Absorber;
+#[derive(Component)]
+struct Bouncy;
+#[derive(Component)]
+struct GravitySphere;
+#[derive(Component)]
+struct Exploder;
+
 #[derive(Event)]
 pub struct SpawnSphere {
     location: Vec2,
@@ -77,20 +103,6 @@ impl SpawnSphere {
         }
     }
 }
-
-pub enum SphereType {
-    Normal,
-    Multiplier,
-    TimeFreeze,
-}
-#[derive(Component)]
-struct Sphere;
-#[derive(Component)]
-struct Normal;
-#[derive(Component)]
-struct Multiplier;
-#[derive(Component)]
-struct TimeFreeze;
 
 fn spawn_sample_level(mut commands: Commands) {
     commands.trigger(SpawnSphere::new(Vec2::new(4., 5.), SphereType::Normal));
@@ -124,6 +136,21 @@ fn spawn_sphere(trigger: Trigger<SpawnSphere>, mut commands: Commands, assets: R
         SphereType::TimeFreeze => commands.spawn((
             bundle,
             (TimeFreeze, MeshMaterial3d(assets.time_freeze.clone())),
+        )),
+        SphereType::Bouncy => {
+            commands.spawn((bundle, (Bouncy, MeshMaterial3d(assets.time_freeze.clone()))))
+        }
+        SphereType::Gravity => commands.spawn((
+            bundle,
+            (GravitySphere, MeshMaterial3d(assets.time_freeze.clone())),
+        )),
+        SphereType::Absorber => commands.spawn((
+            bundle,
+            (Absorber, MeshMaterial3d(assets.time_freeze.clone())),
+        )),
+        SphereType::Exploder => commands.spawn((
+            bundle,
+            (Exploder, MeshMaterial3d(assets.time_freeze.clone())),
         )),
     };
     //.observe(particles_on_collision);
