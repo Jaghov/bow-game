@@ -1,5 +1,3 @@
-use std::time::Duration;
-
 use bevy::{prelude::*, time::Stopwatch};
 
 use crate::{
@@ -23,18 +21,6 @@ const LOOK_AT: Vec3 = Vec3::new(
 );
 const TITLE_SCREEN_CAM_TRANSFORM: Transform = Transform::from_translation(POS);
 
-const TRANSITION_DURATION: Duration = Duration::from_millis(2500);
-
-#[derive(Resource, Default)]
-struct TransitionTimer(Stopwatch);
-
-fn start_transition_timer(mut commands: Commands) {
-    commands.init_resource::<TransitionTimer>();
-}
-fn remove_duration_timer(mut commands: Commands) {
-    commands.remove_resource::<TransitionTimer>();
-}
-
 pub(super) fn plugin(app: &mut App) {
     app.add_systems(
         OnEnter(Screen::Title),
@@ -50,6 +36,21 @@ pub(super) fn plugin(app: &mut App) {
     )
     .add_systems(Update, set_camera_position.run_if(in_state(Screen::Title)));
 }
+
+#[derive(Resource, Default)]
+struct TitleStopwatch(Stopwatch);
+
+fn start_transition_timer(mut commands: Commands) {
+    commands.init_resource::<TitleStopwatch>();
+}
+fn remove_duration_timer(mut commands: Commands) {
+    commands.remove_resource::<TitleStopwatch>();
+}
+
+fn tick_duration_timer(mut timer: ResMut<TitleStopwatch>, time: Res<Time>) {
+    timer.0.tick(time.delta());
+}
+
 fn start_tracking_camera(mut commands: Commands, camera: Query<&Transform, With<WorldCamera>>) {
     let start = camera.single().unwrap();
     commands.insert_resource(CameraTracking {
@@ -60,25 +61,29 @@ fn start_tracking_camera(mut commands: Commands, camera: Query<&Transform, With<
 fn stop_tracking_camera(mut commands: Commands) {
     commands.remove_resource::<CameraTracking>();
 }
-fn tick_duration_timer(mut timer: ResMut<TransitionTimer>, time: Res<Time>) {
-    timer.0.tick(time.delta());
-}
 
 fn set_camera_position(
     mut camera: Query<&mut Transform, With<WorldCamera>>,
-    time: Res<TransitionTimer>,
+    time: Res<TitleStopwatch>,
     tracking: Res<CameraTracking>,
 ) {
-    let total_duration = TRANSITION_DURATION;
     let elapsed = time.0.elapsed();
 
     let mut camera_transform = camera.single_mut().unwrap();
 
+    /*
+    A logistic function which essentially takes the form of
+
+    f(x) = (COEF * x) / ( 1+e^(-k(x-x0)) ).
+     */
+
     // Ease-in curve that starts slow and asymptotically approaches target
     let t = elapsed.as_secs_f32();
-    let k = 0.8; // Controls the curve shape - higher values make it more gradual
+    let k = 0.2; // Controls the curve shape - higher values make it more gradual
+    let m = 0.6; // "Scrunch"
+    let p = 3; //power
 
-    let eased_progress = (t * t) / (t * t + k);
+    let eased_progress = (m * t.powi(p)) / (m * t.powi(p) + k);
 
     // Interpolate translation
     let new_translation = tracking
