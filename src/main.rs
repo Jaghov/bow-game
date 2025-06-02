@@ -6,6 +6,7 @@ mod credits;
 #[cfg(feature = "dev")]
 mod dev;
 mod gameplay;
+mod hdr_hack;
 mod keybinds;
 mod loading;
 mod splash;
@@ -73,6 +74,7 @@ fn main() -> AppExit {
         gameplay::plugin,
         credits::plugin,
         camera::plugin,
+        hdr_hack::plugin,
     ));
 
     #[cfg(feature = "dev")]
