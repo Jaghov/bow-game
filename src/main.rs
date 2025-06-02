@@ -16,6 +16,7 @@ mod splash;
 mod theme;
 mod third_party;
 mod title;
+mod transition;
 mod world;
 
 const UI_RENDER_LAYER: usize = 2;
@@ -75,6 +76,7 @@ fn main() -> AppExit {
         world::plugin,
         splash::plugin,
         loading::plugin,
+        transition::plugin,
         title::plugin,
         gameplay::plugin,
         credits::plugin,

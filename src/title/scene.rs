@@ -1,8 +1,11 @@
-use bevy::prelude::*;
+use std::time::Duration;
+
+use bevy::{prelude::*, time::Stopwatch};
 
 use crate::{
     Screen,
     camera::WorldCamera,
+    transition::camera::CameraTracking,
     world::backdrop::{BACKDROP_OFFSET, BLOCK_LEN},
 };
 
@@ -20,26 +23,76 @@ const LOOK_AT: Vec3 = Vec3::new(
 );
 const TITLE_SCREEN_CAM_TRANSFORM: Transform = Transform::from_translation(POS);
 
-pub(super) fn plugin(app: &mut App) {
-    app.add_systems(Update, set_camera_position.run_if(in_state(Screen::Title)));
+const TRANSITION_DURATION: Duration = Duration::from_millis(2500);
+
+#[derive(Resource, Default)]
+struct TransitionTimer(Stopwatch);
+
+fn start_transition_timer(mut commands: Commands) {
+    commands.init_resource::<TransitionTimer>();
+}
+fn remove_duration_timer(mut commands: Commands) {
+    commands.remove_resource::<TransitionTimer>();
 }
 
-fn set_camera_position(mut camera: Query<&mut Transform, With<WorldCamera>>, time: Res<Time>) {
-    //TODO: would love to implement ease-in-out
-    // Decay rate of ln(10) => after 1 second, remaining distance is 1/10th
-    let decay_rate = f32::ln(4.0);
+pub(super) fn plugin(app: &mut App) {
+    app.add_systems(
+        OnEnter(Screen::Title),
+        (start_transition_timer, start_tracking_camera),
+    )
+    .add_systems(
+        OnExit(Screen::Title),
+        (remove_duration_timer, stop_tracking_camera),
+    )
+    .add_systems(
+        PreUpdate,
+        tick_duration_timer.run_if(in_state(Screen::Title)),
+    )
+    .add_systems(Update, set_camera_position.run_if(in_state(Screen::Title)));
+}
+fn start_tracking_camera(mut commands: Commands, camera: Query<&Transform, With<WorldCamera>>) {
+    let start = camera.single().unwrap();
+    commands.insert_resource(CameraTracking {
+        start: *start,
+        end: TITLE_SCREEN_CAM_TRANSFORM.looking_at(LOOK_AT, Vec3::Z),
+    });
+}
+fn stop_tracking_camera(mut commands: Commands) {
+    commands.remove_resource::<CameraTracking>();
+}
+fn tick_duration_timer(mut timer: ResMut<TransitionTimer>, time: Res<Time>) {
+    timer.0.tick(time.delta());
+}
 
-    let mut cam = camera.single_mut().unwrap();
+fn set_camera_position(
+    mut camera: Query<&mut Transform, With<WorldCamera>>,
+    time: Res<TransitionTimer>,
+    tracking: Res<CameraTracking>,
+) {
+    let total_duration = TRANSITION_DURATION;
+    let elapsed = time.0.elapsed();
 
-    let title_screen_trns = TITLE_SCREEN_CAM_TRANSFORM.looking_at(LOOK_AT, Vec3::Z);
+    let mut camera_transform = camera.single_mut().unwrap();
 
-    cam.translation.smooth_nudge(
-        &title_screen_trns.translation,
-        decay_rate,
-        time.delta_secs(),
-    );
+    // Ease-in curve that starts slow and asymptotically approaches target
+    let t = elapsed.as_secs_f32();
+    let k = 0.8; // Controls the curve shape - higher values make it more gradual
 
-    cam.rotation
-        .smooth_nudge(&title_screen_trns.rotation, decay_rate, time.delta_secs());
-    //*cam = Transform::from_translation(pos).looking_at(look_at, Vec3::Z);
+    let eased_progress = (t * t) / (t * t + k);
+
+    // Interpolate translation
+    let new_translation = tracking
+        .start
+        .translation
+        .lerp(tracking.end.translation, eased_progress);
+
+    // Interpolate rotation
+    let new_rotation = tracking
+        .start
+        .rotation
+        .slerp(tracking.end.rotation, eased_progress);
+
+    // Apply the interpolated transform
+    camera_transform.translation = new_translation;
+    camera_transform.rotation = new_rotation;
 }

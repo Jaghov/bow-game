@@ -23,14 +23,14 @@ pub fn spawn_actions() -> impl Bundle {
         #[cfg(target_family = "wasm")]
         {
             children![
-                widgets::button("Play", enter_gameplay_screen),
+                widgets::button("Play", transition_to_gameplay),
                 widgets::button("Credits", enter_credits_screen),
             ]
         },
         #[cfg(not(target_family = "wasm"))]
         {
             children![
-                widgets::button("Play", enter_gameplay_screen),
+                widgets::button("Play", transition_to_gameplay),
                 widgets::button("Credits", enter_credits_screen),
                 widgets::button("Exit", exit_app),
             ]
@@ -38,8 +38,8 @@ pub fn spawn_actions() -> impl Bundle {
     )
 }
 
-fn enter_gameplay_screen(_trigger: Trigger<OnPress>, mut next_screen: ResMut<NextState<Screen>>) {
-    next_screen.set(Screen::Gameplay);
+fn transition_to_gameplay(_trigger: Trigger<OnPress>, mut next_screen: ResMut<NextState<Screen>>) {
+    next_screen.set(Screen::Transition);
 }
 
 fn enter_credits_screen(_trigger: Trigger<OnPress>, mut next_screen: ResMut<NextState<Screen>>) {
