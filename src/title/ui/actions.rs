@@ -9,7 +9,16 @@ struct Actions;
 
 pub fn spawn_actions() -> impl Bundle {
     (
-        super::section(),
+        Node {
+            flex_direction: FlexDirection::Column,
+            align_items: AlignItems::FlexEnd,
+            justify_content: JustifyContent::Center,
+            margin: UiRect::right(Px(40.)),
+            row_gap: Px(20.0),
+            flex_grow: 1.,
+            flex_shrink: 0.,
+            ..default()
+        },
         Actions,
         #[cfg(target_family = "wasm")]
         {
