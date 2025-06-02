@@ -3,7 +3,7 @@ use bevy::prelude::*;
 mod arrow;
 pub mod bow;
 //mod particles;
-mod cursor;
+pub mod cursor;
 mod sph;
 mod targets;
 

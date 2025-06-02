@@ -2,7 +2,7 @@ use std::f32::consts::PI;
 
 use bevy::prelude::*;
 
-use crate::{cursor::CursorPosition, gameplay::GameSet};
+use crate::gameplay::{GameSet, cursor::CursorPosition};
 
 pub fn plugin(app: &mut App) {
     app.add_systems(Update, pointer_pos.in_set(GameSet::Update));
