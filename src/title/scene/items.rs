@@ -28,7 +28,7 @@ pub(super) fn plugin(app: &mut App) {
 struct TransitionClock(Timer);
 impl Default for TransitionClock {
     fn default() -> Self {
-        Self(Timer::new(Duration::from_millis(300), TimerMode::Once))
+        Self(Timer::new(Duration::from_millis(600), TimerMode::Once))
     }
 }
 fn start_transition_clock(mut commands: Commands) {
