@@ -1,22 +1,18 @@
 use bevy::prelude::*;
 
 mod arrow;
-mod backdrop;
 pub mod bow;
-pub mod camera;
+//mod particles;
 pub mod cursor;
-mod particles;
-mod physics;
 mod sph;
 mod targets;
 
-use crate::Screen;
+use crate::{Screen, camera::WorldCamera};
 
-/// This is the z-plane that everything should sit on
-pub const GAME_PLANE: f32 = 0.;
-
-/// camera z-offset from plane
-pub const CAMERA_OFFSET: f32 = 70.;
+/// camera z-offset from the gameplay plane.
+///
+/// This is where the camera should *usually* be when the game is being played
+pub const GAMEPLAY_CAMERA_OFFSET: f32 = 70.;
 
 #[derive(SubStates, Clone, PartialEq, Eq, Hash, Debug, Default, Reflect)]
 #[source(Screen = Screen::Gameplay)]
@@ -75,13 +71,19 @@ pub fn plugin(app: &mut App) {
     );
 
     app.add_plugins((
-        particles::plugin,
-        backdrop::plugin,
-        cursor::plugin,
+        //particles::plugin,
         bow::plugin,
         sph::plugin,
-        camera::plugin,
         arrow::plugin,
         targets::plugin,
-    ));
+        cursor::plugin,
+    ))
+    .add_systems(OnEnter(Screen::Gameplay), move_camera);
+}
+
+// this is a hack until I implement smooth nudge
+fn move_camera(mut camera: Query<&mut Transform, With<WorldCamera>>) {
+    let mut camera = camera.single_mut().unwrap();
+
+    *camera = Transform::from_xyz(0., 0., GAMEPLAY_CAMERA_OFFSET).looking_at(Vec3::ZERO, Vec3::Y);
 }

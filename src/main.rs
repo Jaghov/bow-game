@@ -9,10 +9,12 @@ mod gameplay;
 mod hdr_hack;
 mod keybinds;
 mod loading;
+mod rand;
 mod splash;
 mod theme;
 mod third_party;
 mod title;
+mod world;
 
 const UI_RENDER_LAYER: usize = 2;
 
@@ -68,6 +70,7 @@ fn main() -> AppExit {
         asset_tracking::plugin,
         theme::plugin,
         keybinds::plugin,
+        world::plugin,
         splash::plugin,
         loading::plugin,
         title::plugin,
@@ -91,6 +94,7 @@ pub enum Screen {
     Loading,
     Title,
     Credits,
+    Transition,
     Gameplay,
 }
 

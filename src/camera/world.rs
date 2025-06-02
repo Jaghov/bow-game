@@ -5,9 +5,11 @@ use bevy::{
     render::view::RenderLayers,
 };
 
-use crate::camera::{CameraOrder, RenderLayer};
+use crate::{
+    camera::{CameraOrder, RenderLayer},
+    world::backdrop::{BACKDROP_OFFSET, BLOCK_LEN},
+};
 
-use super::CAMERA_OFFSET;
 pub(super) fn plugin(app: &mut App) {
     app.add_systems(Startup, spawn_world_camera);
 }
@@ -17,6 +19,19 @@ pub(super) fn plugin(app: &mut App) {
 pub struct WorldCamera;
 
 fn spawn_world_camera(mut commands: Commands) {
+    // this is the title screen position
+    let pos = Vec3::new(
+        BLOCK_LEN * 7. + 4.,
+        BLOCK_LEN * 3. + 4.,
+        1. - BACKDROP_OFFSET,
+    );
+
+    let look_at = Vec3::new(
+        BLOCK_LEN * 6. + 3.,
+        BLOCK_LEN * 4. + 3.,
+        -3. - BACKDROP_OFFSET,
+    );
+
     commands.spawn((
         Name::new("World Camera"),
         Camera3d::default(),
@@ -28,7 +43,7 @@ fn spawn_world_camera(mut commands: Commands) {
             ..default()
         },
         Tonemapping::TonyMcMapface, // 2. Using a tonemapper that desaturates to white is recommended
-        Transform::from_xyz(0., 0., CAMERA_OFFSET).looking_at(Vec3::ZERO, Vec3::Y),
+        Transform::from_translation(pos).looking_at(look_at, Vec3::Z),
         MeshPickingCamera,
         Projection::from(PerspectiveProjection {
             fov: 45.0_f32.to_radians(),
@@ -37,24 +52,4 @@ fn spawn_world_camera(mut commands: Commands) {
         RenderLayers::from(RenderLayer::DEFAULT | RenderLayer::PARTICLES | RenderLayer::GIZMO3),
         Bloom::NATURAL,
     ));
-
-    commands.spawn((
-        DirectionalLight {
-            illuminance: light_consts::lux::OVERCAST_DAY,
-            shadows_enabled: true,
-            ..default()
-        },
-        Transform::from_xyz(0., 50., CAMERA_OFFSET + 5.).looking_at(Vec3::ZERO, Vec3::Y),
-    ));
-
-    // commands.spawn((
-    //     PointLight {
-    //         shadows_enabled: true,
-    //         intensity: 10_000_000.,
-    //         range: 100.0,
-    //         shadow_depth_bias: 0.2,
-    //         ..default()
-    //     },
-    //     Transform::from_xyz(0.0, 16.0, 0.0),
-    // ));
 }

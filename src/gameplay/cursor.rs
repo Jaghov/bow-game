@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use super::{GAME_PLANE, GameSet, camera::WorldCamera};
+use crate::{camera::WorldCamera, gameplay::GameSet, world::GAME_PLANE};
 
 pub(super) fn plugin(app: &mut App) {
     app.register_type::<CursorPosition>()

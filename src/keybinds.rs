@@ -5,6 +5,7 @@ pub(super) fn plugin(app: &mut App) {
     app.insert_resource(Keybinds::dan());
 }
 
+#[allow(dead_code)]
 #[derive(Resource)]
 pub struct Keybinds {
     pub key_up: KeyCode,

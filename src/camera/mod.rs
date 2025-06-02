@@ -1,27 +1,19 @@
 use bevy::{prelude::*, render::view::RenderLayers};
 use bitflags::bitflags;
 
+mod ui;
+
+mod world;
+pub use world::*;
+
 pub(super) fn plugin(app: &mut App) {
-    app.add_systems(Startup, (spawn_ui_camera));
+    app.add_plugins((ui::plugin, world::plugin));
 }
 
 impl From<CameraOrder> for isize {
     fn from(order: CameraOrder) -> Self {
         order as isize
     }
-}
-fn spawn_ui_camera(mut commands: Commands) {
-    commands.spawn((
-        Name::new("UI Camera"),
-        Camera2d,
-        // Render all UI to this camera.
-        IsDefaultUiCamera,
-        Camera {
-            // Bump the order to render on top of the view model.
-            order: CameraOrder::Ui.into(),
-            ..default()
-        },
-    ));
 }
 
 /// This enum is converted to an `isize` to be used as a camera's order.
