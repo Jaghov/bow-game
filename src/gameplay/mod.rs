@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-mod arrow;
+pub mod arrow;
 pub mod bow;
 pub mod cursor;
 mod sph;

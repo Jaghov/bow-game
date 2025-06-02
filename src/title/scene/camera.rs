@@ -3,24 +3,14 @@ use bevy::prelude::*;
 use crate::{
     Screen,
     camera::WorldCamera,
-    title::TitleStopwatch,
+    title::{
+        TitleStopwatch,
+        scene::{CAMERA_LOOK_AT, CAMERA_POSITION},
+    },
     transition::camera::CameraTracking,
-    world::backdrop::{BACKDROP_OFFSET, BLOCK_LEN},
 };
 
-// this is the title screen position
-const POS: Vec3 = Vec3::new(
-    BLOCK_LEN * 7. + 4.,
-    BLOCK_LEN * 3. + 4.,
-    1. - BACKDROP_OFFSET,
-);
-
-const LOOK_AT: Vec3 = Vec3::new(
-    BLOCK_LEN * 6. + 3.,
-    BLOCK_LEN * 4. + 3.,
-    -3. - BACKDROP_OFFSET,
-);
-const TITLE_SCREEN_CAM_TRANSFORM: Transform = Transform::from_translation(POS);
+const TITLE_SCREEN_CAM_TRANSFORM: Transform = Transform::from_translation(CAMERA_POSITION);
 
 pub(super) fn plugin(app: &mut App) {
     app.add_systems(OnEnter(Screen::Title), start_tracking_camera)
@@ -32,7 +22,7 @@ fn start_tracking_camera(mut commands: Commands, camera: Query<&Transform, With<
     let start = camera.single().unwrap();
     commands.insert_resource(CameraTracking {
         start: *start,
-        end: TITLE_SCREEN_CAM_TRANSFORM.looking_at(LOOK_AT, Vec3::Z),
+        end: TITLE_SCREEN_CAM_TRANSFORM.looking_at(CAMERA_LOOK_AT, Vec3::Z),
     });
 }
 fn stop_tracking_camera(mut commands: Commands) {
