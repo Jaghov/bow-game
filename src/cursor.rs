@@ -1,11 +1,13 @@
 use bevy::prelude::*;
 
-use super::{GAME_PLANE, GameSet, camera::WorldCamera};
+use crate::{AppSystems, world::GAME_PLANE};
+
+use super::camera::WorldCamera;
 
 pub(super) fn plugin(app: &mut App) {
     app.register_type::<CursorPosition>()
         .init_resource::<CursorPosition>();
-    app.add_systems(Update, set_cursor_position.in_set(GameSet::RecordInput));
+    app.add_systems(Update, set_cursor_position.in_set(AppSystems::RecordInput));
 }
 
 /// Tells us where the pointer would be on the game plane

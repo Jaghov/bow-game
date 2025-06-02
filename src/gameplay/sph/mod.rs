@@ -4,9 +4,9 @@ use avian3d::prelude::{
 use bevy::{color::palettes::tailwind::BLUE_400, prelude::*};
 use bevy_hanabi::ParticleEffect;
 
-use crate::{Screen, asset_tracking::LoadResource};
+use crate::{Screen, asset_tracking::LoadResource, world::GAME_PLANE};
 
-use super::{GAME_PLANE, particles::ExampleParticles};
+use super::particles::ExampleParticles;
 
 pub(super) fn plugin(app: &mut App) {
     app.register_type::<SphereAssets>()

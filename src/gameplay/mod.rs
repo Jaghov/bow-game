@@ -3,20 +3,16 @@ use bevy::prelude::*;
 mod arrow;
 mod backdrop;
 pub mod bow;
-pub mod camera;
-pub mod cursor;
 mod particles;
-mod physics;
 mod sph;
 mod targets;
 
 use crate::Screen;
 
-/// This is the z-plane that everything should sit on
-pub const GAME_PLANE: f32 = 0.;
-
-/// camera z-offset from plane
-pub const CAMERA_OFFSET: f32 = 70.;
+/// camera z-offset from the gameplay plane.
+///
+/// This is where the camera should *usually* be when the game is being played
+pub const GAMEPLAY_CAMERA_OFFSET: f32 = 70.;
 
 #[derive(SubStates, Clone, PartialEq, Eq, Hash, Debug, Default, Reflect)]
 #[source(Screen = Screen::Gameplay)]
@@ -77,10 +73,8 @@ pub fn plugin(app: &mut App) {
     app.add_plugins((
         particles::plugin,
         backdrop::plugin,
-        cursor::plugin,
         bow::plugin,
         sph::plugin,
-        camera::plugin,
         arrow::plugin,
         targets::plugin,
     ));

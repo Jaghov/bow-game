@@ -1,7 +1,7 @@
 use avian3d::prelude::{Collider, RigidBody};
 use bevy::{color::palettes::tailwind::GREEN_400, prelude::*};
 
-use crate::{Screen, gameplay::GAME_PLANE};
+use crate::{Screen, world::GAME_PLANE};
 
 pub fn plugin(app: &mut App) {
     app.add_systems(OnEnter(Screen::Gameplay), spawn_backdrop);

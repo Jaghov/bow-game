@@ -5,9 +5,11 @@ use bevy::{
     render::view::RenderLayers,
 };
 
-use crate::camera::{CameraOrder, RenderLayer};
+use crate::{
+    camera::{CameraOrder, RenderLayer},
+    gameplay::GAMEPLAY_CAMERA_OFFSET,
+};
 
-use super::CAMERA_OFFSET;
 pub(super) fn plugin(app: &mut App) {
     app.add_systems(Startup, spawn_world_camera);
 }
@@ -28,7 +30,7 @@ fn spawn_world_camera(mut commands: Commands) {
             ..default()
         },
         Tonemapping::TonyMcMapface, // 2. Using a tonemapper that desaturates to white is recommended
-        Transform::from_xyz(0., 0., CAMERA_OFFSET).looking_at(Vec3::ZERO, Vec3::Y),
+        Transform::from_xyz(0., 0., GAMEPLAY_CAMERA_OFFSET).looking_at(Vec3::ZERO, Vec3::Y),
         MeshPickingCamera,
         Projection::from(PerspectiveProjection {
             fov: 45.0_f32.to_radians(),
@@ -36,15 +38,6 @@ fn spawn_world_camera(mut commands: Commands) {
         }),
         RenderLayers::from(RenderLayer::DEFAULT | RenderLayer::PARTICLES | RenderLayer::GIZMO3),
         Bloom::NATURAL,
-    ));
-
-    commands.spawn((
-        DirectionalLight {
-            illuminance: light_consts::lux::OVERCAST_DAY,
-            shadows_enabled: true,
-            ..default()
-        },
-        Transform::from_xyz(0., 50., CAMERA_OFFSET + 5.).looking_at(Vec3::ZERO, Vec3::Y),
     ));
 
     // commands.spawn((
