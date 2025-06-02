@@ -10,6 +10,7 @@ mod gameplay;
 mod hdr_hack;
 mod keybinds;
 mod loading;
+mod rand;
 mod splash;
 mod theme;
 mod third_party;
@@ -95,6 +96,7 @@ pub enum Screen {
     Loading,
     Title,
     Credits,
+    Transition,
     Gameplay,
 }
 

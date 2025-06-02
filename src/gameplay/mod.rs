@@ -1,9 +1,8 @@
 use bevy::prelude::*;
 
 mod arrow;
-mod backdrop;
 pub mod bow;
-mod particles;
+//mod particles;
 mod sph;
 mod targets;
 
@@ -71,8 +70,7 @@ pub fn plugin(app: &mut App) {
     );
 
     app.add_plugins((
-        particles::plugin,
-        backdrop::plugin,
+        //particles::plugin,
         bow::plugin,
         sph::plugin,
         arrow::plugin,

@@ -6,12 +6,15 @@ use bevy::{
 };
 
 use crate::{
+    Screen,
     camera::{CameraOrder, RenderLayer},
     gameplay::GAMEPLAY_CAMERA_OFFSET,
+    world::backdrop::{BACKDROP_OFFSET, BLOCK_LEN},
 };
 
 pub(super) fn plugin(app: &mut App) {
-    app.add_systems(Startup, spawn_world_camera);
+    app.add_systems(Startup, spawn_world_camera)
+        .add_systems(Update, set_camera_position.run_if(in_state(Screen::Title)));
 }
 
 #[derive(Component, Reflect)]
@@ -50,4 +53,30 @@ fn spawn_world_camera(mut commands: Commands) {
     //     },
     //     Transform::from_xyz(0.0, 16.0, 0.0),
     // ));
+}
+
+#[cfg_attr(feature = "hot", bevy_simple_subsecond_system::prelude::hot)]
+fn set_camera_position(mut cam: Query<&mut Transform, With<WorldCamera>>) {
+    use crate::world::backdrop::BLOCK_LEN;
+
+    let mut cam = cam.single_mut().unwrap();
+
+    let trans_x = 3.;
+
+    let trans_y = 3.;
+
+    let trans_z = -1.;
+
+    let pos = Vec3::new(
+        1. + BLOCK_LEN * 7. + trans_x,
+        1. + BLOCK_LEN * 3. + trans_y,
+        2. + trans_z - BACKDROP_OFFSET,
+    );
+    let look_at = Vec3::new(
+        BLOCK_LEN * 6. + trans_x,
+        BLOCK_LEN * 4. + trans_y,
+        -2. + trans_z - BACKDROP_OFFSET,
+    );
+
+    *cam = Transform::from_translation(pos).looking_at(look_at, Vec3::Z);
 }

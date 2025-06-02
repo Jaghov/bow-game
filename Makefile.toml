@@ -1,6 +1,6 @@
 [tasks.web]
-command = "trunk"
-args = ["serve", "--release", "--features", "web"]
+command = "bevy"
+args = ["run", "--features", "web", "web"]
 
 [tasks.chrome]
 command = "trunk"

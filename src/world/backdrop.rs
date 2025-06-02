@@ -1,15 +1,17 @@
 use avian3d::prelude::{Collider, RigidBody};
 use bevy::{color::palettes::tailwind::GREEN_400, prelude::*};
 
-use crate::{Screen, world::GAME_PLANE};
+use crate::{rand, world::GAME_PLANE};
 
 pub fn plugin(app: &mut App) {
-    app.add_systems(OnEnter(Screen::Gameplay), spawn_backdrop);
+    app.add_systems(Startup, spawn_backdrop);
     //.add_systems(Update, update_backdrop_z.in_set(GameSet::Update));
 }
 
-const BACKDROP_OFFSET: f32 = 5.;
+pub const BACKDROP_OFFSET: f32 = 5.;
 const PERIOD: f32 = 0.3;
+
+pub const BLOCK_LEN: f32 = 6.;
 
 #[derive(Component)]
 struct ZState {
@@ -21,21 +23,22 @@ fn spawn_backdrop(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    const BL: f32 = 6.;
-
     let material = materials.add(StandardMaterial {
         base_color: GREEN_400.into(),
         ..default()
     });
 
-    let mesh = meshes.add(Cuboid::from_length(BL));
+    let mesh = meshes.add(Cuboid::from_length(BLOCK_LEN));
 
     for i in (-10..=10) {
         for j in (-10..=10) {
-            let x = i as f32 * BL;
-            let y = j as f32 * BL;
-            let depth = BL / 2.;
-            let z = GAME_PLANE - BACKDROP_OFFSET - rand::random_range((0_f32..=depth)) - (BL * 0.5);
+            let x = i as f32 * BLOCK_LEN;
+            let y = j as f32 * BLOCK_LEN;
+            let depth = BLOCK_LEN / 2.;
+            let z = GAME_PLANE
+                - BACKDROP_OFFSET
+                - rand::random_range((0_f32..=depth))
+                - (BLOCK_LEN * 0.5);
 
             let spawn_here = rand::random_bool(0.9);
             if !spawn_here {
@@ -49,7 +52,7 @@ fn spawn_backdrop(
                 },
                 Mesh3d(mesh.clone()),
                 RigidBody::Kinematic,
-                Collider::cuboid(BL, BL, BL),
+                Collider::cuboid(BLOCK_LEN, BLOCK_LEN, BLOCK_LEN),
                 Transform::from_xyz(x, y, z),
             ));
         }

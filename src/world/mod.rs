@@ -1,13 +1,16 @@
 //! This is set up for the whole world
 
+use crate::gameplay::GAMEPLAY_CAMERA_OFFSET;
 use bevy::prelude::*;
 
-use crate::gameplay::GAMEPLAY_CAMERA_OFFSET;
+pub mod backdrop;
 
 /// This is the z-plane that everything should sit on
 pub const GAME_PLANE: f32 = 0.;
 
 pub(super) fn plugin(app: &mut App) {
+    app.add_plugins(backdrop::plugin);
+
     app.add_systems(Startup, setup_indepedent_world_entities);
 }
 
