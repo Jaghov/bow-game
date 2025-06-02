@@ -8,7 +8,7 @@ use std::f32::consts::FRAC_PI_2;
 use super::WALL;
 use crate::{
     Screen,
-    gameplay::{arrow::ArrowAssets, bow::BowAssets},
+    gameplay::{arrow::ArrowAssets, bow::BowAssets, sph::SphereAssets},
     world::backdrop::{BACKDROP_OFFSET, BLOCK_LEN},
 };
 
@@ -25,7 +25,15 @@ struct Arrow(usize);
 #[derive(Component)]
 struct Bow;
 
-fn spawn_items(mut commands: Commands, bow_assets: Res<BowAssets>, arrow_assets: Res<ArrowAssets>) {
+#[derive(Component)]
+struct Sphere(usize);
+
+fn spawn_items(
+    mut commands: Commands,
+    bow_assets: Res<BowAssets>,
+    arrow_assets: Res<ArrowAssets>,
+    sphere: Res<SphereAssets>,
+) {
     commands.spawn((
         Bow,
         StateScoped(Screen::Title),
@@ -49,13 +57,28 @@ fn spawn_items(mut commands: Commands, bow_assets: Res<BowAssets>, arrow_assets:
         ));
     }
 
+    let mesh = Mesh3d(sphere.mesh.clone());
+
+    commands.spawn((
+        Sphere(0),
+        mesh.clone(),
+        MeshMaterial3d(sphere.normal.clone()),
+    ));
+    commands.spawn((
+        Sphere(1),
+        mesh.clone(),
+        MeshMaterial3d(sphere.multiplier.clone()),
+    ));
+    commands.spawn((Sphere(2), mesh, MeshMaterial3d(sphere.time_freeze.clone())));
+
     //todo
 }
 
 #[cfg_attr(feature = "hot", bevy_simple_subsecond_system::prelude::hot)]
 fn set_locations(
-    mut bow: Query<&mut Transform, With<Bow>>,
-    mut arrows: Query<(&mut Transform, &Arrow), Without<Bow>>,
+    mut bow: Query<&mut Transform, (With<Bow>, Without<Sphere>)>,
+    mut arrows: Query<(&mut Transform, &Arrow), (Without<Bow>, Without<Sphere>)>,
+    mut spheres: Query<(&mut Transform, &Sphere), (Without<Bow>, Without<Arrow>)>,
 ) {
     let mut bow = bow.single_mut().unwrap();
 
@@ -86,6 +109,22 @@ fn set_locations(
             -0.2,
         ))
         .with_scale(Vec3::splat(0.5));
+    }
+
+    for (mut trns, sphere) in &mut spheres {
+        let offset = sphere.0 as f32 * 1.2;
+        *trns = Transform::from_xyz(
+            BLOCK_LEN * 7. - 1.5 + offset,
+            BLOCK_LEN * 4. + 2.5,
+            -1.65 - BACKDROP_OFFSET,
+        )
+        .with_rotation(Quat::from_euler(
+            EulerRot::XYX,
+            FRAC_PI_2 - 0.15,
+            FRAC_PI_2 + 0.02,
+            -0.2,
+        ))
+        .with_scale(Vec3::splat(0.3));
     }
 
     //todod

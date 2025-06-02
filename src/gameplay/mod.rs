@@ -3,7 +3,7 @@ use bevy::prelude::*;
 pub mod arrow;
 pub mod bow;
 pub mod cursor;
-mod sph;
+pub mod sph;
 mod targets;
 
 use crate::{Screen, camera::WorldCamera};
