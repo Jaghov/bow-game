@@ -3,8 +3,6 @@ use bevy::prelude::*;
 mod arrow;
 pub mod bow;
 pub mod cursor;
-#[cfg(feature = "particles")]
-mod particles;
 mod sph;
 mod targets;
 
@@ -70,9 +68,6 @@ pub fn plugin(app: &mut App) {
             .chain()
             .run_if(in_state(GameState::Playing)),
     );
-
-    #[cfg(feature = "particles")]
-    app.add_plugins(particles::plugin);
 
     app.add_plugins((
         bow::plugin,

@@ -1,13 +1,14 @@
 use bevy::{
     color::palettes::tailwind::SKY_300,
     core_pipeline::{bloom::Bloom, tonemapping::Tonemapping},
+    math::VectorSpace,
     prelude::*,
     render::view::RenderLayers,
 };
 
 use crate::{
     camera::{CameraOrder, RenderLayer},
-    world::backdrop::{BACKDROP_OFFSET, BLOCK_LEN},
+    gameplay::GAMEPLAY_CAMERA_OFFSET,
 };
 
 pub(super) fn plugin(app: &mut App) {
@@ -19,19 +20,6 @@ pub(super) fn plugin(app: &mut App) {
 pub struct WorldCamera;
 
 fn spawn_world_camera(mut commands: Commands) {
-    // this is the title screen position
-    let pos = Vec3::new(
-        BLOCK_LEN * 7. + 4.,
-        BLOCK_LEN * 3. + 4.,
-        1. - BACKDROP_OFFSET,
-    );
-
-    let look_at = Vec3::new(
-        BLOCK_LEN * 6. + 3.,
-        BLOCK_LEN * 4. + 3.,
-        -3. - BACKDROP_OFFSET,
-    );
-
     commands.spawn((
         Name::new("World Camera"),
         Camera3d::default(),
@@ -43,7 +31,7 @@ fn spawn_world_camera(mut commands: Commands) {
             ..default()
         },
         Tonemapping::TonyMcMapface, // 2. Using a tonemapper that desaturates to white is recommended
-        Transform::from_translation(pos).looking_at(look_at, Vec3::Z),
+        Transform::from_xyz(0., 0., GAMEPLAY_CAMERA_OFFSET).looking_at(Vec3::ZERO, Vec3::Y),
         MeshPickingCamera,
         Projection::from(PerspectiveProjection {
             fov: 45.0_f32.to_radians(),

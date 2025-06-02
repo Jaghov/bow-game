@@ -9,6 +9,8 @@ mod gameplay;
 mod hdr_hack;
 mod keybinds;
 mod loading;
+#[cfg(feature = "particles")]
+mod particles;
 mod rand;
 mod splash;
 mod theme;
@@ -82,6 +84,9 @@ fn main() -> AppExit {
 
     #[cfg(feature = "dev")]
     app.add_plugins(dev::plugin);
+
+    #[cfg(feature = "particles")]
+    app.add_plugins(particles::plugin);
 
     app.run()
 }
