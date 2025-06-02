@@ -2,6 +2,10 @@
 command = "trunk"
 args = ["serve", "--release", "--features", "web"]
 
+[tasks.chrome]
+command = "trunk"
+args = ["serve", "--release", "--features", "webgpu"]
+
 
 [tasks.run]
 command = "cargo"
@@ -27,3 +31,7 @@ args = ["build", "--features", "native", "--profile", "release-dist"]
 [tasks.brp]
 command = "cargo"
 args = ["run", "--features", "dev", "--bin", "brp"]
+
+[tasks.dhot]
+command = "dx"
+args = ["serve", "--features", "dev hot native", "--hot-patch"]

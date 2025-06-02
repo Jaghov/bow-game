@@ -13,7 +13,7 @@ pub(super) fn plugin(app: &mut App) {
         inspector::gadget,
         cursor::plugin,
         debug::plugin,
-        skip::plugin,
+        //skip::plugin,
     ));
     // Log `Screen` state transitions.
     app.add_systems(Update, log_transitions::<Screen>);
