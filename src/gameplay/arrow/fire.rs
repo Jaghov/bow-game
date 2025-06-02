@@ -4,7 +4,7 @@ use bevy::{platform::time::Instant, prelude::*};
 use super::{Arrow, Canceled};
 
 /// the max linear velocity speed of the arrow
-const STRENGTH_MULT: f32 = 60.;
+pub const STRENGTH_MULT: f32 = 60.;
 
 /// the arrow will be fired, but will be canceled if this velocity is not reached
 const THRESHOLD: f32 = 15.;
@@ -23,7 +23,7 @@ impl FireArrow {
     }
 }
 
-#[derive(Component)]
+#[derive(Component, Clone)]
 #[require(CollisionEventsEnabled)]
 pub struct Fired;
 

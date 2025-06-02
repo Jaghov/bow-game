@@ -60,7 +60,7 @@ fn spawn_debug_arrows(mut commands: Commands, assets: Res<ArrowAssets>) {
 #[derive(Event)]
 pub struct ReadyArrow;
 
-#[derive(Component)]
+#[derive(Component, Clone)]
 #[require(RigidBody = RigidBody::Dynamic)]
 #[require(Collider = Collider::capsule(0.1, 3.5))]
 #[require(GravityScale = GravityScale(0.))]
