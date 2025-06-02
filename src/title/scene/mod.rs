@@ -12,6 +12,8 @@ const CAMERA_POSITION: Vec3 = Vec3::new(
     1. - BACKDROP_OFFSET,
 );
 
+const WALL: Vec3 = Vec3::new(BLOCK_LEN * 7., BLOCK_LEN * 4. + 3., -1. - BACKDROP_OFFSET);
+
 const CAMERA_LOOK_AT: Vec3 = Vec3::new(
     BLOCK_LEN * 6. + 3.,
     BLOCK_LEN * 4. + 3.,
