@@ -4,7 +4,7 @@ pub mod arrow;
 pub mod bow;
 pub mod cursor;
 mod level;
-pub mod sph;
+pub mod sphere;
 mod targets;
 
 use crate::{Screen, camera::WorldCamera};
@@ -72,7 +72,7 @@ pub fn plugin(app: &mut App) {
 
     app.add_plugins((
         bow::plugin,
-        sph::plugin,
+        sphere::plugin,
         level::plugin,
         arrow::plugin,
         targets::plugin,

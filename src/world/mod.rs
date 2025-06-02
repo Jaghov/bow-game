@@ -1,6 +1,5 @@
 //! This is set up for the whole world
 
-use crate::gameplay::GAMEPLAY_CAMERA_OFFSET;
 use bevy::prelude::*;
 
 pub mod backdrop;

@@ -4,7 +4,7 @@ use std::{f32::consts::FRAC_PI_2, time::Duration};
 
 use crate::{
     Screen,
-    gameplay::{arrow::ArrowAssets, bow::BowAssets, sph::SphereAssets},
+    gameplay::{arrow::ArrowAssets, bow::BowAssets, sphere::SphereAssets},
     world::backdrop::{BACKDROP_OFFSET, BLOCK_LEN},
 };
 

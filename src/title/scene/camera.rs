@@ -5,7 +5,6 @@ use bevy::prelude::*;
 use crate::{
     Screen,
     camera::WorldCamera,
-    gameplay::GAMEPLAY_CAMERA_OFFSET,
     title::{
         TitleStopwatch,
         scene::{CAMERA_LOOK_AT, CAMERA_POSITION},
