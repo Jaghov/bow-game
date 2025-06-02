@@ -5,7 +5,6 @@ mod backdrop;
 pub mod bow;
 pub mod camera;
 pub mod cursor;
-mod loading;
 mod particles;
 mod physics;
 mod sph;
@@ -19,19 +18,8 @@ pub const GAME_PLANE: f32 = 0.;
 /// camera z-offset from plane
 pub const CAMERA_OFFSET: f32 = 70.;
 
-/// This for the initial load.
-#[derive(Debug, Clone, Copy, Default, Eq, PartialEq, Hash, SubStates)]
-#[source(Screen = Screen::Gameplay)]
-#[states(scoped_entities)]
-pub enum GameLoadState {
-    /// This is when initially loading in
-    #[default]
-    Loading,
-    Loaded,
-}
-
 #[derive(SubStates, Clone, PartialEq, Eq, Hash, Debug, Default, Reflect)]
-#[source(GameLoadState = GameLoadState::Loaded)]
+#[source(Screen = Screen::Gameplay)]
 #[states(scoped_entities)]
 pub enum GameState {
     #[default]
@@ -60,8 +48,7 @@ pub enum ArrowSet {
 }
 
 pub fn plugin(app: &mut App) {
-    app.add_sub_state::<GameLoadState>()
-        .add_sub_state::<GameState>()
+    app.add_sub_state::<GameState>()
         .register_type::<GameState>()
         .register_type::<GameSet>();
 
@@ -89,7 +76,6 @@ pub fn plugin(app: &mut App) {
 
     app.add_plugins((
         particles::plugin,
-        loading::plugin,
         backdrop::plugin,
         cursor::plugin,
         bow::plugin,

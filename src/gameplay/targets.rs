@@ -1,13 +1,11 @@
 use bevy::prelude::*;
 
-use crate::asset_tracking::LoadResource;
-
-use super::GameLoadState;
+use crate::{Screen, asset_tracking::LoadResource};
 
 pub(super) fn plugin(app: &mut App) {
     app.register_type::<TargetAssets>()
         .load_resource::<TargetAssets>();
-    app.add_systems(OnEnter(GameLoadState::Loaded), spawn_target);
+    app.add_systems(OnEnter(Screen::Gameplay), spawn_target);
 }
 #[derive(Resource, Asset, Reflect, Clone)]
 struct TargetAssets {

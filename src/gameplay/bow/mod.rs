@@ -3,9 +3,9 @@ use std::{collections::VecDeque, f32::consts::PI};
 use bevy::prelude::*;
 use pull::{PullStrength, Pulling};
 
-use crate::asset_tracking::LoadResource;
+use crate::{Screen, asset_tracking::LoadResource};
 
-use super::{GameLoadState, GameSet, cursor::CursorPosition};
+use super::{GameSet, cursor::CursorPosition};
 
 mod animation;
 pub mod pull;
@@ -18,7 +18,7 @@ pub(super) fn plugin(app: &mut App) {
 
     app.add_plugins((pull::plugin, animation::plugin));
 
-    app.add_systems(OnEnter(GameLoadState::Loaded), spawn_bow)
+    app.add_systems(OnEnter(Screen::Gameplay), spawn_bow)
         .add_systems(
             Update,
             (update_bow_transform, update_bow_rotation_not_pulling).in_set(GameSet::Update),
