@@ -3,7 +3,7 @@ use std::{collections::VecDeque, f32::consts::PI};
 use bevy::prelude::*;
 use pull::{PullStrength, Pulling};
 
-use crate::{Screen, asset_tracking::LoadResource, cursor::CursorPosition};
+use crate::{Screen, asset_tracking::LoadResource, gameplay::cursor::CursorPosition};
 
 use super::GameSet;
 

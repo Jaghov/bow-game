@@ -5,12 +5,10 @@ use bevy::{
     prelude::*,
 };
 
-use crate::{
+use crate::gameplay::{
+    ArrowSet, GameSet,
+    arrow::{CancelArrow, FireArrow, ReadyArrow},
     cursor::CursorPosition,
-    gameplay::{
-        ArrowSet, GameSet,
-        arrow::{CancelArrow, FireArrow, ReadyArrow},
-    },
 };
 
 use super::{Bow, EPS};

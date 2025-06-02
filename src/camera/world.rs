@@ -32,7 +32,7 @@ fn spawn_world_camera(mut commands: Commands) {
         -3. - BACKDROP_OFFSET,
     );
 
-    *cam = commands.spawn((
+    commands.spawn((
         Name::new("World Camera"),
         Camera3d::default(),
         WorldCamera,
@@ -52,15 +52,4 @@ fn spawn_world_camera(mut commands: Commands) {
         RenderLayers::from(RenderLayer::DEFAULT | RenderLayer::PARTICLES | RenderLayer::GIZMO3),
         Bloom::NATURAL,
     ));
-
-    // commands.spawn((
-    //     PointLight {
-    //         shadows_enabled: true,
-    //         intensity: 10_000_000.,
-    //         range: 100.0,
-    //         shadow_depth_bias: 0.2,
-    //         ..default()
-    //     },
-    //     Transform::from_xyz(0.0, 16.0, 0.0),
-    // ));
 }

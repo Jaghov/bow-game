@@ -3,10 +3,11 @@ use bevy::prelude::*;
 mod arrow;
 pub mod bow;
 //mod particles;
+mod cursor;
 mod sph;
 mod targets;
 
-use crate::Screen;
+use crate::{Screen, camera::WorldCamera};
 
 /// camera z-offset from the gameplay plane.
 ///
@@ -75,5 +76,14 @@ pub fn plugin(app: &mut App) {
         sph::plugin,
         arrow::plugin,
         targets::plugin,
-    ));
+        cursor::plugin,
+    ))
+    .add_systems(OnEnter(Screen::Gameplay), move_camera);
+}
+
+// this is a hack until I implement smooth nudge
+fn move_camera(mut camera: Query<&mut Transform, With<WorldCamera>>) {
+    let mut camera = camera.single_mut().unwrap();
+
+    *camera = Transform::from_xyz(0., 0., GAMEPLAY_CAMERA_OFFSET).looking_at(Vec3::ZERO, Vec3::Y);
 }

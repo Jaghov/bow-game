@@ -3,7 +3,6 @@ use bevy::{asset::AssetMetaCheck, prelude::*, window::WindowMode};
 mod asset_tracking;
 mod camera;
 mod credits;
-mod cursor;
 #[cfg(feature = "dev")]
 mod dev;
 mod gameplay;
@@ -73,7 +72,6 @@ fn main() -> AppExit {
         keybinds::plugin,
         world::plugin,
         splash::plugin,
-        cursor::plugin,
         loading::plugin,
         title::plugin,
         gameplay::plugin,
