@@ -13,4 +13,6 @@ pub fn plugin(app: &mut App) {
         GltfAnimationPlugin,
         HanabiPlugin,
     ));
+    #[cfg(feature = "hot")]
+    app.add_plugins(bevy_simple_subsecond_system::prelude::SimpleSubsecondPlugin::default());
 }
