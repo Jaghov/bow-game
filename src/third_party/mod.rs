@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use bevy_gltf_animation::GltfAnimationPlugin;
-//use bevy_hanabi::HanabiPlugin;
+use bevy_hanabi::HanabiPlugin;
 use bevy_trauma_shake::TraumaPlugin;
 
 pub mod avian3d;
@@ -11,7 +11,7 @@ pub fn plugin(app: &mut App) {
         avian3d::plugin,
         TraumaPlugin,
         GltfAnimationPlugin,
-        //HanabiPlugin,
+        HanabiPlugin,
     ));
     #[cfg(feature = "hot")]
     app.add_plugins(bevy_simple_subsecond_system::prelude::SimpleSubsecondPlugin::default());
