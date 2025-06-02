@@ -1,11 +1,7 @@
-use avian3d::prelude::{
-    ColliderConstructor, ColliderConstructorHierarchy, GravityScale, RigidBody,
-};
 use bevy::prelude::*;
 
-use std::f32::consts::FRAC_PI_2;
+use std::{f32::consts::FRAC_PI_2, time::Duration};
 
-use super::WALL;
 use crate::{
     Screen,
     gameplay::{arrow::ArrowAssets, bow::BowAssets, sph::SphereAssets},
@@ -14,9 +10,51 @@ use crate::{
 
 pub(super) fn plugin(app: &mut App) {
     app.add_systems(OnEnter(Screen::Title), spawn_items)
+        .add_systems(OnEnter(Screen::Transition), start_transition_clock)
+        .add_systems(
+            PreUpdate,
+            update_transition_clock.run_if(in_state(Screen::Transition)),
+        )
+        .add_systems(
+            Update,
+            despawn_on_complete.run_if(in_state(Screen::Transition)),
+        )
+        .add_systems(OnExit(Screen::Transition), remove_transition_clock)
         .add_systems(Update, set_locations.run_if(in_state(Screen::Title)));
     //todo
 }
+
+#[derive(Resource)]
+struct TransitionClock(Timer);
+impl Default for TransitionClock {
+    fn default() -> Self {
+        Self(Timer::new(Duration::from_millis(300), TimerMode::Once))
+    }
+}
+fn start_transition_clock(mut commands: Commands) {
+    commands.init_resource::<TransitionClock>();
+}
+fn remove_transition_clock(mut commands: Commands) {
+    commands.remove_resource::<TransitionClock>();
+}
+fn update_transition_clock(mut clock: ResMut<TransitionClock>, time: Res<Time>) {
+    clock.0.tick(time.delta());
+}
+fn despawn_on_complete(
+    mut commands: Commands,
+    clock: Res<TransitionClock>,
+    props: Query<Entity, With<Prop>>,
+) {
+    if !clock.0.finished() {
+        return;
+    }
+    for prop in props {
+        commands.entity(prop).despawn();
+    }
+}
+
+#[derive(Component)]
+struct Prop;
 
 // note these are different from the game components
 #[derive(Component)]
@@ -34,27 +72,9 @@ fn spawn_items(
     arrow_assets: Res<ArrowAssets>,
     sphere: Res<SphereAssets>,
 ) {
-    commands.spawn((
-        Bow,
-        StateScoped(Screen::Title),
-        Transform::from_xyz(
-            BLOCK_LEN * 7. - 2.8,
-            BLOCK_LEN * 4. + 1.2,
-            -1.3 - BACKDROP_OFFSET,
-        )
-        .with_rotation(Quat::from_euler(EulerRot::XYX, FRAC_PI_2, FRAC_PI_2, -0.2))
-        .with_scale(Vec3::splat(0.5)),
-        //RigidBody::Dynamic,
-        //ColliderConstructorHierarchy::new(ColliderConstructor::ConvexDecompositionFromMesh),
-        GravityScale(3.),
-        SceneRoot(bow_assets.scene.clone()),
-    ));
+    commands.spawn((Bow, Prop, SceneRoot(bow_assets.scene.clone())));
     for i in (0..5) {
-        commands.spawn((
-            Arrow(i),
-            StateScoped(Screen::Title),
-            SceneRoot(arrow_assets.glowing.clone()),
-        ));
+        commands.spawn((Arrow(i), Prop, SceneRoot(arrow_assets.glowing.clone())));
     }
 
     let mesh = Mesh3d(sphere.mesh.clone());
@@ -62,14 +82,21 @@ fn spawn_items(
     commands.spawn((
         Sphere(0),
         mesh.clone(),
+        Prop,
         MeshMaterial3d(sphere.normal.clone()),
     ));
     commands.spawn((
         Sphere(1),
+        Prop,
         mesh.clone(),
         MeshMaterial3d(sphere.multiplier.clone()),
     ));
-    commands.spawn((Sphere(2), mesh, MeshMaterial3d(sphere.time_freeze.clone())));
+    commands.spawn((
+        Sphere(2),
+        Prop,
+        mesh,
+        MeshMaterial3d(sphere.time_freeze.clone()),
+    ));
 
     //todo
 }
