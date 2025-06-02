@@ -53,6 +53,11 @@ fn split_arrow_on_multiplier_collision(
             LinearVelocity(left * STRENGTH_MULT),
         ));
         commands.spawn((
+            arrow_base.clone(),
+            *arrow_transform,
+            LinearVelocity(arrow_transform.up().normalize() * STRENGTH_MULT),
+        ));
+        commands.spawn((
             arrow_base,
             right_transform,
             LinearVelocity(right * STRENGTH_MULT),
