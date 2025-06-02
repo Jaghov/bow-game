@@ -4,7 +4,7 @@ use std::time::Duration;
 
 use bevy::prelude::*;
 
-use crate::Screen;
+use crate::{Screen, world::light::SetLightPosition};
 
 const TRANSITION_DURATION: Duration = Duration::from_millis(2500);
 
@@ -18,6 +18,7 @@ pub(super) fn plugin(app: &mut App) {
             PreUpdate,
             tick_duration_timer.run_if(in_state(Screen::Transition)),
         )
+        .add_systems(Update, move_light.run_if(in_state(Screen::Transition)))
         .add_systems(
             PostUpdate,
             start_gameplay.run_if(in_state(Screen::Transition)),
@@ -46,4 +47,12 @@ fn start_gameplay(timer: Res<TransitionTimer>, mut screen: ResMut<NextState<Scre
         return;
     }
     screen.set(Screen::Gameplay);
+}
+
+fn move_light(mut commands: Commands, timer: Res<TransitionTimer>) {
+    if !timer.0.just_finished() {
+        return;
+    }
+    info!("moving light up");
+    commands.trigger(SetLightPosition::to_above().with_duration(Duration::from_millis(700)));
 }

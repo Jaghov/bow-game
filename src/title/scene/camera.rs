@@ -1,13 +1,17 @@
+use std::time::Duration;
+
 use bevy::prelude::*;
 
 use crate::{
     Screen,
     camera::WorldCamera,
+    gameplay::GAMEPLAY_CAMERA_OFFSET,
     title::{
         TitleStopwatch,
         scene::{CAMERA_LOOK_AT, CAMERA_POSITION},
     },
     transition::camera::CameraTracking,
+    world::light::SetLightPosition,
 };
 
 const TITLE_SCREEN_CAM_TRANSFORM: Transform = Transform::from_translation(CAMERA_POSITION);
@@ -15,7 +19,10 @@ const TITLE_SCREEN_CAM_TRANSFORM: Transform = Transform::from_translation(CAMERA
 pub(super) fn plugin(app: &mut App) {
     app.add_systems(OnEnter(Screen::Title), start_tracking_camera)
         .add_systems(OnExit(Screen::Title), stop_tracking_camera)
-        .add_systems(Update, set_camera_position.run_if(in_state(Screen::Title)));
+        .add_systems(
+            Update,
+            (set_camera_position, update_light_position).run_if(in_state(Screen::Title)),
+        );
 }
 
 fn start_tracking_camera(mut commands: Commands, camera: Query<&Transform, With<WorldCamera>>) {
@@ -30,7 +37,7 @@ fn stop_tracking_camera(mut commands: Commands) {
 }
 
 fn set_camera_position(
-    mut camera: Query<&mut Transform, With<WorldCamera>>,
+    mut camera: Query<&mut Transform, (With<WorldCamera>, Without<DirectionalLight>)>,
     time: Res<TitleStopwatch>,
     tracking: Res<CameraTracking>,
 ) {
@@ -67,4 +74,24 @@ fn set_camera_position(
     // Apply the interpolated transform
     camera_transform.translation = new_translation;
     camera_transform.rotation = new_rotation;
+}
+
+#[derive(Component)]
+struct Sent;
+
+fn update_light_position(
+    mut commands: Commands,
+    time: Res<TitleStopwatch>,
+    sent: Query<(), With<Sent>>,
+) {
+    if sent.single().is_ok() {
+        return;
+    }
+    if time.0.elapsed_secs() < 1. {
+        return;
+    }
+    info!("triggering light position");
+    commands.trigger(SetLightPosition::to_below().with_duration(Duration::from_secs(3)));
+
+    commands.spawn((Sent, StateScoped(Screen::Title)));
 }

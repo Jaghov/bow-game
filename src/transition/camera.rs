@@ -61,20 +61,4 @@ fn move_camera(
     // Apply the interpolated transform
     camera_transform.translation = new_translation;
     camera_transform.rotation = new_rotation;
-
-    // Interpolate translation
-    let new_translation = tracking
-        .start
-        .translation
-        .lerp(tracking.end.translation, eased_progress);
-
-    // Interpolate rotation
-    let new_rotation = tracking
-        .start
-        .rotation
-        .slerp(tracking.end.rotation, eased_progress);
-
-    // Apply the interpolated transform
-    camera_transform.translation = new_translation;
-    camera_transform.rotation = new_rotation;
 }
