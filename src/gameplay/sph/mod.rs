@@ -52,8 +52,11 @@ impl FromWorld for SphereAssets {
             ..Default::default()
         });
 
+        //let red = LinearRgba::from(RED).with_alpha(0.1);
+        let emissive = Srgba::rgb(5., 0., 0.);
         let multiplier = materials.add(StandardMaterial {
-            base_color: RED.into(),
+            //base_color: RED.into(),
+            emissive: emissive.into(),
             ..default()
         });
         let time_freeze = materials.add(StandardMaterial {

@@ -35,6 +35,7 @@ fn spawn_world_camera(mut commands: Commands) {
             ..default()
         }),
         RenderLayers::from(RenderLayer::DEFAULT | RenderLayer::PARTICLES | RenderLayer::GIZMO3),
+        Bloom::NATURAL,
     ));
 
     commands.spawn((
