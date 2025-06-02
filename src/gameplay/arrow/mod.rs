@@ -9,10 +9,10 @@ pub use fire::*;
 use avian3d::prelude::*;
 use bevy::prelude::*;
 
-use crate::asset_tracking::LoadResource;
+use crate::{Screen, asset_tracking::LoadResource};
 
 use super::{
-    ArrowSet, GAME_PLANE, GameLoadState,
+    ArrowSet, GAME_PLANE,
     bow::{Bow, pull::PullStrength},
 };
 
@@ -22,7 +22,7 @@ pub(super) fn plugin(app: &mut App) {
 
     app.add_plugins((fire::plugin, cancel::plugin));
 
-    app.add_systems(OnEnter(GameLoadState::Loaded), spawn_debug_arrows)
+    app.add_systems(OnEnter(Screen::Gameplay), spawn_debug_arrows)
         .add_systems(
             Update,
             update_unfired_arrow_transform.in_set(ArrowSet::UpdateArrow),

@@ -1,25 +1,18 @@
 use avian3d::prelude::{
-    Collider, CollidingEntities, CollisionStarted, GravityScale, LockedAxes, OnCollisionStart,
-    RigidBody,
+    Collider, CollidingEntities, GravityScale, LockedAxes, OnCollisionStart, RigidBody,
 };
-use bevy::{
-    color::palettes::{
-        css::{RED, WHITE},
-        tailwind::{BLUE_200, BLUE_400},
-    },
-    prelude::*,
-};
+use bevy::{color::palettes::tailwind::BLUE_400, prelude::*};
 use bevy_hanabi::ParticleEffect;
 
-use crate::asset_tracking::LoadResource;
+use crate::{Screen, asset_tracking::LoadResource};
 
-use super::{GAME_PLANE, GameLoadState, particles::ExampleParticles};
+use super::{GAME_PLANE, particles::ExampleParticles};
 
 pub(super) fn plugin(app: &mut App) {
     app.register_type::<SphereAssets>()
         .load_resource::<SphereAssets>();
 
-    app.add_systems(OnEnter(GameLoadState::Loaded), (spawn_sample_level,))
+    app.add_systems(OnEnter(Screen::Gameplay), (spawn_sample_level,))
         .add_observer(spawn_sphere);
 }
 
@@ -52,8 +45,11 @@ impl FromWorld for SphereAssets {
             ..Default::default()
         });
 
+        //let red = LinearRgba::from(RED).with_alpha(0.1);
+        let emissive = Srgba::rgb(5., 0., 0.);
         let multiplier = materials.add(StandardMaterial {
-            base_color: RED.into(),
+            //base_color: RED.into(),
+            emissive: emissive.into(),
             ..default()
         });
         let time_freeze = materials.add(StandardMaterial {

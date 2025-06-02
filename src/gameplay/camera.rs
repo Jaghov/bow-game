@@ -1,5 +1,7 @@
 use bevy::{
-    color::palettes::tailwind::SKY_300, core_pipeline::tonemapping::Tonemapping, prelude::*,
+    color::palettes::tailwind::SKY_300,
+    core_pipeline::{bloom::Bloom, tonemapping::Tonemapping},
+    prelude::*,
     render::view::RenderLayers,
 };
 
@@ -22,7 +24,7 @@ fn spawn_world_camera(mut commands: Commands) {
         Camera {
             order: CameraOrder::World.into(),
             clear_color: ClearColorConfig::Custom(SKY_300.into()),
-            //hdr: true,
+            hdr: true,
             ..default()
         },
         Tonemapping::TonyMcMapface, // 2. Using a tonemapper that desaturates to white is recommended
@@ -33,6 +35,7 @@ fn spawn_world_camera(mut commands: Commands) {
             ..default()
         }),
         RenderLayers::from(RenderLayer::DEFAULT | RenderLayer::PARTICLES | RenderLayer::GIZMO3),
+        Bloom::NATURAL,
     ));
 
     commands.spawn((
