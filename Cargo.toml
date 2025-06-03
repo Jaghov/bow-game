@@ -148,13 +148,15 @@ unused_parens = "allow"
 # Also, no wasm-opt performed by trunk if not the release profile
 [profile.release]
 opt-level = "z"
-# lto = true
-# codegen-units = 1
-# strip = false
 
 # this is what `release` should be
 [profile.release-dist]
 inherits = "release"
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+strip = true
+panic = "abort"
 
 [profile.wasm-dev]
 inherits = "dev"

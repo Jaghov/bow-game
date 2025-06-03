@@ -12,15 +12,28 @@ use bevy::{
 mod normal;
 pub use normal::*;
 
+mod exploder;
+pub use exploder::*;
+
 mod multiplier;
 pub use multiplier::*;
 
+mod timefreeze;
+pub use timefreeze::*;
+
 mod despawn;
+pub use despawn::*;
 
 use crate::{asset_tracking::LoadResource, world::GAME_PLANE};
 
 pub(super) fn plugin(app: &mut App) {
-    app.add_plugins((normal::plugin, multiplier::plugin, despawn::plugin));
+    app.add_plugins((
+        normal::plugin,
+        multiplier::plugin,
+        despawn::plugin,
+        timefreeze::plugin,
+        exploder::plugin,
+    ));
 
     app.register_type::<SphereAssets>()
         .load_resource::<SphereAssets>();
@@ -119,7 +132,13 @@ impl FromWorld for SphereAssets {
     }
 }
 #[derive(Component, Default)]
-struct KeepOnCollide;
+enum KeepOnCollideWith {
+    Arrow,
+    Sphere,
+    Both,
+    #[default]
+    NeverKeep,
+}
 
 #[derive(Component)]
 #[allow(dead_code)]
@@ -136,22 +155,16 @@ pub enum SphereType {
 pub struct Sphere;
 
 #[derive(Component)]
-pub struct TimeFreeze;
-
-#[derive(Component)]
-#[require(KeepOnCollide)]
+#[require(KeepOnCollideWith = KeepOnCollideWith::Both)]
 pub struct Absorber;
 
 #[derive(Component)]
-#[require(KeepOnCollide)]
+#[require(KeepOnCollideWith = KeepOnCollideWith::Both)]
 pub struct Bouncy;
 
 #[derive(Component)]
-#[require(KeepOnCollide)]
+#[require(KeepOnCollideWith = KeepOnCollideWith::Sphere)]
 pub struct GravitySphere;
-
-#[derive(Component)]
-pub struct Exploder;
 
 #[derive(Event)]
 pub struct SpawnSphere {
@@ -196,10 +209,7 @@ fn spawn_sphere(trigger: Trigger<SpawnSphere>, mut commands: Commands, assets: R
     match event.sphere_type {
         SphereType::Normal => commands.spawn((normal(&assets), transform)),
         SphereType::Multiplier => commands.spawn((multiplier(&assets), transform)),
-        SphereType::TimeFreeze => commands.spawn((
-            bundle,
-            (TimeFreeze, MeshMaterial3d(assets.time_freeze.clone())),
-        )),
+        SphereType::TimeFreeze => commands.spawn((timefreeze(&assets), transform)),
         SphereType::Bouncy => {
             commands.spawn((bundle, (Bouncy, MeshMaterial3d(assets.time_freeze.clone()))))
         }
@@ -211,9 +221,6 @@ fn spawn_sphere(trigger: Trigger<SpawnSphere>, mut commands: Commands, assets: R
             bundle,
             (Absorber, MeshMaterial3d(assets.time_freeze.clone())),
         )),
-        SphereType::Exploder => commands.spawn((
-            bundle,
-            (Exploder, MeshMaterial3d(assets.time_freeze.clone())),
-        )),
+        SphereType::Exploder => commands.spawn((exploder(&assets), transform)),
     };
 }
