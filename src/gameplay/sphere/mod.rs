@@ -123,6 +123,7 @@ impl FromWorld for SphereAssets {
 struct KeepOnCollide;
 
 #[derive(Component)]
+#[allow(dead_code)]
 pub enum SphereType {
     Normal,
     Multiplier,
@@ -239,7 +240,7 @@ fn check_sphere_despawn(
     spheres: Query<Entity, (With<Sphere>, Without<KeepOnCollide>)>,
 ) {
     for CollisionStarted(entity1, entity2) in collision_events.read() {
-        let (arrow, maybe_sphere) = match arrow.get(*entity1) {
+        let (_arrow, maybe_sphere) = match arrow.get(*entity1) {
             Ok(arrow) => (arrow, entity2),
             Err(_) => match arrow.get(*entity2) {
                 Ok(arrow) => (arrow, entity1),

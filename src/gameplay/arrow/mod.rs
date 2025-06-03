@@ -9,7 +9,7 @@ pub use fire::*;
 use avian3d::prelude::*;
 use bevy::prelude::*;
 
-use crate::{Screen, asset_tracking::LoadResource, world::GAME_PLANE};
+use crate::asset_tracking::LoadResource;
 
 use super::{
     ArrowSet,

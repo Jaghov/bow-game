@@ -1,9 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{
-    Screen,
-    world::{GAME_PLANE, backdrop::BLOCK_LEN},
-};
+use crate::Screen;
 
 mod infinite;
 mod one;
