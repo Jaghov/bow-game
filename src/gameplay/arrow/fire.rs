@@ -12,7 +12,8 @@ use super::{Arrow, Canceled};
 const STRENGTH_MULT: f32 = 60.;
 
 /// the arrow will be fired, but will be canceled if this velocity is not reached
-const THRESHOLD: f32 = 15.;
+//TODO: set this back to 15ish
+const THRESHOLD: f32 = 0.;
 
 pub(super) fn plugin(app: &mut App) {
     app.add_observer(fire_arrow);
@@ -63,25 +64,23 @@ fn on_multiply(
         return;
     };
 
-    info!(
-        "\n\nArrow given message to multiply!, arrow_location: {:?}, event_loc: {:?}",
-        arrow_trn.translation, event.local_point
-    );
-
-    let multiply_origin = (arrow_trn.translation + event.local_point).with_z(GAME_PLANE);
+    let multiply_origin = event.local_point.with_z(GAME_PLANE);
 
     info!(
-        "\n\nArrow given message to multiply!\narrow_location: {:?}\nevent_loc: {:?}\nmultiply_origin: {:?}",
+        "\n\nArrow given message to multiply!\narrow_location: {:?}\nevent_loc: {:?}\nmultiply_origin: {:?}\n",
         arrow_trn.translation, event.local_point, multiply_origin
     );
 
     for rotation_offset in &event.rot_offset {
-        let rotation = arrow_trn.rotation + Quat::from_rotation_z(*rotation_offset);
+        let quatrot = Quat::from_rotation_z(*rotation_offset);
+        let rotation = arrow_trn.rotation * Quat::from_rotation_z(*rotation_offset);
 
-        let unapplied_velocity = arrow_trn.rotation.conjugate() * lvel.0;
+        //let unapplied_velocity = arrow_trn.rotation.conjugate() * lvel.0;
 
-        let velocity = rotation * unapplied_velocity * 0.5;
-        let offset = rotation * unapplied_velocity.normalize() * 2.;
+        //let velocity = rotation * unapplied_velocity * 0.5;
+        //let offset = rotation * unapplied_velocity.normalize() * 4.;
+        let velocity = quatrot * lvel.0;
+        let offset = velocity.normalize() * 2.;
 
         let transform = Transform::from_translation(multiply_origin + offset)
             .with_rotation(rotation)
@@ -99,6 +98,7 @@ fn on_multiply(
             transform,
             LinearVelocity(velocity),
             collider.clone(),
+            CollisionLayers::NONE,
             scene_root.clone(),
         ));
 
