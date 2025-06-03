@@ -178,7 +178,6 @@ fn sphere_defaults(assets: &SphereAssets) -> impl Bundle {
         Sphere,
         Mesh3d(assets.mesh.clone()),
         Collider::sphere(1.),
-        RigidBody::Dynamic,
         LockedAxes::default().lock_translation_z(),
         GravityScale(0.),
         CollisionEventsEnabled,
@@ -252,6 +251,7 @@ fn check_sphere_despawn(
         };
         info!("sphere and arrow collided!");
 
+        // note that observers should assume they must now despawn!
         commands.trigger_targets(Hit, sphere);
     }
     //todo

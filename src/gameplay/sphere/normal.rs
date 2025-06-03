@@ -1,9 +1,9 @@
-use avian3d::prelude::{CollisionStarted, OnCollisionEnd, OnCollisionStart};
+use avian3d::prelude::{OnCollisionStart, Sensor};
 use bevy::prelude::*;
 
 use crate::gameplay::{
     arrow::Arrow,
-    sphere::{KeepOnCollide, Normal, SphereAssets, SphereType, sphere_defaults},
+    sphere::{Hit, KeepOnCollide, Normal, SphereAssets, SphereType, sphere_defaults},
 };
 
 pub fn normal(assets: &SphereAssets) -> impl Bundle {
@@ -12,6 +12,7 @@ pub fn normal(assets: &SphereAssets) -> impl Bundle {
         (
             Normal,
             SphereType::Normal,
+            Sensor,
             MeshMaterial3d(assets.normal.clone()),
         ),
     )
@@ -25,7 +26,8 @@ fn insert_normal(trigger: Trigger<OnAdd, Normal>, mut commands: Commands) {
     info!("observed new normal insert");
     commands
         .entity(trigger.target())
-        .observe(observe_collisions);
+        .observe(observe_collisions)
+        .observe(on_hit);
 }
 
 fn observe_collisions(
@@ -50,4 +52,9 @@ fn observe_collisions(
     // };
 
     info!("normal ball collision with arrow");
+}
+
+fn on_hit(trigger: Trigger<Hit>, mut commands: Commands, normals: Query<Entity, With<Normal>>) {
+    let normal = normals.get(trigger.target()).unwrap();
+    commands.entity(normal).try_despawn();
 }
