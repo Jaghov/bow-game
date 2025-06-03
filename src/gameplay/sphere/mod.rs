@@ -1,4 +1,6 @@
-use avian3d::prelude::{Collider, CollidingEntities, GravityScale, LockedAxes, RigidBody};
+use avian3d::prelude::{
+    Collider, CollidingEntities, CollisionEventsEnabled, GravityScale, LockedAxes, RigidBody,
+};
 use bevy::{
     color::palettes::{
         css::{GREEN, ORANGE, YELLOW},
@@ -8,6 +10,7 @@ use bevy::{
 };
 
 mod normal;
+pub use normal::*;
 
 use crate::{asset_tracking::LoadResource, world::GAME_PLANE};
 
@@ -110,7 +113,10 @@ impl FromWorld for SphereAssets {
         }
     }
 }
+#[derive(Component, Default)]
+struct DontRemoveOnCollide;
 
+#[derive(Component)]
 pub enum SphereType {
     Normal,
     Multiplier,
@@ -133,12 +139,15 @@ pub struct Multiplier;
 pub struct TimeFreeze;
 
 #[derive(Component)]
+#[require(DontRemoveOnCollide)]
 pub struct Absorber;
 
 #[derive(Component)]
+#[require(DontRemoveOnCollide)]
 pub struct Bouncy;
 
 #[derive(Component)]
+#[require(DontRemoveOnCollide)]
 pub struct GravitySphere;
 
 #[derive(Component)]
@@ -158,6 +167,18 @@ impl SpawnSphere {
     }
 }
 
+fn sphere_defaults(assets: &SphereAssets) -> impl Bundle {
+    (
+        Sphere,
+        Mesh3d(assets.mesh.clone()),
+        Collider::sphere(1.),
+        RigidBody::Dynamic,
+        LockedAxes::default().lock_translation_z(),
+        GravityScale(0.),
+        CollisionEventsEnabled,
+    )
+}
+
 fn spawn_sphere(trigger: Trigger<SpawnSphere>, mut commands: Commands, assets: Res<SphereAssets>) {
     let event = trigger.event();
     let transform = Transform::from_xyz(event.location.x, event.location.y, GAME_PLANE);
@@ -174,9 +195,7 @@ fn spawn_sphere(trigger: Trigger<SpawnSphere>, mut commands: Commands, assets: R
     );
 
     match event.sphere_type {
-        SphereType::Normal => {
-            commands.spawn((bundle, (Normal, MeshMaterial3d(assets.normal.clone()))))
-        }
+        SphereType::Normal => commands.spawn((normal(&assets), transform)),
         SphereType::Multiplier => commands.spawn((
             bundle,
             (Multiplier, MeshMaterial3d(assets.multiplier.clone())),

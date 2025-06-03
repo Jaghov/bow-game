@@ -1,3 +1,4 @@
+use avian3d::prelude::{Collider, RigidBody};
 use bevy::prelude::*;
 
 use crate::{
@@ -28,19 +29,25 @@ fn spawn_walls(
         ..default()
     });
     let top_mesh = meshes.add(Cuboid::new(BLOCK_LEN * 19., BLOCK_LEN, BLOCK_LEN));
+    let top_collider = Collider::cuboid(BLOCK_LEN * 19., BLOCK_LEN, BLOCK_LEN);
 
     commands.spawn((
         Mesh3d(top_mesh.clone()),
         Top,
+        RigidBody::Kinematic,
+        top_collider.clone(),
         MeshMaterial3d(material.clone()),
         Transform::from_xyz(-BLOCK_LEN * 5., 0., GAME_PLANE),
     ));
 
     let right_mesh = meshes.add(Cuboid::new(BLOCK_LEN, BLOCK_LEN * 7., BLOCK_LEN));
+    let right_collider = Collider::cuboid(BLOCK_LEN, BLOCK_LEN * 7., BLOCK_LEN);
 
     commands.spawn((
         Mesh3d(right_mesh),
         Right,
+        RigidBody::Kinematic,
+        right_collider,
         MeshMaterial3d(material.clone()),
         Transform::from_xyz(BLOCK_LEN * 9., 0., GAME_PLANE),
     ));
@@ -48,6 +55,8 @@ fn spawn_walls(
     commands.spawn((
         Mesh3d(top_mesh),
         Bottom,
+        RigidBody::Kinematic,
+        top_collider.clone(),
         MeshMaterial3d(material.clone()),
         Transform::from_xyz(-BLOCK_LEN * 5., 0., GAME_PLANE),
     ));
