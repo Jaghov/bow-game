@@ -3,7 +3,11 @@ use std::{collections::VecDeque, f32::consts::PI};
 use bevy::prelude::*;
 use pull::{PullStrength, Pulling};
 
-use crate::{Screen, asset_tracking::LoadResource, gameplay::cursor::CursorPosition};
+use crate::{
+    Screen,
+    asset_tracking::LoadResource,
+    gameplay::{GameState, arrow::ArrowOf, cursor::CursorPosition},
+};
 
 use super::GameSet;
 
@@ -20,10 +24,15 @@ pub(super) fn plugin(app: &mut App) {
 
     app.add_plugins((pull::plugin, timefreeze::plugin, animation::plugin));
 
-    app.add_systems(OnEnter(Screen::Gameplay), spawn_bow)
+    app.add_systems(OnEnter(Screen::Gameplay), spawn_primary_bow)
         .add_systems(
             Update,
-            (update_bow_transform, update_bow_rotation_not_pulling).in_set(GameSet::Update),
+            (
+                update_primary_bow_transform,
+                update_primary_bow_rotation_not_pulling,
+            )
+                .run_if(in_state(GameState::Playing))
+                .in_set(GameSet::Update),
         );
 }
 #[derive(Resource, Asset, Reflect, Clone)]
@@ -45,18 +54,31 @@ impl FromWorld for BowAssets {
 
 #[derive(Component)]
 #[require(PullStrength)]
+#[relationship_target(relationship = ArrowOf)]
+pub struct BowOf(Entity);
+
+#[derive(Component)]
+#[require(PullStrength)]
 pub struct Bow;
 
-fn spawn_bow(mut commands: Commands, assets: Res<BowAssets>) {
+// this is the bow on the cursor
+#[derive(Component)]
+pub struct PrimaryBow;
+
+// this is the bow that's currently doing things
+#[derive(Component)]
+pub struct ActiveBow;
+
+fn spawn_primary_bow(mut commands: Commands, assets: Res<BowAssets>) {
     info!("Spawning bow");
     commands
-        .spawn((Bow, SceneRoot(assets.scene.clone())))
+        .spawn((Bow, ActiveBow, PrimaryBow, SceneRoot(assets.scene.clone())))
         .observe(animation::setup_animations);
 }
 
-fn update_bow_transform(
+fn update_primary_bow_transform(
     cursor: Res<CursorPosition>,
-    mut bow: Query<&mut Transform, (With<Bow>, Without<Pulling>)>,
+    mut bow: Query<&mut Transform, (With<Bow>, With<PrimaryBow>, Without<Pulling>)>,
 ) {
     let Ok(mut bow) = bow.single_mut() else {
         return;
@@ -67,7 +89,7 @@ fn update_bow_transform(
     bow.translation = position;
 }
 
-fn update_bow_rotation_not_pulling(
+fn update_primary_bow_rotation_not_pulling(
     cursor: Res<CursorPosition>,
     mut bow: Query<&mut Transform, (With<Bow>, Without<Pulling>)>,
     mut last_positions: Local<VecDeque<Vec3>>,

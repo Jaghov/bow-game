@@ -61,7 +61,7 @@ fn on_mouse_down(mut commands: Commands, mut bow: Query<Entity, With<Bow>>) {
         return;
     };
     commands.entity(bow).insert(Pulling);
-    commands.trigger(ReadyArrow);
+    commands.trigger(ReadyArrow::for_bow(bow));
 }
 fn on_mouse_cancel(mut commands: Commands, mut bow: Query<(Entity, &mut PullStrength), With<Bow>>) {
     let Ok((bow, mut pull_strength)) = bow.single_mut() else {

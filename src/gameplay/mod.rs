@@ -55,7 +55,7 @@ pub fn plugin(app: &mut App) {
         Update,
         (GameSet::TickTimers, GameSet::RecordInput, GameSet::Update)
             .chain()
-            .run_if(in_state(GameState::Playing)),
+            .run_if(in_state(Screen::Gameplay)),
     );
     app.configure_sets(
         Update,
