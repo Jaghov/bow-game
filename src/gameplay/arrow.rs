@@ -58,6 +58,7 @@ pub struct ArrowOf(Entity);
 #[require(RigidBody = RigidBody::Dynamic)]
 #[require(Collider = Collider::capsule(0.1, 3.5))]
 #[require(GravityScale = GravityScale(0.))]
+#[require(LockedAxes = LockedAxes::new().lock_translation_z())]
 pub struct Arrow {
     pub bounces: u8,
 }
@@ -179,8 +180,13 @@ pub struct CancelArrow;
 #[derive(Component)]
 pub struct Canceled;
 fn cancel_arrow(trigger: Trigger<CancelArrow>, mut commands: Commands) {
+    // this may have been done already if the firing speed is too low
+    commands.entity(trigger.target()).try_remove::<ArrowOf>();
+
     commands.entity(trigger.target()).insert((
         Canceled,
+        // allows for z translation
+        LockedAxes::new(),
         MaxFlightTime::new(Duration::from_secs(5)),
         GravityScale(1.),
     ));
