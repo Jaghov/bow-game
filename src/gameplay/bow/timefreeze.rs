@@ -12,7 +12,6 @@ use crate::{
 
 pub(super) fn plugin(app: &mut App) {
     app.add_systems(OnEnter(GameState::TimeFreeze), spawn_bow);
-    //todo
 }
 
 pub fn spawn_bow(

@@ -2,7 +2,7 @@ use bevy::{animation::RepeatAnimation, prelude::*, scene::SceneInstanceReady};
 
 use crate::AppSystems;
 
-use super::{Bow, BowAssets, pull::PullStrength};
+use super::{Bow, BowArrow, BowAssets};
 
 pub(super) fn plugin(app: &mut App) {
     app.add_systems(Update, update_bow_pull.in_set(AppSystems::Update));
@@ -49,10 +49,14 @@ pub(super) fn setup_animations(
 }
 
 fn update_bow_pull(
-    bow_pull: Query<(&BowAnimation, &PullStrength)>,
+    bow_pull: Query<(&BowAnimation, Option<&BowArrow>)>,
     mut animations: Query<&mut AnimationPlayer>,
 ) {
-    for (anim_props, pull_strength) in bow_pull {
+    for (anim_props, bow_arrow) in bow_pull {
+        let pull_strength = bow_arrow
+            .map(|bow_arrow| bow_arrow.strength())
+            .unwrap_or_default();
+
         let mut anim_player = animations.get_mut(anim_props.player).unwrap();
 
         if !anim_player.is_playing_animation(anim_props.index) {
@@ -68,7 +72,7 @@ fn update_bow_pull(
 
         const MAX: f32 = 0.83;
 
-        let strength = pull_strength.strength() * MAX;
+        let strength = pull_strength * MAX;
         pull_animation.seek_to(strength);
     }
 }

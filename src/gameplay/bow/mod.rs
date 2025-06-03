@@ -1,7 +1,6 @@
 use std::{collections::VecDeque, f32::consts::PI};
 
 use bevy::prelude::*;
-use pull::PullStrength;
 
 use crate::{
     Screen,
@@ -53,12 +52,28 @@ impl FromWorld for BowAssets {
 }
 
 #[derive(Component)]
-#[require(PullStrength)]
 #[relationship_target(relationship = ArrowOf)]
-pub struct BowArrow(Entity);
+pub struct BowArrow {
+    #[relationship]
+    arrow: Entity,
+    pull_strength: f32,
+}
+
+impl BowArrow {
+    pub fn arrow(&self) -> Entity {
+        self.arrow
+    }
+    /// Returns a value from 0. to 1.
+    pub fn strength(&self) -> f32 {
+        self.pull_strength
+    }
+    /// clamps a set value from 0 to 1
+    pub fn set_strength(&mut self, val: f32) {
+        self.pull_strength = val.clamp(0., 1.)
+    }
+}
 
 #[derive(Component)]
-#[require(PullStrength)]
 pub struct Bow;
 
 // this is the bow on the cursor
@@ -78,7 +93,7 @@ fn spawn_primary_bow(mut commands: Commands, assets: Res<BowAssets>) {
 
 fn update_primary_bow_transform(
     cursor: Res<CursorPosition>,
-    mut bow: Query<&mut Transform, (With<Bow>, With<PrimaryBow>, Without<PullStrength>)>,
+    mut bow: Query<&mut Transform, (With<Bow>, With<PrimaryBow>, Without<BowArrow>)>,
 ) {
     let Ok(mut bow) = bow.single_mut() else {
         return;
@@ -91,7 +106,7 @@ fn update_primary_bow_transform(
 
 fn update_primary_bow_rotation_not_pulling(
     cursor: Res<CursorPosition>,
-    mut bow: Query<&mut Transform, (With<Bow>, Without<PullStrength>)>,
+    mut bow: Query<&mut Transform, (With<Bow>, Without<BowArrow>)>,
     mut last_positions: Local<VecDeque<Vec3>>,
     mut bow_should_rotation: Local<Quat>,
 ) {

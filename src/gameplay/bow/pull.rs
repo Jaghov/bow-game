@@ -40,20 +40,6 @@ pub(super) fn plugin(app: &mut App) {
         );
 }
 
-#[derive(Component, Default)]
-pub struct PullStrength(f32);
-
-impl PullStrength {
-    /// Returns a value from 0. to 1.
-    pub fn strength(&self) -> f32 {
-        self.0
-    }
-    /// clamps a set value from 0 to 1
-    pub fn set_strength(&mut self, val: f32) {
-        self.0 = val.clamp(0., 1.)
-    }
-}
-
 fn on_mouse_down(mut commands: Commands, bows: Query<Entity, (With<Bow>, With<ActiveBow>)>) {
     for bow in bows {
         commands.trigger(ReadyArrow::for_bow(bow));
@@ -61,20 +47,17 @@ fn on_mouse_down(mut commands: Commands, bows: Query<Entity, (With<Bow>, With<Ac
 }
 fn on_mouse_cancel(mut commands: Commands, bows: Query<&BowArrow>) {
     for arrow in &bows {
-        commands.trigger_targets(CancelArrow, arrow.0);
+        commands.trigger_targets(CancelArrow, arrow.arrow());
     }
 }
 
 fn on_mouse_up(mut commands: Commands, bow_arrows: Query<&BowArrow>) {
     for arrow in &bow_arrows {
-        commands.trigger_targets(FireArrow, arrow.0);
+        commands.trigger_targets(FireArrow, arrow.arrow());
     }
 }
 
-fn update_pull_strength(
-    mut bow: Query<(&mut PullStrength, &Transform)>,
-    cursor: Res<CursorPosition>,
-) {
+fn update_pull_strength(mut bow: Query<(&mut BowArrow, &Transform)>, cursor: Res<CursorPosition>) {
     let Some(cursor_position) = cursor.last() else {
         return;
     };
@@ -91,7 +74,7 @@ fn update_pull_strength(
 }
 
 fn update_pull_rotation(
-    mut bow: Query<&mut Transform, (With<Bow>, With<PullStrength>)>,
+    mut bow: Query<&mut Transform, (With<Bow>, With<BowArrow>)>,
     cursor: Res<CursorPosition>,
 ) {
     let Ok(mut bow) = bow.single_mut() else {

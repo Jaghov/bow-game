@@ -9,10 +9,7 @@ use crate::{
     world::GAME_PLANE,
 };
 
-use super::{
-    ArrowSet,
-    bow::{Bow, pull::PullStrength},
-};
+use super::{ArrowSet, bow::Bow};
 
 pub(super) fn plugin(app: &mut App) {
     app.register_type::<ArrowAssets>()
@@ -78,8 +75,8 @@ fn spawn_arrow(trigger: Trigger<ReadyArrow>, mut commands: Commands, assets: Res
 }
 
 fn update_unfired_arrow_transform(
-    mut arrows: Query<(&mut Transform, &ArrowOf), Without<Bow>>,
-    bow: Query<(&Transform, &PullStrength), With<Bow>>,
+    mut arrows: Query<(&mut Transform, &ArrowOf), Without<BowArrow>>,
+    bow: Query<(&Transform, &BowArrow)>,
 ) {
     for (mut arrow, arrow_of) in &mut arrows {
         let Ok((bow, pull_strength)) = bow.get(arrow_of.0) else {
@@ -120,7 +117,7 @@ fn fire_arrow(
     trigger: Trigger<FireArrow>,
     mut commands: Commands,
     mut arrows: Query<(&Rotation, &mut LinearVelocity, &ArrowOf)>,
-    mut pull_strength: Query<&PullStrength, Without<ArrowOf>>,
+    mut pull_strength: Query<&BowArrow, Without<ArrowOf>>,
 ) {
     let (rotation, mut lvel, arrow_of) = arrows
         .get_mut(trigger.target())
