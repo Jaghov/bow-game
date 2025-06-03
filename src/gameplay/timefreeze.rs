@@ -9,6 +9,10 @@ pub(super) fn plugin(app: &mut App) {
         .add_systems(OnExit(GameState::TimeFreeze), on_unfreeze);
     //todo
 }
+/// Use this struct to differentiate between frozen and unfrozen entities in
+/// systems not conditionally run by GameState
+#[derive(Component)]
+pub struct Frozen;
 
 #[derive(Event)]
 pub struct FreezeTime {
@@ -21,24 +25,35 @@ impl FreezeTime {
     }
 }
 #[derive(Resource)]
-struct FreezeParent(Entity);
+pub struct FreezeLocation {
+    sphere: Entity,
+    pub location: Vec3,
+}
 
 pub fn freeze_time(
     trigger: Trigger<FreezeTime>,
     mut commands: Commands,
     mut state: ResMut<NextState<GameState>>,
+    transforms: Query<&Transform>,
 ) {
-    state.set(GameState::TimeFreeze);
     let event = trigger.event();
-    commands.insert_resource(FreezeParent(event.sphere));
+    commands.insert_resource(FreezeLocation {
+        sphere: event.sphere,
+        location: transforms.get(event.sphere).unwrap().translation,
+    });
+    state.set(GameState::TimeFreeze);
 }
 
 fn on_freeze(mut time: ResMut<Time<Physics>>) {
     time.pause();
 }
 
-fn on_unfreeze(mut commands: Commands, freeze: Res<FreezeParent>, mut time: ResMut<Time<Physics>>) {
-    commands.entity(freeze.0).trigger(BeginDespawning);
-    commands.remove_resource::<FreezeParent>();
+fn on_unfreeze(
+    mut commands: Commands,
+    freeze: Res<FreezeLocation>,
+    mut time: ResMut<Time<Physics>>,
+) {
+    commands.entity(freeze.sphere).trigger(BeginDespawning);
+    commands.remove_resource::<FreezeLocation>();
     time.unpause();
 }

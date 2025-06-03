@@ -53,12 +53,7 @@ pub fn plugin(app: &mut App) {
 
     app.configure_sets(
         Update,
-        (
-            GameSet::TickTimers,
-            GameSet::RecordInput,
-            ArrowSet::ProcessInput,
-            GameSet::Update,
-        )
+        (GameSet::TickTimers, GameSet::RecordInput, GameSet::Update)
             .chain()
             .run_if(in_state(GameState::Playing)),
     );
@@ -69,8 +64,7 @@ pub fn plugin(app: &mut App) {
             ArrowSet::UpdateBow,
             ArrowSet::UpdateArrow,
         )
-            .chain()
-            .run_if(in_state(GameState::Playing)),
+            .chain(),
     );
 
     app.add_plugins((
@@ -83,8 +77,6 @@ pub fn plugin(app: &mut App) {
         timefreeze::plugin,
     ))
     .add_systems(OnEnter(Screen::Gameplay), move_camera)
-    .add_systems(OnEnter(GameState::TimeFreeze), pause_physics_time)
-    .add_systems(OnExit(GameState::TimeFreeze), resume_physics_time)
     .add_systems(OnEnter(GameState::Paused), pause_physics_time)
     .add_systems(OnExit(GameState::Paused), resume_physics_time);
 }

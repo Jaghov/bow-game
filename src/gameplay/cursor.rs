@@ -41,13 +41,12 @@ fn set_cursor_position(
     mut cursor_position: ResMut<CursorPosition>,
 ) {
     let Ok((camera, camera_transform)) = camera.single() else {
-        warn!("Camera does not exist for setting the cursor position on the floor!");
         return;
     };
 
-    let window = windows
-        .single()
-        .expect("A single window. This is unrecoverable!");
+    let Ok(window) = windows.single() else {
+        return;
+    };
 
     let Some(window_cursor_position) = window.cursor_position() else {
         // can happen if cursor ain't around rn

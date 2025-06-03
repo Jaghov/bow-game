@@ -1,4 +1,4 @@
-use std::{f32::consts::FRAC_PI_2, time::Duration};
+use std::f32::consts::FRAC_PI_2;
 
 mod cancel;
 pub use cancel::*;
@@ -12,7 +12,7 @@ pub use flight_time::*;
 use avian3d::prelude::*;
 use bevy::prelude::*;
 
-use crate::asset_tracking::LoadResource;
+use crate::{asset_tracking::LoadResource, gameplay::timefreeze::Frozen};
 
 use super::{
     ArrowSet,

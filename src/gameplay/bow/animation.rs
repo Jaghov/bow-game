@@ -1,11 +1,11 @@
 use bevy::{animation::RepeatAnimation, prelude::*, scene::SceneInstanceReady};
 
-use crate::gameplay::GameSet;
+use crate::AppSystems;
 
 use super::{Bow, BowAssets, pull::PullStrength};
 
 pub(super) fn plugin(app: &mut App) {
-    app.add_systems(Update, update_bow_pull.in_set(GameSet::Update));
+    app.add_systems(Update, update_bow_pull.in_set(AppSystems::Update));
 }
 
 #[derive(Component)]
@@ -52,24 +52,23 @@ fn update_bow_pull(
     bow_pull: Query<(&BowAnimation, &PullStrength)>,
     mut animations: Query<&mut AnimationPlayer>,
 ) {
-    let Ok((anim_props, pull_strength)) = bow_pull.single() else {
-        return;
-    };
-    let mut anim_player = animations.get_mut(anim_props.player).unwrap();
+    for (anim_props, pull_strength) in bow_pull {
+        let mut anim_player = animations.get_mut(anim_props.player).unwrap();
 
-    if !anim_player.is_playing_animation(anim_props.index) {
-        warn!("Not playing animation");
-        let pull_animation = anim_player.play(anim_props.index);
-        pull_animation
-            .set_repeat(RepeatAnimation::Never)
-            .set_speed(0.);
+        if !anim_player.is_playing_animation(anim_props.index) {
+            warn!("Not playing animation");
+            let pull_animation = anim_player.play(anim_props.index);
+            pull_animation
+                .set_repeat(RepeatAnimation::Never)
+                .set_speed(0.);
+        }
+
+        let pull_animation = anim_player.animation_mut(anim_props.index).unwrap();
+        //the animation is at max at 0.83. This may be an off-by-one interp problem.
+
+        const MAX: f32 = 0.83;
+
+        let strength = pull_strength.strength() * MAX;
+        pull_animation.seek_to(strength);
     }
-
-    let pull_animation = anim_player.animation_mut(anim_props.index).unwrap();
-    //the animation is at max at 0.83. This may be an off-by-one interp problem.
-
-    const MAX: f32 = 0.83;
-
-    let strength = pull_strength.strength() * MAX;
-    pull_animation.seek_to(strength);
 }

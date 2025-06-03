@@ -10,6 +10,7 @@ use super::GameSet;
 mod animation;
 pub mod pull;
 mod quiver;
+mod timefreeze;
 
 const EPS: f32 = 1e-3;
 
@@ -17,7 +18,7 @@ pub(super) fn plugin(app: &mut App) {
     app.register_type::<BowAssets>()
         .load_resource::<BowAssets>();
 
-    app.add_plugins((pull::plugin, animation::plugin));
+    app.add_plugins((pull::plugin, timefreeze::plugin, animation::plugin));
 
     app.add_systems(OnEnter(Screen::Gameplay), spawn_bow)
         .add_systems(
