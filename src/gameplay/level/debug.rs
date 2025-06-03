@@ -22,6 +22,18 @@ fn setup_debug_level(mut commands: Commands) {
         SphereType::Multiplier,
     ));
 
+    commands.trigger(SpawnSphere::new(Vec2::new(24., 7.), SphereType::Normal));
+    commands.trigger(SpawnSphere::new(Vec2::new(21., 3.), SphereType::Normal));
+    commands.trigger(SpawnSphere::new(Vec2::new(27., -4.), SphereType::Exploder));
+    commands.trigger(SpawnSphere::new(Vec2::new(28., 3.), SphereType::Multiplier));
+    commands.trigger(SpawnSphere::new(Vec2::new(37., 8.5), SphereType::Exploder));
+    commands.trigger(SpawnSphere::new(
+        Vec2::new(42., 8.8),
+        SphereType::TimeFreeze,
+    ));
+
+    commands.trigger(SpawnSphere::new(Vec2::new(-9., 8.5), SphereType::Normal));
+
     // commands.trigger(SpawnSphere::new(Vec2::new(11., 0.), SphereType::Exploder));
     // commands.trigger(SpawnSphere::new(Vec2::new(12., 0.), SphereType::Exploder));
     // commands.trigger(SpawnSphere::new(Vec2::new(13., 0.), SphereType::Exploder));

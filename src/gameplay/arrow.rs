@@ -172,13 +172,15 @@ fn on_multiply(
             .with_rotation(rotation)
             .with_scale(arrow_trn.scale);
 
-        commands.spawn((
-            Arrow::default(),
-            transform,
-            LinearVelocity(velocity),
-            collider.clone(),
-            scene_root.clone(),
-        ));
+        commands
+            .spawn((
+                Arrow::default(),
+                transform,
+                LinearVelocity(velocity),
+                collider.clone(),
+                scene_root.clone(),
+            ))
+            .observe(on_multiply);
     }
 }
 
