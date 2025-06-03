@@ -22,6 +22,10 @@ pub struct SphereAssets {
     pub normal: Handle<StandardMaterial>,
     pub multiplier: Handle<StandardMaterial>,
     pub time_freeze: Handle<StandardMaterial>,
+    pub absorber: Handle<StandardMaterial>,
+    pub bouncy: Handle<StandardMaterial>,
+    pub gravity: Handle<StandardMaterial>,
+    pub exploder: Handle<StandardMaterial>,
 }
 
 impl FromWorld for SphereAssets {
@@ -54,12 +58,61 @@ impl FromWorld for SphereAssets {
             ..default()
         });
 
+        let absorber = materials.add(StandardMaterial {
+            base_color: Color::srgb(0.7, 0.7, 1.0),
+            // specular_tint: Color::from(Srgba::RED),
+            reflectance: 0.3,
+            specular_transmission: 0.95,
+            diffuse_transmission: 1.0,
+            thickness: 0.6,
+            ior: 1.5,
+            perceptual_roughness: 0.12,
+            ..Default::default()
+        });
+        let bouncy = materials.add(StandardMaterial {
+            base_color: Color::srgb(0.7, 0.7, 1.0),
+            // specular_tint: Color::from(Srgba::RED),
+            reflectance: 0.3,
+            specular_transmission: 0.95,
+            diffuse_transmission: 1.0,
+            thickness: 0.6,
+            ior: 1.5,
+            perceptual_roughness: 0.12,
+            ..Default::default()
+        });
+
+        let gravity = materials.add(StandardMaterial {
+            base_color: Color::srgb(0.7, 0.7, 1.0),
+            // specular_tint: Color::from(Srgba::RED),
+            reflectance: 0.3,
+            specular_transmission: 0.95,
+            diffuse_transmission: 1.0,
+            thickness: 0.6,
+            ior: 1.5,
+            perceptual_roughness: 0.12,
+            ..Default::default()
+        });
+        let exploder = materials.add(StandardMaterial {
+            base_color: Color::srgb(0.7, 0.7, 1.0),
+            // specular_tint: Color::from(Srgba::RED),
+            reflectance: 0.3,
+            specular_transmission: 0.95,
+            diffuse_transmission: 1.0,
+            thickness: 0.6,
+            ior: 1.5,
+            perceptual_roughness: 0.12,
+            ..Default::default()
+        });
         Self {
             model,
             mesh,
             normal,
             multiplier,
             time_freeze,
+            absorber,
+            bouncy,
+            gravity,
+            exploder,
         }
     }
 }
@@ -74,21 +127,28 @@ pub enum SphereType {
     Absorber,
 }
 #[derive(Component)]
-struct Sphere;
+pub struct Sphere;
+
 #[derive(Component)]
-struct Normal;
+pub struct Normal;
+
 #[derive(Component)]
-struct Multiplier;
+pub struct Multiplier;
+
 #[derive(Component)]
-struct TimeFreeze;
+pub struct TimeFreeze;
+
 #[derive(Component)]
-struct Absorber;
+pub struct Absorber;
+
 #[derive(Component)]
-struct Bouncy;
+pub struct Bouncy;
+
 #[derive(Component)]
-struct GravitySphere;
+pub struct GravitySphere;
+
 #[derive(Component)]
-struct Exploder;
+pub struct Exploder;
 
 #[derive(Event)]
 pub struct SpawnSphere {
