@@ -1,8 +1,8 @@
-use avian3d::prelude::Sensor;
+use avian3d::prelude::*;
 use bevy::prelude::*;
 
 use crate::gameplay::sphere::{
-    Normal, SphereAssets, SphereType, despawn::BeginDespawning, sphere_defaults,
+    SphereAssets, SphereType, despawn::BeginDespawning, sphere_defaults,
 };
 
 pub fn multiplier(assets: &SphereAssets) -> impl Bundle {
@@ -24,16 +24,53 @@ pub(super) fn plugin(app: &mut App) {
 #[derive(Component)]
 pub struct Multiplier;
 
-fn insert_multiplier(trigger: Trigger<OnAdd, Normal>, mut commands: Commands) {
+fn insert_multiplier(trigger: Trigger<OnAdd, Multiplier>, mut commands: Commands) {
     info!("observed new normal insert");
-    commands.entity(trigger.target()).observe(on_hit);
+    commands
+        .entity(trigger.target())
+        .observe(start_despawn)
+        .observe(on_hit);
 }
 
-fn on_hit(
+fn start_despawn(
     trigger: Trigger<BeginDespawning>,
     mut commands: Commands,
-    normals: Query<Entity, With<Normal>>,
+    multipliers: Query<Entity, With<Multiplier>>,
 ) {
-    let normal = normals.get(trigger.target()).unwrap();
-    commands.entity(normal).try_despawn();
+    let multiplier = multipliers.get(trigger.target()).unwrap();
+    commands.entity(multiplier).try_despawn();
+}
+
+fn on_hit(trigger: Trigger<OnCollisionStart>, collisions: Collisions) {
+    info!("In multiplier on hit");
+    let Some(contact_pair) = collisions.get(trigger.target(), trigger.collider) else {
+        info!("no contact pair!");
+        return;
+    };
+
+    // OPTION 1: Iterate over all contact manifolds and their points.
+    // Iterate over the contact manifolds (kinda like contact surfaces).
+    // For convex-convex contacts there's only one.
+    for manifold in contact_pair.manifolds.iter() {
+        // Iterate over contact points in the manifold.
+        // For a circle or sphere there's only one.
+        for manifold_point in manifold.points.iter() {
+            // Use `global_point1()` and provide the translation and rotation
+            // to get the point in global space.
+            println!(
+                "opt 1: Local point on `trigger.target` is {}",
+                manifold_point.local_point1,
+            );
+        }
+    }
+
+    // OPTION 2: Just get the deepest contact point.
+    if let Some(deepest_contact) = contact_pair.find_deepest_contact() {
+        // Use `global_point1()` and provide the translation and rotation
+        // to get the point in global space.
+        println!(
+            "opt 2: Local point on `trigger.target` is {}",
+            deepest_contact.local_point1,
+        );
+    }
 }

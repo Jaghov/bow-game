@@ -1,4 +1,4 @@
-use avian3d::prelude::Sensor;
+use avian3d::prelude::*;
 use bevy::prelude::*;
 
 use crate::gameplay::sphere::{
@@ -24,10 +24,10 @@ pub(super) fn plugin(app: &mut App) {
 }
 fn insert_normal(trigger: Trigger<OnAdd, Normal>, mut commands: Commands) {
     info!("observed new normal insert");
-    commands.entity(trigger.target()).observe(on_hit);
+    commands.entity(trigger.target()).observe(start_despawn);
 }
 
-fn on_hit(
+fn start_despawn(
     trigger: Trigger<BeginDespawning>,
     mut commands: Commands,
     normals: Query<Entity, With<Normal>>,
