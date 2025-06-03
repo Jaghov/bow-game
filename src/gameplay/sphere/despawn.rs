@@ -12,9 +12,9 @@ pub fn plugin(app: &mut App) {
     app.add_systems(Update, check_sphere_despawn.in_set(GameSet::Update));
 }
 
-// to filter out future events
+// to filter out future events. Use this to bypass the default sphere collision check
 #[derive(Component)]
-struct DespawnStarted;
+pub struct DespawnStarted;
 
 /// because things will need *time* to despawn, this is sent to the
 /// sphere's observer so it can handle it.

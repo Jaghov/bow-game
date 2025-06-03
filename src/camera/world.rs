@@ -4,6 +4,7 @@ use bevy::{
     prelude::*,
     render::view::RenderLayers,
 };
+use bevy_trauma_shake::Shake;
 
 use crate::{
     camera::{CameraOrder, RenderLayer},
@@ -29,6 +30,7 @@ fn spawn_world_camera(mut commands: Commands) {
             hdr: true,
             ..default()
         },
+        Shake::default(),
         Tonemapping::TonyMcMapface, // 2. Using a tonemapper that desaturates to white is recommended
         Transform::from_xyz(0., 0., GAMEPLAY_CAMERA_OFFSET).looking_at(Vec3::ZERO, Vec3::Y),
         MeshPickingCamera,
