@@ -3,7 +3,7 @@ use bevy::prelude::*;
 
 use crate::gameplay::{
     arrow::Arrow,
-    sphere::{DontRemoveOnCollide, Normal, SphereAssets, SphereType, sphere_defaults},
+    sphere::{KeepOnCollide, Normal, SphereAssets, SphereType, sphere_defaults},
 };
 
 pub fn normal(assets: &SphereAssets) -> impl Bundle {
@@ -31,7 +31,7 @@ fn insert_normal(trigger: Trigger<OnAdd, Normal>, mut commands: Commands) {
 fn observe_collisions(
     trigger: Trigger<OnCollisionStart>,
     arrow: Query<&Arrow>,
-    remove: Query<&DontRemoveOnCollide>,
+    remove: Query<&KeepOnCollide>,
 ) {
     let event = trigger.event();
     let Some(body) = event.body else {

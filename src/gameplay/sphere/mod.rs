@@ -1,5 +1,6 @@
 use avian3d::prelude::{
-    Collider, CollidingEntities, CollisionEventsEnabled, GravityScale, LockedAxes, RigidBody,
+    Collider, CollidingEntities, CollisionEventsEnabled, CollisionStarted, GravityScale,
+    LockedAxes, RigidBody,
 };
 use bevy::{
     color::palettes::{
@@ -12,7 +13,11 @@ use bevy::{
 mod normal;
 pub use normal::*;
 
-use crate::{asset_tracking::LoadResource, world::GAME_PLANE};
+use crate::{
+    asset_tracking::LoadResource,
+    gameplay::{GameSet, arrow::Arrow},
+    world::GAME_PLANE,
+};
 
 pub(super) fn plugin(app: &mut App) {
     app.add_plugins((normal::plugin));
@@ -20,7 +25,8 @@ pub(super) fn plugin(app: &mut App) {
     app.register_type::<SphereAssets>()
         .load_resource::<SphereAssets>();
 
-    app.add_observer(spawn_sphere);
+    app.add_observer(spawn_sphere)
+        .add_systems(Update, check_sphere_despawn.in_set(GameSet::Update));
 }
 
 #[derive(Resource, Asset, Reflect, Clone)]
@@ -114,7 +120,7 @@ impl FromWorld for SphereAssets {
     }
 }
 #[derive(Component, Default)]
-struct DontRemoveOnCollide;
+struct KeepOnCollide;
 
 #[derive(Component)]
 pub enum SphereType {
@@ -139,15 +145,15 @@ pub struct Multiplier;
 pub struct TimeFreeze;
 
 #[derive(Component)]
-#[require(DontRemoveOnCollide)]
+#[require(KeepOnCollide)]
 pub struct Absorber;
 
 #[derive(Component)]
-#[require(DontRemoveOnCollide)]
+#[require(KeepOnCollide)]
 pub struct Bouncy;
 
 #[derive(Component)]
-#[require(DontRemoveOnCollide)]
+#[require(KeepOnCollide)]
 pub struct GravitySphere;
 
 #[derive(Component)]
@@ -220,4 +226,33 @@ fn spawn_sphere(trigger: Trigger<SpawnSphere>, mut commands: Commands, assets: R
             (Exploder, MeshMaterial3d(assets.time_freeze.clone())),
         )),
     };
+}
+
+#[derive(Event)]
+struct Hit;
+
+// this will trigger a despawn event for any spheres that need to be triggered when getting hit
+fn check_sphere_despawn(
+    mut commands: Commands,
+    mut collision_events: EventReader<CollisionStarted>,
+    //todo: this may need to be something like `SphereTriggerer`
+    arrow: Query<&Arrow>,
+    spheres: Query<Entity, (With<Sphere>, Without<KeepOnCollide>)>,
+) {
+    for CollisionStarted(entity1, entity2) in collision_events.read() {
+        let (arrow, maybe_sphere) = match arrow.get(*entity1) {
+            Ok(arrow) => (arrow, entity2),
+            Err(_) => match arrow.get(*entity2) {
+                Ok(arrow) => (arrow, entity1),
+                Err(_) => continue,
+            },
+        };
+        let Ok(sphere) = spheres.get(*maybe_sphere) else {
+            continue;
+        };
+        info!("sphere and arrow collided!");
+
+        commands.trigger_targets(Hit, sphere);
+    }
+    //todo
 }
