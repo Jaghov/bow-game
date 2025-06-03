@@ -1,6 +1,8 @@
 use avian3d::prelude::*;
 use bevy::{platform::time::Instant, prelude::*};
 
+use crate::gameplay::sphere::ShouldMultiply;
+
 use super::{Arrow, Canceled};
 
 /// the max linear velocity speed of the arrow
@@ -39,6 +41,29 @@ fn fire_arrow(
         arrow_commands.insert(Fired);
         if strength < THRESHOLD {
             arrow_commands.insert((Canceled(Instant::now()), GravityScale(1.)));
+        } else {
+            arrow_commands.observe(on_multiply);
         }
     }
+}
+
+fn on_multiply(
+    trigger: Trigger<ShouldMultiply>,
+    mut commands: Commands,
+    arrows: Query<(&Transform, &Collider, &LinearVelocity), With<Arrow>>,
+) {
+    info!("Arrow given message to multiply!");
+    let event = trigger.event();
+    let Ok((arrow_trn, collider, lvel)) = arrows.get(trigger.target()) else {
+        warn!("Arrow was commanded to multiply, but its required components were not found!");
+        return;
+    };
+    for rotation_offset in &event.rot_offset {
+        let rotation = arrow_trn.rotation + Quat::from_rotation_z(*rotation_offset);
+
+        let transform = Transform::from_translation(event.location).with_rotation(rotation);
+
+        //arrow stuff
+    }
+    //todo
 }

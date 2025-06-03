@@ -1,10 +1,13 @@
-use std::f32::consts::FRAC_PI_2;
+use std::{f32::consts::FRAC_PI_2, time::Duration};
 
 mod cancel;
 pub use cancel::*;
 
 mod fire;
 pub use fire::*;
+
+mod flight_time;
+pub use flight_time::*;
 
 use avian3d::prelude::*;
 use bevy::prelude::*;
@@ -20,7 +23,7 @@ pub(super) fn plugin(app: &mut App) {
     app.register_type::<ArrowAssets>()
         .load_resource::<ArrowAssets>();
 
-    app.add_plugins((fire::plugin, cancel::plugin));
+    app.add_plugins((fire::plugin, cancel::plugin, flight_time::plugin));
 
     app.add_systems(
         Update,
@@ -49,14 +52,17 @@ impl FromWorld for ArrowAssets {
 #[derive(Event)]
 pub struct ReadyArrow;
 
-#[derive(Component)]
+#[derive(Component, Default)]
 #[require(RigidBody = RigidBody::Dynamic)]
 #[require(Collider = Collider::capsule(0.1, 3.5))]
 #[require(GravityScale = GravityScale(0.))]
-pub struct Arrow;
+#[require(MaxFlightTime)]
+pub struct Arrow {
+    pub bounces: u8,
+}
 
 fn spawn_arrow(_: Trigger<ReadyArrow>, mut commands: Commands, assets: Res<ArrowAssets>) {
-    commands.spawn((Arrow, SceneRoot(assets.glowing.clone())));
+    commands.spawn((Arrow::default(), SceneRoot(assets.glowing.clone())));
 }
 
 fn update_unfired_arrow_transform(

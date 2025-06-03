@@ -41,36 +41,36 @@ fn start_despawn(
     commands.entity(multiplier).try_despawn();
 }
 
-fn on_hit(trigger: Trigger<OnCollisionStart>, collisions: Collisions) {
+/// An event that tells an observer to multiply with an array
+/// of rotations relative to the observing entity's rotation
+#[derive(Event)]
+pub struct ShouldMultiply {
+    pub location: Vec3,
+    pub rot_offset: Vec<f32>,
+}
+
+fn on_hit(trigger: Trigger<OnCollisionStart>, mut commands: Commands, collisions: Collisions) {
     info!("In multiplier on hit");
-    let Some(contact_pair) = collisions.get(trigger.target(), trigger.collider) else {
-        info!("no contact pair!");
+
+    let contact_pair = match collisions.get(trigger.target(), trigger.collider) {
+        Some(pair) => pair,
+        None => match collisions.get(trigger.collider, trigger.target()) {
+            Some(pair) => pair,
+            None => {
+                info!("no contact pair!");
+                return;
+            }
+        },
+    };
+    let Some(deepest_contact) = contact_pair.find_deepest_contact() else {
+        warn!("multiplier was hit, but couldn't find deepest contact point!");
         return;
     };
-
-    // OPTION 1: Iterate over all contact manifolds and their points.
-    // Iterate over the contact manifolds (kinda like contact surfaces).
-    // For convex-convex contacts there's only one.
-    for manifold in contact_pair.manifolds.iter() {
-        // Iterate over contact points in the manifold.
-        // For a circle or sphere there's only one.
-        for manifold_point in manifold.points.iter() {
-            // Use `global_point1()` and provide the translation and rotation
-            // to get the point in global space.
-            println!(
-                "opt 1: Local point on `trigger.target` is {}",
-                manifold_point.local_point1,
-            );
-        }
-    }
-
-    // OPTION 2: Just get the deepest contact point.
-    if let Some(deepest_contact) = contact_pair.find_deepest_contact() {
-        // Use `global_point1()` and provide the translation and rotation
-        // to get the point in global space.
-        println!(
-            "opt 2: Local point on `trigger.target` is {}",
-            deepest_contact.local_point1,
-        );
-    }
+    commands.trigger_targets(
+        ShouldMultiply {
+            location: deepest_contact.local_point1,
+            rot_offset: vec![35.0_f32.to_radians(), -35.0_f32.to_radians()],
+        },
+        trigger.collider,
+    );
 }
