@@ -19,3 +19,10 @@ crashes into other balls and breaks at the end of the turn
 pulls balls close to it
 - Absorber Ball
 A bouncy ball that will absorb the other balls' capabilities on impact
+
+
+## TODOs
+- Animate normal despawn (with sounds)
+- Animate backdrop on level start and finish
+- Animate walls during the screen transition period
+- Animate spheres upon entering a level

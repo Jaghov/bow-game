@@ -1,10 +1,18 @@
 use bevy::prelude::*;
+use bevy_mod_outline::OutlineVolume;
 
 use std::{f32::consts::FRAC_PI_2, time::Duration};
 
 use crate::{
     Screen,
-    gameplay::{arrow::ArrowAssets, bow::BowAssets, sph::SphereAssets},
+    gameplay::{
+        arrow::ArrowAssets,
+        bow::BowAssets,
+        sphere::{
+            Absorber, Bouncy, Exploder, GravitySphere, Multiplier, Normal, Sphere, SphereAssets,
+            TimeFreeze,
+        },
+    },
     world::backdrop::{BACKDROP_OFFSET, BLOCK_LEN},
 };
 
@@ -64,7 +72,7 @@ struct Arrow(usize);
 struct Bow;
 
 #[derive(Component)]
-struct Sphere(usize);
+struct SphereCount(usize);
 
 fn spawn_items(
     mut commands: Commands,
@@ -80,22 +88,65 @@ fn spawn_items(
     let mesh = Mesh3d(sphere.mesh.clone());
 
     commands.spawn((
-        Sphere(0),
+        SphereCount(0),
+        Sphere,
         mesh.clone(),
         Prop,
+        Normal,
         MeshMaterial3d(sphere.normal.clone()),
     ));
     commands.spawn((
-        Sphere(1),
+        SphereCount(1),
+        Sphere,
+        Multiplier,
         Prop,
         mesh.clone(),
         MeshMaterial3d(sphere.multiplier.clone()),
     ));
     commands.spawn((
-        Sphere(2),
+        SphereCount(2),
+        Sphere,
+        TimeFreeze,
         Prop,
-        mesh,
+        mesh.clone(),
         MeshMaterial3d(sphere.time_freeze.clone()),
+    ));
+    commands.spawn((
+        SphereCount(3),
+        Sphere,
+        Absorber,
+        Prop,
+        mesh.clone(),
+        MeshMaterial3d(sphere.absorber.clone()),
+    ));
+    commands.spawn((
+        SphereCount(4),
+        Sphere,
+        Bouncy,
+        Prop,
+        mesh.clone(),
+        MeshMaterial3d(sphere.bouncy.clone()),
+    ));
+    commands.spawn((
+        SphereCount(5),
+        Sphere,
+        GravitySphere,
+        Prop,
+        mesh.clone(),
+        MeshMaterial3d(sphere.gravity.clone()),
+        OutlineVolume {
+            visible: true,
+            colour: Color::srgb(0.0, 0.0, 0.0),
+            width: 25.0,
+        },
+    ));
+    commands.spawn((
+        SphereCount(6),
+        Sphere,
+        Prop,
+        Exploder,
+        mesh.clone(),
+        MeshMaterial3d(sphere.exploder.clone()),
     ));
 
     //todo
@@ -103,9 +154,9 @@ fn spawn_items(
 
 #[cfg_attr(feature = "hot", bevy_simple_subsecond_system::prelude::hot)]
 fn set_locations(
-    mut bow: Query<&mut Transform, (With<Bow>, Without<Sphere>)>,
-    mut arrows: Query<(&mut Transform, &Arrow), (Without<Bow>, Without<Sphere>)>,
-    mut spheres: Query<(&mut Transform, &Sphere), (Without<Bow>, Without<Arrow>)>,
+    mut bow: Query<&mut Transform, (With<Bow>, Without<SphereCount>)>,
+    mut arrows: Query<(&mut Transform, &Arrow), (Without<Bow>, Without<SphereCount>)>,
+    mut spheres: Query<(&mut Transform, &SphereCount), (Without<Bow>, Without<Arrow>)>,
     time: Res<Time>,
 ) {
     let mut bow = bow.single_mut().unwrap();
@@ -142,14 +193,19 @@ fn set_locations(
     for (mut trns, sphere) in &mut spheres {
         use std::f32::consts::PI;
 
-        let offset = sphere.0 as f32 * 1.2;
+        let mut x_offset = (sphere.0 % 4) as f32 * 1.2;
+        if sphere.0 / 4 == 1 {
+            x_offset += 0.6;
+        }
 
-        let time = 2. * (time.elapsed_secs() + (2. * PI * (sphere.0 as f32 + 1.) / 3.));
+        let y_offset = -((sphere.0 / 4) as f32 * 1.);
+
+        let time = 2. * (time.elapsed_secs() + (2. * PI * (sphere.0 as f32 + 1.) / 7.));
         let z_offset = time.cos() * 0.05;
 
         *trns = Transform::from_xyz(
-            BLOCK_LEN * 7. - 1.5 + offset,
-            BLOCK_LEN * 4. + 2.5,
+            BLOCK_LEN * 7. - 1.5 + x_offset,
+            BLOCK_LEN * 4. + 2.5 + y_offset,
             -1.65 - BACKDROP_OFFSET + z_offset,
         )
         .with_rotation(Quat::from_euler(

@@ -73,6 +73,7 @@ where
 }
 
 /// A small square button with text and an action defined as an [`Observer`].
+#[allow(dead_code)]
 pub fn button_small<E, B, M, I>(text: impl Into<String>, action: I) -> impl Bundle
 where
     E: Event,

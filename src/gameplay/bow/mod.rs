@@ -9,6 +9,7 @@ use super::GameSet;
 
 mod animation;
 pub mod pull;
+mod quiver;
 
 const EPS: f32 = 1e-3;
 
