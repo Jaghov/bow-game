@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bevy_mod_outline::OutlineVolume;
 
 use std::{f32::consts::FRAC_PI_2, time::Duration};
 
@@ -133,6 +134,11 @@ fn spawn_items(
         Prop,
         mesh.clone(),
         MeshMaterial3d(sphere.gravity.clone()),
+        OutlineVolume {
+            visible: true,
+            colour: Color::srgb(0.0, 0.0, 0.0),
+            width: 25.0,
+        },
     ));
     commands.spawn((
         SphereCount(6),

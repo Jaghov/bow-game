@@ -1,5 +1,11 @@
 use avian3d::prelude::{Collider, CollidingEntities, GravityScale, LockedAxes, RigidBody};
-use bevy::{color::palettes::tailwind::BLUE_400, prelude::*};
+use bevy::{
+    color::palettes::{
+        css::{BLACK, GREEN, ORANGE, YELLOW},
+        tailwind::{BLUE_400, PURPLE_100, PURPLE_900},
+    },
+    prelude::*,
+};
 
 use crate::{Screen, asset_tracking::LoadResource, world::GAME_PLANE};
 
@@ -34,74 +40,61 @@ impl FromWorld for SphereAssets {
         let model = assets.load("models/sph.glb#Scene0");
         let mesh = assets.load("models/sph.glb#Mesh0/Primitive0");
         let mut materials = world.resource_mut::<Assets<StandardMaterial>>();
-        let normal = materials.add(StandardMaterial {
+
+        let base = StandardMaterial {
             base_color: Color::srgb(0.7, 0.7, 1.0),
             // specular_tint: Color::from(Srgba::RED),
-            reflectance: 0.3,
-            specular_transmission: 0.95,
-            diffuse_transmission: 1.0,
+            reflectance: 1.,
+            specular_transmission: 0.90,
+            diffuse_transmission: 0.5,
             thickness: 0.6,
             ior: 1.5,
-            perceptual_roughness: 0.12,
+            perceptual_roughness: 0.4,
             ..Default::default()
-        });
+        };
 
-        //let red = LinearRgba::from(RED).with_alpha(0.1);
-        let emissive = Srgba::rgb(5., 0., 0.);
+        let normal = materials.add(base.clone());
+
         let multiplier = materials.add(StandardMaterial {
-            //base_color: RED.into(),
-            emissive: emissive.into(),
+            base_color: ORANGE.into(),
             ..default()
         });
+
         let time_freeze = materials.add(StandardMaterial {
             base_color: BLUE_400.into(),
+            emissive: LinearRgba::new(0.0, 0., 1., 1.),
             ..default()
         });
 
         let absorber = materials.add(StandardMaterial {
-            base_color: Color::srgb(0.7, 0.7, 1.0),
-            // specular_tint: Color::from(Srgba::RED),
-            reflectance: 0.3,
-            specular_transmission: 0.95,
-            diffuse_transmission: 1.0,
-            thickness: 0.6,
-            ior: 1.5,
-            perceptual_roughness: 0.12,
-            ..Default::default()
+            base_color: GREEN.into(),
+            ..default()
         });
+
         let bouncy = materials.add(StandardMaterial {
-            base_color: Color::srgb(0.7, 0.7, 1.0),
-            // specular_tint: Color::from(Srgba::RED),
-            reflectance: 0.3,
-            specular_transmission: 0.95,
-            diffuse_transmission: 1.0,
-            thickness: 0.6,
-            ior: 1.5,
-            perceptual_roughness: 0.12,
-            ..Default::default()
+            base_color: YELLOW.into(),
+            ..default()
         });
 
         let gravity = materials.add(StandardMaterial {
-            base_color: Color::srgb(0.7, 0.7, 1.0),
+            base_color: Color::BLACK,
+            emissive: Color::BLACK.into(),
+            unlit: true,
             // specular_tint: Color::from(Srgba::RED),
-            reflectance: 0.3,
-            specular_transmission: 0.95,
-            diffuse_transmission: 1.0,
-            thickness: 0.6,
-            ior: 1.5,
-            perceptual_roughness: 0.12,
-            ..Default::default()
+            reflectance: 0.,
+            metallic: 0.,
+            specular_transmission: 0.0,
+            diffuse_transmission: 0.0,
+            thickness: 5.,
+            ior: 1.,
+            perceptual_roughness: 1.0,
+            ..default()
         });
+
         let exploder = materials.add(StandardMaterial {
-            base_color: Color::srgb(0.7, 0.7, 1.0),
-            // specular_tint: Color::from(Srgba::RED),
-            reflectance: 0.3,
-            specular_transmission: 0.95,
-            diffuse_transmission: 1.0,
-            thickness: 0.6,
-            ior: 1.5,
-            perceptual_roughness: 0.12,
-            ..Default::default()
+            //base_color: RED.into(),
+            emissive: Srgba::rgb(5., 0., 0.).into(),
+            ..default()
         });
         Self {
             model,

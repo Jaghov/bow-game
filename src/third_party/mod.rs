@@ -2,6 +2,7 @@ use bevy::prelude::*;
 use bevy_easings::EasingsPlugin;
 use bevy_gltf_animation::GltfAnimationPlugin;
 use bevy_hanabi::HanabiPlugin;
+use bevy_mod_outline::OutlinePlugin;
 use bevy_trauma_shake::TraumaPlugin;
 
 pub mod avian3d;
@@ -13,6 +14,7 @@ pub fn plugin(app: &mut App) {
         TraumaPlugin,
         GltfAnimationPlugin,
         HanabiPlugin,
+        OutlinePlugin,
         EasingsPlugin::default(),
     ));
     #[cfg(feature = "hot")]
