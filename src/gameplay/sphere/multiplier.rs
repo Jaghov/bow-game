@@ -38,24 +38,28 @@ fn start_despawn(
     multipliers: Query<Entity, With<Multiplier>>,
 ) {
     let multiplier = multipliers.get(trigger.target()).unwrap();
-    commands.entity(multiplier).try_despawn();
+    //commands.entity(multiplier).try_despawn();
 }
 
 /// An event that tells an observer to multiply with an array
 /// of rotations relative to the observing entity's rotation
 #[derive(Event)]
 pub struct ShouldMultiply {
-    pub location: Vec3,
+    /// the point of contact relative to the observer's collider
+    pub local_point: Vec3,
     pub rot_offset: Vec<f32>,
 }
 
 fn on_hit(trigger: Trigger<OnCollisionStart>, mut commands: Commands, collisions: Collisions) {
     info!("In multiplier on hit");
 
-    let contact_pair = match collisions.get(trigger.target(), trigger.collider) {
-        Some(pair) => pair,
+    // if point to use is true, use local point 2.
+    // else, use 1.
+    let (contact_pair, use_local_point_2) = match collisions.get(trigger.target(), trigger.collider)
+    {
+        Some(pair) => (pair, true),
         None => match collisions.get(trigger.collider, trigger.target()) {
-            Some(pair) => pair,
+            Some(pair) => (pair, false),
             None => {
                 info!("no contact pair!");
                 return;
@@ -66,10 +70,22 @@ fn on_hit(trigger: Trigger<OnCollisionStart>, mut commands: Commands, collisions
         warn!("multiplier was hit, but couldn't find deepest contact point!");
         return;
     };
+
+    let local_point = if use_local_point_2 {
+        deepest_contact.local_point2
+    } else {
+        deepest_contact.local_point1
+    };
+
     commands.trigger_targets(
         ShouldMultiply {
-            location: deepest_contact.local_point1,
-            rot_offset: vec![35.0_f32.to_radians(), -35.0_f32.to_radians()],
+            local_point,
+            rot_offset: vec![
+                50.0_f32.to_radians(),
+                35.0_f32.to_radians(),
+                -35.0_f32.to_radians(),
+                50.0_f32.to_radians(),
+            ],
         },
         trigger.collider,
     );

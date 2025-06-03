@@ -56,13 +56,16 @@ pub struct ReadyArrow;
 #[require(RigidBody = RigidBody::Dynamic)]
 #[require(Collider = Collider::capsule(0.1, 3.5))]
 #[require(GravityScale = GravityScale(0.))]
-#[require(MaxFlightTime)]
 pub struct Arrow {
     pub bounces: u8,
 }
 
 fn spawn_arrow(_: Trigger<ReadyArrow>, mut commands: Commands, assets: Res<ArrowAssets>) {
-    commands.spawn((Arrow::default(), SceneRoot(assets.glowing.clone())));
+    commands.spawn((
+        Name::new("Arrow"),
+        Arrow::default(),
+        SceneRoot(assets.glowing.clone()),
+    ));
 }
 
 fn update_unfired_arrow_transform(
