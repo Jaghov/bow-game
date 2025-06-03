@@ -38,7 +38,7 @@ fn start_despawn(
     multipliers: Query<Entity, With<Multiplier>>,
 ) {
     let multiplier = multipliers.get(trigger.target()).unwrap();
-    //commands.entity(multiplier).try_despawn();
+    commands.entity(multiplier).try_despawn();
 }
 
 /// An event that tells an observer to multiply with an array

@@ -1,5 +1,5 @@
 use avian3d::prelude::*;
-use bevy::{platform::time::Instant, prelude::*, scene::SceneInstance};
+use bevy::{platform::time::Instant, prelude::*};
 
 use crate::{
     gameplay::{arrow::MaxFlightTime, sphere::ShouldMultiply},
@@ -57,7 +57,6 @@ fn on_multiply(
     mut commands: Commands,
     arrows: Query<(&Transform, &Collider, &LinearVelocity, &SceneRoot), With<Arrow>>,
 ) {
-    info!("\n\nArrow given message to multiply!");
     let event = trigger.event();
     let Ok((arrow_trn, collider, lvel, scene_root)) = arrows.get(trigger.target()) else {
         warn!("Arrow was commanded to multiply, but its required components were not found!");
@@ -66,31 +65,16 @@ fn on_multiply(
 
     let multiply_origin = event.local_point.with_z(GAME_PLANE);
 
-    info!(
-        "\n\nArrow given message to multiply!\narrow_location: {:?}\nevent_loc: {:?}\nmultiply_origin: {:?}\n",
-        arrow_trn.translation, event.local_point, multiply_origin
-    );
-
     for rotation_offset in &event.rot_offset {
         let quatrot = Quat::from_rotation_z(*rotation_offset);
         let rotation = arrow_trn.rotation * Quat::from_rotation_z(*rotation_offset);
 
-        //let unapplied_velocity = arrow_trn.rotation.conjugate() * lvel.0;
-
-        //let velocity = rotation * unapplied_velocity * 0.5;
-        //let offset = rotation * unapplied_velocity.normalize() * 4.;
         let velocity = quatrot * lvel.0;
-        let offset = velocity.normalize() * 2.;
+        let offset = velocity.normalize() * 2.2;
 
         let transform = Transform::from_translation(multiply_origin + offset)
             .with_rotation(rotation)
             .with_scale(arrow_trn.scale);
-
-        info!(
-            "Child arrow\noffset: {}deg\nscale: {:?}",
-            rotation_offset.to_degrees(),
-            arrow_trn.scale
-        );
 
         commands.spawn((
             Arrow::default(),
@@ -98,11 +82,7 @@ fn on_multiply(
             transform,
             LinearVelocity(velocity),
             collider.clone(),
-            CollisionLayers::NONE,
             scene_root.clone(),
         ));
-
-        //arrow stuff
     }
-    //todo
 }

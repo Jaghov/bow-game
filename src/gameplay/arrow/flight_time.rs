@@ -13,12 +13,6 @@ pub(super) fn plugin(app: &mut App) {
 #[derive(Component)]
 pub struct MaxFlightTime(Timer);
 
-impl MaxFlightTime {
-    pub fn new(duration: Duration) -> Self {
-        Self(Timer::new(duration, TimerMode::Once))
-    }
-}
-
 impl Default for MaxFlightTime {
     fn default() -> Self {
         Self(Timer::new(Duration::from_secs(10), TimerMode::Once))
@@ -39,7 +33,7 @@ fn reset_flight_time(mut timers: Query<&mut MaxFlightTime, Changed<Arrow>>) {
 fn despawn_arrows(mut commands: Commands, timers: Query<(Entity, &MaxFlightTime)>) {
     for (entity, timer) in timers {
         if timer.0.just_finished() {
-            //commands.entity(entity).despawn();
+            commands.entity(entity).despawn();
         }
     }
 }
