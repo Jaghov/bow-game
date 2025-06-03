@@ -16,7 +16,7 @@ pub fn timefreeze(assets: &SphereAssets) -> impl Bundle {
             TimeFreeze,
             SphereType::TimeFreeze,
             Sensor,
-            MeshMaterial3d(assets.normal.clone()),
+            MeshMaterial3d(assets.time_freeze.clone()),
         ),
     )
 }

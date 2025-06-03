@@ -12,6 +12,9 @@ use bevy::{
 mod normal;
 pub use normal::*;
 
+mod exploder;
+pub use exploder::*;
+
 mod multiplier;
 pub use multiplier::*;
 
@@ -29,6 +32,7 @@ pub(super) fn plugin(app: &mut App) {
         multiplier::plugin,
         despawn::plugin,
         timefreeze::plugin,
+        exploder::plugin,
     ));
 
     app.register_type::<SphereAssets>()
@@ -162,10 +166,6 @@ pub struct Bouncy;
 #[require(KeepOnCollideWith = KeepOnCollideWith::Sphere)]
 pub struct GravitySphere;
 
-#[derive(Component)]
-#[require(KeepOnCollideWith = KeepOnCollideWith::Sphere)]
-pub struct Exploder;
-
 #[derive(Event)]
 pub struct SpawnSphere {
     location: Vec2,
@@ -221,9 +221,6 @@ fn spawn_sphere(trigger: Trigger<SpawnSphere>, mut commands: Commands, assets: R
             bundle,
             (Absorber, MeshMaterial3d(assets.time_freeze.clone())),
         )),
-        SphereType::Exploder => commands.spawn((
-            bundle,
-            (Exploder, MeshMaterial3d(assets.time_freeze.clone())),
-        )),
+        SphereType::Exploder => commands.spawn((exploder(&assets), transform)),
     };
 }
