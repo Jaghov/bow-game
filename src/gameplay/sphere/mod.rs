@@ -9,8 +9,6 @@ use bevy::{
 
 use crate::{Screen, asset_tracking::LoadResource, world::GAME_PLANE};
 
-//use super::particles::ExampleParticles;
-
 pub(super) fn plugin(app: &mut App) {
     app.register_type::<SphereAssets>()
         .load_resource::<SphereAssets>();
@@ -199,21 +197,4 @@ fn spawn_sphere(trigger: Trigger<SpawnSphere>, mut commands: Commands, assets: R
             (Exploder, MeshMaterial3d(assets.time_freeze.clone())),
         )),
     };
-    //.observe(particles_on_collision);
 }
-
-// fn particles_on_collision(
-//     trigger: Trigger<OnCollisionStart>,
-//     transforms: Query<&Transform>,
-//     assets: Res<ExampleParticles>,
-//     mut commands: Commands,
-// ) {
-//     let event = trigger.event();
-//     //let t1 = transforms.get(trigger.target()).unwrap();
-//     let t2 = transforms.get(event.body.unwrap()).unwrap();
-//     //let avg = (t1.translation + t2.translation);
-
-//     commands.spawn((ParticleEffect::new(assets.0.clone()), *t2));
-
-//     //todo
-// }

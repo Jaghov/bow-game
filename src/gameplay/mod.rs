@@ -5,14 +5,13 @@ pub mod bow;
 pub mod cursor;
 mod level;
 pub mod sphere;
-mod targets;
 
 use crate::{Screen, camera::WorldCamera};
 
 /// camera z-offset from the gameplay plane.
 ///
 /// This is where the camera should *usually* be when the game is being played
-pub const GAMEPLAY_CAMERA_OFFSET: f32 = 70.;
+pub const GAMEPLAY_CAMERA_OFFSET: f32 = 100.;
 
 #[derive(SubStates, Clone, PartialEq, Eq, Hash, Debug, Default, Reflect)]
 #[source(Screen = Screen::Gameplay)]
@@ -75,7 +74,6 @@ pub fn plugin(app: &mut App) {
         sphere::plugin,
         level::plugin,
         arrow::plugin,
-        targets::plugin,
         cursor::plugin,
     ))
     .add_systems(OnEnter(Screen::Gameplay), move_camera);
