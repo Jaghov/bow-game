@@ -5,6 +5,6 @@ use crate::Screen;
 pub fn plugin(app: &mut App) {
     app.add_systems(
         OnExit(Screen::Loading),
-        |mut screen: ResMut<NextState<Screen>>| screen.set(Screen::Gameplay),
+        |mut screen: ResMut<NextState<Screen>>| screen.set(Screen::Transition),
     );
 }
