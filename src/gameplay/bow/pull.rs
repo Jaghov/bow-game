@@ -8,6 +8,7 @@ use bevy::{
 use crate::gameplay::{
     ArrowSet, GameSet,
     arrow::{CancelArrow, FireArrow, ReadyArrow},
+    bow::{ActiveBow, BowArrow},
     cursor::CursorPosition,
 };
 
@@ -39,9 +40,6 @@ pub(super) fn plugin(app: &mut App) {
         );
 }
 
-#[derive(Component)]
-pub struct Pulling;
-
 #[derive(Component, Default)]
 pub struct PullStrength(f32);
 
@@ -56,33 +54,25 @@ impl PullStrength {
     }
 }
 
-fn on_mouse_down(mut commands: Commands, mut bow: Query<Entity, With<Bow>>) {
-    let Ok(bow) = bow.single_mut() else {
-        return;
-    };
-    commands.entity(bow).insert(Pulling);
-    commands.trigger(ReadyArrow::for_bow(bow));
+fn on_mouse_down(mut commands: Commands, bows: Query<Entity, (With<Bow>, With<ActiveBow>)>) {
+    for bow in bows {
+        commands.trigger(ReadyArrow::for_bow(bow));
+    }
 }
-fn on_mouse_cancel(mut commands: Commands, mut bow: Query<(Entity, &mut PullStrength), With<Bow>>) {
-    let Ok((bow, mut pull_strength)) = bow.single_mut() else {
-        return;
-    };
-    commands.entity(bow).remove::<Pulling>();
-    commands.trigger(CancelArrow);
-    pull_strength.set_strength(0.);
+fn on_mouse_cancel(mut commands: Commands, bows: Query<&BowArrow>) {
+    for arrow in &bows {
+        commands.trigger_targets(CancelArrow, arrow.0);
+    }
 }
 
-fn on_mouse_up(mut commands: Commands, mut bow: Query<(Entity, &mut PullStrength), With<Bow>>) {
-    let Ok((bow, mut pull_strength)) = bow.single_mut() else {
-        return;
-    };
-    commands.entity(bow).remove::<Pulling>();
-    commands.trigger(FireArrow::new(pull_strength.strength()));
-    pull_strength.set_strength(0.);
+fn on_mouse_up(mut commands: Commands, bow_arrows: Query<&BowArrow>) {
+    for arrow in &bow_arrows {
+        commands.trigger_targets(FireArrow, arrow.0);
+    }
 }
 
 fn update_pull_strength(
-    mut bow: Query<(&mut PullStrength, &Transform), With<Pulling>>,
+    mut bow: Query<(&mut PullStrength, &Transform)>,
     cursor: Res<CursorPosition>,
 ) {
     let Some(cursor_position) = cursor.last() else {
@@ -101,7 +91,7 @@ fn update_pull_strength(
 }
 
 fn update_pull_rotation(
-    mut bow: Query<&mut Transform, (With<Bow>, With<Pulling>)>,
+    mut bow: Query<&mut Transform, (With<Bow>, With<PullStrength>)>,
     cursor: Res<CursorPosition>,
 ) {
     let Ok(mut bow) = bow.single_mut() else {

@@ -5,7 +5,7 @@ use bevy::prelude::*;
 
 use crate::{
     asset_tracking::LoadResource,
-    gameplay::{GameSet, bow::BowOf, sphere::ShouldMultiply},
+    gameplay::{GameSet, bow::BowArrow, sphere::ShouldMultiply},
     world::GAME_PLANE,
 };
 
@@ -54,7 +54,7 @@ impl ReadyArrow {
 }
 
 #[derive(Component)]
-#[relationship(relationship_target = BowOf)]
+#[relationship(relationship_target = BowArrow)]
 pub struct ArrowOf(Entity);
 
 #[derive(Component, Default)]

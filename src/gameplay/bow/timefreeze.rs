@@ -1,11 +1,10 @@
 use bevy::prelude::*;
 
-use super::{Bow, BowAssets, Pulling, animation};
+use super::{Bow, BowAssets, animation};
 use crate::{
     gameplay::{
         GameState,
-        arrow::{Arrow, ArrowAssets, ReadyArrow},
-        bow::pull::PullStrength,
+        arrow::{Arrow, ArrowAssets},
         timefreeze::{FreezeLocation, Frozen},
     },
     world::GAME_PLANE,
@@ -31,8 +30,6 @@ pub fn spawn_bow(
     commands
         .spawn((
             Bow,
-            Pulling,
-            PullStrength::default(),
             SceneRoot(bow_assets.scene.clone()),
             Transform::from_xyz(freeze.location.x, freeze.location.y, GAME_PLANE),
         ))
