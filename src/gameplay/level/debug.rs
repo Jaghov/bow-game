@@ -10,9 +10,20 @@ pub(super) fn plugin(app: &mut App) {
 }
 
 fn setup_debug_level(mut commands: Commands) {
-    commands.trigger(SpawnSphere::new(Vec2::new(10., 0.), SphereType::Exploder));
-    commands.trigger(SpawnSphere::new(Vec2::new(11., 0.), SphereType::Exploder));
-    commands.trigger(SpawnSphere::new(Vec2::new(12., 0.), SphereType::Exploder));
-    commands.trigger(SpawnSphere::new(Vec2::new(13., 0.), SphereType::Exploder));
-    commands.trigger(SpawnSphere::new(Vec2::new(15., 0.), SphereType::Exploder));
+    commands.trigger(SpawnSphere::new(Vec2::new(10., 0.), SphereType::Multiplier));
+
+    let l2 = 18.;
+    let l2y = 6.;
+    // behind it
+    commands.trigger(SpawnSphere::new(Vec2::new(l2, l2y), SphereType::Multiplier));
+    commands.trigger(SpawnSphere::new(Vec2::new(l2, 0.), SphereType::Multiplier));
+    commands.trigger(SpawnSphere::new(
+        Vec2::new(l2, -l2y),
+        SphereType::Multiplier,
+    ));
+
+    // commands.trigger(SpawnSphere::new(Vec2::new(11., 0.), SphereType::Exploder));
+    // commands.trigger(SpawnSphere::new(Vec2::new(12., 0.), SphereType::Exploder));
+    // commands.trigger(SpawnSphere::new(Vec2::new(13., 0.), SphereType::Exploder));
+    // commands.trigger(SpawnSphere::new(Vec2::new(15., 0.), SphereType::Exploder));
 }
