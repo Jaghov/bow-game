@@ -22,12 +22,11 @@ pub(super) fn plugin(app: &mut App) {
 
     app.add_plugins((fire::plugin, cancel::plugin));
 
-    app.add_systems(OnEnter(Screen::Gameplay), spawn_debug_arrows)
-        .add_systems(
-            Update,
-            update_unfired_arrow_transform.in_set(ArrowSet::UpdateArrow),
-        )
-        .add_observer(spawn_arrow);
+    app.add_systems(
+        Update,
+        update_unfired_arrow_transform.in_set(ArrowSet::UpdateArrow),
+    )
+    .add_observer(spawn_arrow);
 }
 
 #[derive(Resource, Asset, Reflect, Clone)]
@@ -45,16 +44,6 @@ impl FromWorld for ArrowAssets {
             normal: assets.load("models/Arrow.glb#Scene0"),
         }
     }
-}
-fn spawn_debug_arrows(mut commands: Commands, assets: Res<ArrowAssets>) {
-    commands.spawn((
-        Transform::from_xyz(-5., 0., GAME_PLANE),
-        SceneRoot(assets.glowing.clone()),
-    ));
-    commands.spawn((
-        Transform::from_xyz(5., 0., GAME_PLANE),
-        SceneRoot(assets.normal.clone()),
-    ));
 }
 
 #[derive(Event)]

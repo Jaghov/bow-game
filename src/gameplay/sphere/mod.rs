@@ -15,8 +15,7 @@ pub(super) fn plugin(app: &mut App) {
     app.register_type::<SphereAssets>()
         .load_resource::<SphereAssets>();
 
-    app.add_systems(OnEnter(Screen::Gameplay), (spawn_sample_level,))
-        .add_observer(spawn_sphere);
+    app.add_observer(spawn_sphere);
 }
 
 #[derive(Resource, Asset, Reflect, Clone)]
@@ -155,12 +154,6 @@ impl SpawnSphere {
             sphere_type,
         }
     }
-}
-
-fn spawn_sample_level(mut commands: Commands) {
-    commands.trigger(SpawnSphere::new(Vec2::new(4., 5.), SphereType::Normal));
-    commands.trigger(SpawnSphere::new(Vec2::new(0., 5.), SphereType::Multiplier));
-    commands.trigger(SpawnSphere::new(Vec2::new(-4., 5.), SphereType::TimeFreeze));
 }
 
 fn spawn_sphere(trigger: Trigger<SpawnSphere>, mut commands: Commands, assets: Res<SphereAssets>) {

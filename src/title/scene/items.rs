@@ -143,6 +143,7 @@ fn spawn_items(
     commands.spawn((
         SphereCount(6),
         Sphere,
+        Prop,
         Exploder,
         mesh.clone(),
         MeshMaterial3d(sphere.exploder.clone()),
