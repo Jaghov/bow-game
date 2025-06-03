@@ -1,3 +1,4 @@
+use avian3d::prelude::{Physics, PhysicsTime};
 use bevy::prelude::*;
 
 pub mod arrow;
@@ -5,6 +6,7 @@ pub mod bow;
 pub mod cursor;
 mod level;
 pub mod sphere;
+pub mod timefreeze;
 pub mod walls;
 
 use crate::{Screen, camera::WorldCamera};
@@ -21,6 +23,7 @@ pub enum GameState {
     #[default]
     Playing,
     Paused,
+    TimeFreeze,
 }
 
 /// High level groups of systems in the "Update" schedule.
@@ -77,8 +80,13 @@ pub fn plugin(app: &mut App) {
         level::plugin,
         arrow::plugin,
         cursor::plugin,
+        timefreeze::plugin,
     ))
-    .add_systems(OnEnter(Screen::Gameplay), move_camera);
+    .add_systems(OnEnter(Screen::Gameplay), move_camera)
+    .add_systems(OnEnter(GameState::TimeFreeze), pause_physics_time)
+    .add_systems(OnExit(GameState::TimeFreeze), resume_physics_time)
+    .add_systems(OnEnter(GameState::Paused), pause_physics_time)
+    .add_systems(OnExit(GameState::Paused), resume_physics_time);
 }
 
 // this is a hack until I implement smooth nudge
@@ -86,4 +94,11 @@ fn move_camera(mut camera: Query<&mut Transform, With<WorldCamera>>) {
     let mut camera = camera.single_mut().unwrap();
 
     *camera = Transform::from_xyz(0., 0., GAMEPLAY_CAMERA_OFFSET).looking_at(Vec3::ZERO, Vec3::Y);
+}
+
+fn pause_physics_time(mut time: ResMut<Time<Physics>>) {
+    time.pause();
+}
+fn resume_physics_time(mut time: ResMut<Time<Physics>>) {
+    time.unpause();
 }

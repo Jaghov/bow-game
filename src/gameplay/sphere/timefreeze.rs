@@ -7,6 +7,7 @@ use crate::gameplay::{
     sphere::{
         KeepOnCollideWith, SphereAssets, SphereType, despawn::BeginDespawning, sphere_defaults,
     },
+    timefreeze::FreezeTime,
 };
 
 pub fn timefreeze(assets: &SphereAssets) -> impl Bundle {
@@ -38,16 +39,16 @@ fn insert_timefreeze(trigger: Trigger<OnAdd, TimeFreeze>, mut commands: Commands
 
 fn freeze_on_arrow_collision(
     trigger: Trigger<OnCollisionStart>,
+    mut commands: Commands,
     arrows: Query<Entity, (With<Arrow>, Without<Canceled>)>,
-    mut game_state: ResMut<NextState<GameState>>,
 ) {
-    info!("timefreeze collision");
     let event = trigger.event();
     let Ok(arrow) = arrows.get(event.collider) else {
         return;
     };
-    info!("freeze time");
-    game_state.set(GameState::Paused);
+    info!("timefreeze collision: freezing time");
+    commands.entity(arrow).despawn();
+    commands.trigger(FreezeTime::new(trigger.target()));
 }
 
 // ignore if the hit comes from an arrow

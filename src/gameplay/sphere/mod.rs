@@ -19,6 +19,7 @@ mod timefreeze;
 pub use timefreeze::*;
 
 mod despawn;
+pub use despawn::*;
 
 use crate::{asset_tracking::LoadResource, world::GAME_PLANE};
 
