@@ -5,7 +5,7 @@ use super::Sphere;
 use crate::gameplay::{
     GameSet,
     arrow::{Arrow, Canceled},
-    sphere::KeepOnCollide,
+    sphere::KeepOnCollideWith,
 };
 
 pub fn plugin(app: &mut App) {
@@ -26,29 +26,46 @@ fn check_sphere_despawn(
     mut commands: Commands,
     mut collision_events: EventReader<CollisionStarted>,
     //todo: this may need to be something like `SphereTriggerer`
-    arrow: Query<&Arrow, Without<Canceled>>,
-    spheres: Query<
-        Entity,
-        (
-            With<Sphere>,
-            Without<KeepOnCollide>,
-            Without<DespawnStarted>,
-        ),
-    >,
+    arrows: Query<(), (With<Arrow>, Without<Canceled>)>,
+    spheres: Query<(Entity, &KeepOnCollideWith), (With<Sphere>, Without<DespawnStarted>)>,
 ) {
     for CollisionStarted(entity1, entity2) in collision_events.read() {
-        let maybe_sphere = if arrow.get(*entity1).is_ok() {
-            entity2
-        } else if arrow.get(*entity2).is_ok() {
-            entity1
-        } else {
-            continue;
+        let ((sphere, keep_if), other) = match spheres.get(*entity1) {
+            Ok(res) => (res, *entity2),
+            Err(_) => match spheres.get(*entity2) {
+                Ok(res) => (res, *entity1),
+                Err(_) => continue,
+            },
         };
 
-        let Ok(sphere) = spheres.get(*maybe_sphere) else {
-            continue;
-        };
-        info!("sphere and arrow collided!");
+        match keep_if {
+            KeepOnCollideWith::Arrow => {
+                // dont do anything if colliding with an arrow, or the other collider isn't a sphere.
+                if arrows.get(other).is_ok() {
+                    continue;
+                }
+                if spheres.get(other).is_err() {
+                    continue;
+                }
+            }
+            KeepOnCollideWith::Sphere => {
+                //dont do anything if colliding with a sphere or non-arrows
+                if spheres.get(other).is_ok() {
+                    continue;
+                }
+                if arrows.get(other).is_err() {
+                    continue;
+                }
+            }
+            KeepOnCollideWith::Both => continue,
+            KeepOnCollideWith::NeverKeep => {
+                if spheres.get(other).is_err() && arrows.get(other).is_err() {
+                    continue;
+                }
+            }
+        }
+
+        info!("sphere collided!");
 
         commands.entity(sphere).insert(DespawnStarted);
 

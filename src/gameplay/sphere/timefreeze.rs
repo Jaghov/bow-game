@@ -1,0 +1,62 @@
+use avian3d::prelude::*;
+use bevy::prelude::*;
+
+use crate::gameplay::{
+    GameState,
+    arrow::{Arrow, Canceled},
+    sphere::{
+        KeepOnCollideWith, SphereAssets, SphereType, despawn::BeginDespawning, sphere_defaults,
+    },
+};
+
+pub fn timefreeze(assets: &SphereAssets) -> impl Bundle {
+    (
+        sphere_defaults(assets),
+        (
+            TimeFreeze,
+            SphereType::TimeFreeze,
+            Sensor,
+            MeshMaterial3d(assets.normal.clone()),
+        ),
+    )
+}
+/// Notice this remains if collided on arrow
+#[derive(Component)]
+#[require(KeepOnCollideWith = KeepOnCollideWith::Arrow)]
+pub struct TimeFreeze;
+
+pub(super) fn plugin(app: &mut App) {
+    app.add_observer(insert_timefreeze);
+}
+fn insert_timefreeze(trigger: Trigger<OnAdd, TimeFreeze>, mut commands: Commands) {
+    info!("observed new timefreeze insert");
+    commands
+        .entity(trigger.target())
+        .observe(start_despawn)
+        .observe(freeze_on_arrow_collision);
+}
+
+fn freeze_on_arrow_collision(
+    trigger: Trigger<OnCollisionStart>,
+    arrows: Query<Entity, (With<Arrow>, Without<Canceled>)>,
+    mut game_state: ResMut<NextState<GameState>>,
+) {
+    info!("timefreeze collision");
+    let event = trigger.event();
+    let Ok(arrow) = arrows.get(event.collider) else {
+        return;
+    };
+    info!("freeze time");
+    game_state.set(GameState::Paused);
+}
+
+// ignore if the hit comes from an arrow
+fn start_despawn(
+    trigger: Trigger<BeginDespawning>,
+    mut commands: Commands,
+    normals: Query<Entity, With<TimeFreeze>>,
+    arrows: Query<(), With<Arrow>>,
+) {
+    let normal = normals.get(trigger.target()).unwrap();
+    commands.entity(normal).try_despawn();
+}
