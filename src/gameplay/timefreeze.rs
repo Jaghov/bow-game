@@ -1,12 +1,13 @@
 use avian3d::prelude::*;
 use bevy::prelude::*;
 
-use crate::gameplay::{GameState, sphere::BeginDespawning};
+use crate::gameplay::{GameState, arrow::FireArrow, sphere::BeginDespawning};
 
 pub(super) fn plugin(app: &mut App) {
     app.add_observer(freeze_time)
         .add_systems(OnEnter(GameState::TimeFreeze), on_freeze)
-        .add_systems(OnExit(GameState::TimeFreeze), on_unfreeze);
+        .add_systems(OnExit(GameState::TimeFreeze), on_unfreeze)
+        .add_observer(listen_for_fire);
     //todo
 }
 
@@ -52,4 +53,8 @@ fn on_unfreeze(
     commands.entity(freeze.sphere).trigger(BeginDespawning);
     commands.remove_resource::<FreezeLocation>();
     time.unpause();
+}
+
+fn listen_for_fire(_trigger: Trigger<FireArrow>, mut state: ResMut<NextState<GameState>>) {
+    state.set(GameState::Playing);
 }

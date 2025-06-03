@@ -27,6 +27,7 @@ pub fn spawn_bow(mut commands: Commands, bow_assets: Res<BowAssets>, freeze: Res
         .spawn((
             Name::new("Frozen Bow"),
             Bow,
+            StateScoped(GameState::TimeFreeze),
             SceneRoot(bow_assets.scene.clone()),
             Transform::from_xyz(freeze.location.x, freeze.location.y, GAME_PLANE),
         ))
