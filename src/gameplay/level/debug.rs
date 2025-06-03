@@ -11,4 +11,8 @@ pub(super) fn plugin(app: &mut App) {
 
 fn setup_debug_level(mut commands: Commands) {
     commands.trigger(SpawnSphere::new(Vec2::new(10., 0.), SphereType::Exploder));
+    commands.trigger(SpawnSphere::new(Vec2::new(11., 0.), SphereType::Exploder));
+    commands.trigger(SpawnSphere::new(Vec2::new(12., 0.), SphereType::Exploder));
+    commands.trigger(SpawnSphere::new(Vec2::new(13., 0.), SphereType::Exploder));
+    commands.trigger(SpawnSphere::new(Vec2::new(15., 0.), SphereType::Exploder));
 }

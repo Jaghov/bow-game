@@ -65,7 +65,10 @@ pub struct Exploder;
 
 fn insert_exploder(trigger: Trigger<OnAdd, Exploder>, mut commands: Commands) {
     info!("observed new normal insert");
-    commands.entity(trigger.target()).observe(start_despawn);
+    commands
+        .entity(trigger.target())
+        .observe(start_despawn)
+        .observe(light_fuse);
 }
 
 #[derive(Component, Debug)]
@@ -147,7 +150,7 @@ fn animate_indicator(
 
 fn explode(
     mut commands: Commands,
-    fuses: Query<(&Transform, &Fuse)>,
+    fuses: Query<(Entity, &Transform, &Fuse)>,
 
     spheres: Query<Has<Exploder>, With<Sphere>>,
 
@@ -155,7 +158,7 @@ fn explode(
     spatial_query: SpatialQuery,
 ) {
     let mut should_shake = false;
-    for (transform, fuse) in fuses {
+    for (entity, transform, fuse) in fuses {
         if fuse.countdown != 0 {
             continue;
         }
@@ -169,23 +172,23 @@ fn explode(
         let hits = spatial_query.shape_intersections(&shape, origin, rotation, &filter);
 
         for hit in hits {
+            if hit == entity {
+                commands.entity(entity).try_despawn();
+                continue;
+            }
             let Ok(is_exploder) = spheres.get(hit) else {
                 continue;
             };
 
-            commands.entity(hit).insert(DespawnStarted);
+            commands.entity(hit).try_insert(DespawnStarted);
             // if it's an exploder, it'll explode in 1 second. otherwise, lfg
             if is_exploder {
-                commands.trigger_targets(LightFuse(2), hit);
+                commands.trigger_targets(LightFuse(1), hit);
             } else {
                 commands.entity(hit).trigger(BeginDespawning);
             }
         }
-
-        //let origin = transform.translation;
-
         should_shake = true;
-        //commands.entity(exploder).despawn()
     }
     if should_shake {
         shake.add_trauma(0.3);
