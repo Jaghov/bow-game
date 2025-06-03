@@ -65,6 +65,7 @@ pub struct ArrowOf(Entity);
 #[require(Collider = Collider::capsule(0.1, 3.5))]
 #[require(GravityScale = GravityScale(0.))]
 #[require(LockedAxes = LockedAxes::new().lock_translation_z())]
+#[require(MaxFlightTime)]
 pub struct Arrow {
     pub bounces: u8,
 }
@@ -220,13 +221,13 @@ impl Default for MaxFlightTime {
     }
 }
 
-fn tick_flight_time(mut timers: Query<&mut MaxFlightTime>, time: Res<Time>) {
+fn tick_flight_time(mut timers: Query<&mut MaxFlightTime, Without<ArrowOf>>, time: Res<Time>) {
     for mut timer in &mut timers {
         timer.0.tick(time.delta());
     }
 }
 
-fn reset_flight_time(mut timers: Query<&mut MaxFlightTime, Changed<Arrow>>) {
+fn reset_flight_time(mut timers: Query<&mut MaxFlightTime, (Changed<Arrow>, Without<ArrowOf>)>) {
     for mut timer in &mut timers {
         timer.0.reset();
     }

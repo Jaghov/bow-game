@@ -1,4 +1,4 @@
-use avian3d::prelude::{Collider, RigidBody};
+use avian3d::prelude::*;
 use bevy::prelude::*;
 
 use crate::{
@@ -10,6 +10,11 @@ pub(super) fn plugin(app: &mut App) {
     app.add_systems(OnEnter(Screen::Gameplay), spawn_walls)
         .add_systems(Update, set_wall_locs.run_if(in_state(Screen::Gameplay)));
 }
+
+#[derive(Component)]
+#[require(RigidBody = RigidBody::Kinematic)]
+#[require(Restitution = Restitution::PERFECTLY_ELASTIC)]
+struct Wall;
 
 #[derive(Component)]
 struct Top;
@@ -34,7 +39,7 @@ fn spawn_walls(
     commands.spawn((
         Mesh3d(top_mesh.clone()),
         Top,
-        RigidBody::Kinematic,
+        Wall,
         top_collider.clone(),
         MeshMaterial3d(material.clone()),
         Transform::from_xyz(-BLOCK_LEN * 5., 0., GAME_PLANE),
@@ -46,7 +51,7 @@ fn spawn_walls(
     commands.spawn((
         Mesh3d(right_mesh),
         Right,
-        RigidBody::Kinematic,
+        Wall,
         right_collider,
         MeshMaterial3d(material.clone()),
         Transform::from_xyz(BLOCK_LEN * 9., 0., GAME_PLANE),
@@ -55,7 +60,7 @@ fn spawn_walls(
     commands.spawn((
         Mesh3d(top_mesh),
         Bottom,
-        RigidBody::Kinematic,
+        Wall,
         top_collider.clone(),
         MeshMaterial3d(material.clone()),
         Transform::from_xyz(-BLOCK_LEN * 5., 0., GAME_PLANE),
