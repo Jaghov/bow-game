@@ -9,10 +9,6 @@ pub(super) fn plugin(app: &mut App) {
         .add_systems(OnExit(GameState::TimeFreeze), on_unfreeze);
     //todo
 }
-/// Use this struct to differentiate between frozen and unfrozen entities in
-/// systems not conditionally run by GameState
-#[derive(Component)]
-pub struct Frozen;
 
 #[derive(Event)]
 pub struct FreezeTime {

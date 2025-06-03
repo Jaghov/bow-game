@@ -9,10 +9,14 @@ use crate::{
     world::GAME_PLANE,
 };
 
-use super::{ArrowSet, bow::Bow};
+use super::ArrowSet;
 
 pub(super) fn plugin(app: &mut App) {
-    app.register_type::<ArrowAssets>()
+    app.register_type::<ArrowOf>()
+        .register_type::<Arrow>()
+        .register_type::<Canceled>()
+        .register_type::<MaxFlightTime>()
+        .register_type::<ArrowAssets>()
         .load_resource::<ArrowAssets>();
 
     app.add_systems(
@@ -50,11 +54,13 @@ impl ReadyArrow {
     }
 }
 
-#[derive(Component)]
+#[derive(Component, Reflect)]
+#[reflect(Component)]
 #[relationship(relationship_target = BowArrow)]
 pub struct ArrowOf(Entity);
 
-#[derive(Component, Default)]
+#[derive(Component, Default, Reflect)]
+#[reflect(Component)]
 #[require(RigidBody = RigidBody::Dynamic)]
 #[require(Collider = Collider::capsule(0.1, 3.5))]
 #[require(GravityScale = GravityScale(0.))]
@@ -64,6 +70,7 @@ pub struct Arrow {
 }
 
 fn spawn_arrow(trigger: Trigger<ReadyArrow>, mut commands: Commands, assets: Res<ArrowAssets>) {
+    info!("spawning arrow");
     commands
         .spawn((
             Name::new("Arrow"),
@@ -120,6 +127,7 @@ fn fire_arrow(
     mut arrows: Query<(&Rotation, &mut LinearVelocity, &ArrowOf)>,
     mut pull_strength: Query<&BowArrow, Without<ArrowOf>>,
 ) {
+    info!("fire arrow event");
     let (rotation, mut lvel, arrow_of) = arrows
         .get_mut(trigger.target())
         .expect("target to be an arrow");
@@ -177,9 +185,11 @@ fn on_multiply(
 #[derive(Event)]
 pub struct CancelArrow;
 
-#[derive(Component)]
+#[derive(Component, Reflect)]
 pub struct Canceled;
+
 fn cancel_arrow(trigger: Trigger<CancelArrow>, mut commands: Commands) {
+    info!("cancel arrow event");
     // this may have been done already if the firing speed is too low
     commands.entity(trigger.target()).try_remove::<ArrowOf>();
 
@@ -193,7 +203,8 @@ fn cancel_arrow(trigger: Trigger<CancelArrow>, mut commands: Commands) {
 }
 
 // how long an arrow can fly without bouncing
-#[derive(Component)]
+#[derive(Component, Reflect)]
+#[reflect(Component)]
 pub struct MaxFlightTime(Timer);
 impl MaxFlightTime {
     pub fn new(duration: Duration) -> Self {

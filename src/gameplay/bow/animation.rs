@@ -60,7 +60,6 @@ fn update_bow_pull(
         let mut anim_player = animations.get_mut(anim_props.player).unwrap();
 
         if !anim_player.is_playing_animation(anim_props.index) {
-            warn!("Not playing animation");
             let pull_animation = anim_player.play(anim_props.index);
             pull_animation
                 .set_repeat(RepeatAnimation::Never)
