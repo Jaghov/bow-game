@@ -10,5 +10,5 @@ pub(super) fn plugin(app: &mut App) {
 }
 
 fn setup_level_one(mut commands: Commands) {
-    commands.trigger(SpawnSphere::new(Vec2::new(4., 5.), SphereType::Normal));
+    commands.trigger(SpawnSphere::new(Vec2::new(10., 0.), SphereType::Normal));
 }

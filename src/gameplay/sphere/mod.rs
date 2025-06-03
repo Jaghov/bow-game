@@ -1,15 +1,19 @@
 use avian3d::prelude::{Collider, CollidingEntities, GravityScale, LockedAxes, RigidBody};
 use bevy::{
     color::palettes::{
-        css::{BLACK, GREEN, ORANGE, YELLOW},
-        tailwind::{BLUE_400, PURPLE_100, PURPLE_900},
+        css::{GREEN, ORANGE, YELLOW},
+        tailwind::BLUE_400,
     },
     prelude::*,
 };
 
-use crate::{Screen, asset_tracking::LoadResource, world::GAME_PLANE};
+mod normal;
+
+use crate::{asset_tracking::LoadResource, world::GAME_PLANE};
 
 pub(super) fn plugin(app: &mut App) {
+    app.add_plugins((normal::plugin));
+
     app.register_type::<SphereAssets>()
         .load_resource::<SphereAssets>();
 
