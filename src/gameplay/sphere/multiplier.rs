@@ -2,27 +2,29 @@ use avian3d::prelude::Sensor;
 use bevy::prelude::*;
 
 use crate::gameplay::sphere::{
-    SphereAssets, SphereType, despawn::BeginDespawning, sphere_defaults,
+    Normal, SphereAssets, SphereType, despawn::BeginDespawning, sphere_defaults,
 };
 
-pub fn normal(assets: &SphereAssets) -> impl Bundle {
+pub fn multiplier(assets: &SphereAssets) -> impl Bundle {
     (
         sphere_defaults(assets),
         (
-            Normal,
-            SphereType::Normal,
+            Multiplier,
+            SphereType::Multiplier,
             Sensor,
-            MeshMaterial3d(assets.normal.clone()),
+            MeshMaterial3d(assets.multiplier.clone()),
         ),
     )
 }
-#[derive(Component)]
-pub struct Normal;
 
 pub(super) fn plugin(app: &mut App) {
-    app.add_observer(insert_normal);
+    app.add_observer(insert_multiplier);
 }
-fn insert_normal(trigger: Trigger<OnAdd, Normal>, mut commands: Commands) {
+
+#[derive(Component)]
+pub struct Multiplier;
+
+fn insert_multiplier(trigger: Trigger<OnAdd, Normal>, mut commands: Commands) {
     info!("observed new normal insert");
     commands.entity(trigger.target()).observe(on_hit);
 }
