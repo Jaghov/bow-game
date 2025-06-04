@@ -12,7 +12,7 @@ use crate::{
 use super::ArrowSet;
 
 pub(super) fn plugin(app: &mut App) {
-    app.register_type::<ArrowOf>()
+    app.register_type::<NockedOn>()
         .register_type::<Arrow>()
         .register_type::<Canceled>()
         .register_type::<MaxFlightTime>()
@@ -57,7 +57,7 @@ impl ReadyArrow {
 #[derive(Component, Reflect)]
 #[reflect(Component)]
 #[relationship(relationship_target = BowArrow)]
-pub struct ArrowOf(Entity);
+pub struct NockedOn(Entity);
 
 #[derive(Component, Default, Reflect)]
 #[reflect(Component)]
@@ -77,14 +77,14 @@ fn spawn_arrow(trigger: Trigger<ReadyArrow>, mut commands: Commands, assets: Res
             Name::new("Arrow"),
             Arrow::default(),
             SceneRoot(assets.glowing.clone()),
-            ArrowOf(trigger.event().0),
+            NockedOn(trigger.event().0),
         ))
         .observe(fire_arrow)
         .observe(cancel_arrow);
 }
 
 fn update_unfired_arrow_transform(
-    mut arrows: Query<(&mut Transform, &ArrowOf), Without<BowArrow>>,
+    mut arrows: Query<(&mut Transform, &NockedOn), Without<BowArrow>>,
     bow: Query<(&Transform, &BowArrow)>,
 ) {
     for (mut arrow, arrow_of) in &mut arrows {
@@ -122,8 +122,8 @@ pub struct FireArrow;
 fn fire_arrow(
     trigger: Trigger<FireArrow>,
     mut commands: Commands,
-    mut arrows: Query<(&Rotation, &mut LinearVelocity, &ArrowOf)>,
-    mut pull_strength: Query<&BowArrow, Without<ArrowOf>>,
+    mut arrows: Query<(&Rotation, &mut LinearVelocity, &NockedOn)>,
+    mut pull_strength: Query<&BowArrow, Without<NockedOn>>,
 ) {
     info!("fire arrow event");
     let (rotation, mut lvel, arrow_of) = arrows
@@ -139,7 +139,7 @@ fn fire_arrow(
     let velocity = rotation.0 * Vec3::new(0., arrow_velocity, 0.);
     lvel.0 = velocity;
     let mut arrow_commands = commands.entity(trigger.target());
-    arrow_commands.remove::<ArrowOf>();
+    arrow_commands.remove::<NockedOn>();
     if arrow_velocity >= ARROW_VELOCITY_THRESHOLD {
         arrow_commands.observe(on_multiply);
     } else {
@@ -192,7 +192,7 @@ pub struct Canceled;
 fn cancel_arrow(trigger: Trigger<CancelArrow>, mut commands: Commands) {
     info!("cancel arrow event");
     // this may have been done already if the firing speed is too low
-    commands.entity(trigger.target()).try_remove::<ArrowOf>();
+    commands.entity(trigger.target()).try_remove::<NockedOn>();
 
     commands.entity(trigger.target()).insert((
         Canceled,
@@ -219,13 +219,13 @@ impl Default for MaxFlightTime {
     }
 }
 
-fn tick_flight_time(mut timers: Query<&mut MaxFlightTime, Without<ArrowOf>>, time: Res<Time>) {
+fn tick_flight_time(mut timers: Query<&mut MaxFlightTime, Without<NockedOn>>, time: Res<Time>) {
     for mut timer in &mut timers {
         timer.0.tick(time.delta());
     }
 }
 
-fn reset_flight_time(mut timers: Query<&mut MaxFlightTime, (Changed<Arrow>, Without<ArrowOf>)>) {
+fn reset_flight_time(mut timers: Query<&mut MaxFlightTime, (Changed<Arrow>, Without<NockedOn>)>) {
     for mut timer in &mut timers {
         timer.0.reset();
     }

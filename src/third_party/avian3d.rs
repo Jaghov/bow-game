@@ -9,3 +9,11 @@ pub fn plugin(app: &mut App) {
     app.add_plugins(PhysicsPlugins::default())
         .insert_resource(Gravity(Vec3::Z * -9.81));
 }
+
+#[derive(PhysicsLayer, Default)]
+pub enum GameLayer {
+    #[default]
+    Default,
+    Arrow,  // colliders that interact with the arrow
+    Sphere, // colliders that interact with spheres
+}

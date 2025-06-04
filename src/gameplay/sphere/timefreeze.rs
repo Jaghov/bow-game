@@ -2,7 +2,7 @@ use avian3d::prelude::*;
 use bevy::prelude::*;
 
 use crate::gameplay::{
-    arrow::{Arrow, ArrowOf, Canceled},
+    arrow::{Arrow, Canceled, NockedIn},
     sphere::{
         KeepOnCollideWith, SphereAssets, SphereType, despawn::BeginDespawning, sphere_defaults,
     },
@@ -39,7 +39,7 @@ fn insert_timefreeze(trigger: Trigger<OnAdd, TimeFreeze>, mut commands: Commands
 fn freeze_on_arrow_collision(
     trigger: Trigger<OnCollisionStart>,
     mut commands: Commands,
-    arrows: Query<Entity, (With<Arrow>, Without<Canceled>, Without<ArrowOf>)>,
+    arrows: Query<Entity, (With<Arrow>, Without<Canceled>, Without<NockedOn>)>,
 ) {
     let event = trigger.event();
     let Ok(arrow) = arrows.get(event.collider) else {

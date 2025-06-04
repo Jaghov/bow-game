@@ -141,6 +141,7 @@ enum KeepOnCollideWith {
 }
 
 #[derive(Component, Clone, Copy)]
+#[require(Sphere)]
 #[allow(dead_code)]
 pub enum SphereType {
     Normal,
@@ -151,7 +152,7 @@ pub enum SphereType {
     Gravity,
     Absorber,
 }
-#[derive(Component)]
+#[derive(Component, Default)]
 pub struct Sphere;
 
 #[derive(Component)]
