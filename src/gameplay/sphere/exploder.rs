@@ -126,14 +126,13 @@ fn light_fuse_on_collision(
 fn light_fuse(
     trigger: Trigger<LightFuse>,
     mut commands: Commands,
-    mut exploders: Query<(Entity, Option<&mut Fuse>), With<Exploder>>,
+    mut exploders: Query<(Entity, Has<Fuse>), With<Exploder>>,
     assets: Res<ExploderAssets>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     let (exploder, current_fuse) = exploders.get_mut(trigger.target()).unwrap();
 
-    if let Some(mut lit_fuse) = current_fuse {
-        lit_fuse.countdown = 0;
+    if current_fuse {
         return;
     }
 
