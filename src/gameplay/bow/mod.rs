@@ -8,9 +8,11 @@ use crate::{
 };
 
 mod animation;
-mod primary;
-mod quiver;
 mod timefreeze;
+
+mod primary;
+pub use primary::*;
+
 /// how far from the bow the player must draw bow
 const MAX_RADIUS: f32 = 10.;
 const EPS: f32 = 1e-3;
@@ -47,6 +49,9 @@ impl FromWorld for BowAssets {
     }
 }
 
+/// the max linear velocity speed of the arrow
+const STRENGTH_MULT: f32 = 60.;
+
 #[derive(Component, Reflect)]
 #[reflect(Component)]
 #[relationship_target(relationship = ArrowOf)]
@@ -67,6 +72,12 @@ impl BowArrow {
     /// clamps a set value from 0 to 1
     pub fn set_strength(&mut self, val: f32) {
         self.pull_strength = val.clamp(0., 1.)
+    }
+
+    /// based on the current strength, this returns the
+    /// velocity of the arrow
+    pub fn arrow_velocity(&self) -> f32 {
+        self.strength().powi(2) * STRENGTH_MULT
     }
 }
 
