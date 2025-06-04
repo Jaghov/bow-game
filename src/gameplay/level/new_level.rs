@@ -5,21 +5,21 @@ use bevy::prelude::*;
 
 use crate::{
     gameplay::{
-        GAMEPLAY_CAMERA_OFFSET, GameSet,
+        GameSet,
         bow::Quiver,
-        level::{Level, LevelState, Levels, WallMaterial, timer::LevelSetupTimer},
+        level::{
+            Level, LevelState, Levels, SPHERE_START_PLANE, WALL_START_PLANE, WallMaterial, Walls,
+            timer::LevelSetupTimer,
+        },
         sphere::Sphere,
     },
     world::{GAME_PLANE, light::SetLightPosition},
 };
 
-const WALL_START_PLANE: f32 = GAMEPLAY_CAMERA_OFFSET + 20.;
-const SPHERE_START_PLANE: f32 = GAME_PLANE - 20.;
-
 pub(super) fn plugin(app: &mut App) {
     app.add_systems(
         OnEnter(LevelState::NewLevel),
-        (load_level, set_light_position).chain(),
+        (init_timer, (load_level, set_light_position).chain()),
     )
     .add_systems(
         Update,
@@ -32,9 +32,9 @@ pub(super) fn plugin(app: &mut App) {
         update_level_state.run_if(in_state(LevelState::NewLevel)),
     );
 }
-
-#[derive(Component)]
-struct Walls;
+fn init_timer(mut commands: Commands) {
+    commands.init_resource::<LevelSetupTimer>();
+}
 
 fn load_level(
     mut commands: Commands,
@@ -110,14 +110,8 @@ fn set_light_position(mut commands: Commands) {
     commands.trigger(SetLightPosition::to_above().with_duration(Duration::from_millis(700)));
 }
 
-fn update_level_state(
-    mut commands: Commands,
-    timer: Res<LevelSetupTimer>,
-    mut level_state: ResMut<NextState<LevelState>>,
-) {
-    if !timer.finished() {
-        return;
+fn update_level_state(timer: Res<LevelSetupTimer>, mut level_state: ResMut<NextState<LevelState>>) {
+    if timer.finished() {
+        level_state.set(LevelState::Playing);
     }
-    commands.remove_resource::<LevelSetupTimer>();
-    level_state.set(LevelState::Playing);
 }
