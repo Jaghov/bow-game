@@ -62,8 +62,8 @@ macro_rules! vert {
     ($x:literal, $start_y:literal, $end_y:literal) => {
         $crate::gameplay::level::wall::WallBuilder::vertical(
             $crate::world::BLOCK_LEN * $x,
-            $crate::world::BLOCK_LEN * $start_y,
-            $crate::world::BLOCK_LEN * $end_y,
+            $crate::world::BLOCK_LEN * $start_y - $crate::world::BLOCK_LEN * 0.5,
+            $crate::world::BLOCK_LEN * $end_y + $crate::world::BLOCK_LEN * 0.5,
         )
     };
 }
@@ -73,8 +73,8 @@ macro_rules! horz {
     ($x:literal, $start_y:literal, $end_y:literal) => {
         $crate::gameplay::level::wall::WallBuilder::horizontal(
             $crate::world::BLOCK_LEN * $x,
-            $crate::world::BLOCK_LEN * $start_y,
-            $crate::world::BLOCK_LEN * $end_y,
+            $crate::world::BLOCK_LEN * $start_y - $crate::world::BLOCK_LEN * 0.5,
+            $crate::world::BLOCK_LEN * $end_y + $crate::world::BLOCK_LEN * 0.5,
         )
     };
 }

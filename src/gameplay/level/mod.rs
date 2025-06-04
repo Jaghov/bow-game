@@ -1,3 +1,4 @@
+use avian3d::prelude::{ColliderConstructorHierarchy, RigidBody};
 use bevy::{platform::collections::HashMap, prelude::*};
 
 use crate::{Screen, gameplay::level::wall::WallBuilder, world::GAME_PLANE};
@@ -83,6 +84,7 @@ fn load_level(
         .spawn((
             Transform::from_xyz(0., 0., GAME_PLANE),
             InheritedVisibility::VISIBLE,
+            RigidBody::Static,
         ))
         .id();
 
