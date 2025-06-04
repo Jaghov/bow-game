@@ -15,5 +15,5 @@ pub enum GameLayer {
     #[default]
     Default,
     Arrow,  // colliders that interact with the arrow
-    Sphere, // colliders that interact with spheres
+    Sphere, // colliders that interacts with all spheres
 }

@@ -1,5 +1,5 @@
 use avian3d::prelude::{
-    Collider, CollidingEntities, CollisionEventsEnabled, GravityScale, LockedAxes, RigidBody,
+    Collider, CollisionEventsEnabled, GravityScale, LockedAxes, OnCollisionStart, RigidBody,
 };
 use bevy::{
     color::palettes::{
@@ -21,21 +21,14 @@ pub use multiplier::*;
 mod timefreeze;
 pub use timefreeze::*;
 
-mod despawn;
-pub use despawn::*;
-
-mod arrow_layer;
-
-use crate::{asset_tracking::LoadResource, gameplay::sphere::arrow_layer::ArrowSensor};
+use crate::{asset_tracking::LoadResource, gameplay::arrow::Arrow};
 
 pub(super) fn plugin(app: &mut App) {
     app.add_plugins((
         normal::plugin,
         multiplier::plugin,
-        despawn::plugin,
         timefreeze::plugin,
         exploder::plugin,
-        arrow_layer::plugin,
     ));
 
     app.register_type::<SphereAssets>()
@@ -156,6 +149,8 @@ pub enum SphereType {
     Absorber,
 }
 #[derive(Component, Default)]
+#[require(RigidBody = RigidBody::Dynamic)]
+#[require(LockedAxes = LockedAxes::new().lock_translation_z())]
 pub struct Sphere;
 
 #[derive(Component)]
@@ -193,7 +188,6 @@ fn spawn_sphere(
     match sphere_type {
         SphereType::Normal => {
             ec.insert((Normal, MeshMaterial3d(assets.normal.clone())));
-            commands.trigger_targets(ArrowSensor, trigger.target());
         }
         SphereType::Multiplier => {
             ec.insert((Multiplier, MeshMaterial3d(assets.multiplier.clone())));
@@ -214,6 +208,30 @@ fn spawn_sphere(
             ec.insert((Exploder, MeshMaterial3d(assets.exploder.clone())));
         }
     }
+}
+
+fn debug_collision(trigger: Trigger<OnCollisionStart>, arrows: Query<&Arrow>) {
+    let event = trigger.event();
+
+    info!(
+        "Collision event: was arrow? {}",
+        arrows.get(event.collider).is_ok()
+    );
+}
+
+fn despawn_on_arrow(
+    trigger: Trigger<OnCollisionStart>,
+    mut commands: Commands,
+    arrows: Query<&Arrow>,
+    child_of: Query<&ChildOf>,
+) {
+    let event = trigger.event();
+    if arrows.get(event.collider).is_err() {
+        return;
+    }
+    let parent = child_of.get(trigger.target()).unwrap().parent();
+
+    commands.entity(parent).try_despawn();
 }
 
 // fn spawn_sphere(trigger: Trigger<SpawnSphere>, mut commands: Commands, assets: Res<SphereAssets>) {

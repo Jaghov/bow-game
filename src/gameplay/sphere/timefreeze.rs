@@ -1,12 +1,13 @@
 use avian3d::prelude::*;
 use bevy::prelude::*;
 
-use crate::gameplay::{
-    arrow::{Arrow, Canceled, NockedOn},
-    sphere::{
-        KeepOnCollideWith, SphereAssets, SphereType, despawn::BeginDespawning, sphere_defaults,
+use crate::{
+    gameplay::{
+        arrow::{Arrow, Canceled, NockedOn},
+        sphere::{KeepOnCollideWith, SphereAssets, SphereType, sphere_defaults},
+        timefreeze::FreezeTime,
     },
-    timefreeze::FreezeTime,
+    third_party::avian3d::GameLayer,
 };
 
 pub fn timefreeze(assets: &SphereAssets) -> impl Bundle {
@@ -31,9 +32,25 @@ pub(super) fn plugin(app: &mut App) {
 fn insert_timefreeze(trigger: Trigger<OnAdd, TimeFreeze>, mut commands: Commands) {
     info!("observed new timefreeze insert");
     commands
-        .entity(trigger.target())
-        .observe(start_despawn)
+        .spawn((
+            CollisionLayers::new(GameLayer::Arrow, GameLayer::Arrow),
+            Collider::sphere(1.),
+            Sensor,
+            CollisionEventsEnabled,
+            ChildOf(trigger.target()),
+        ))
+        .observe(super::debug_collision)
+        .observe(super::despawn_on_arrow)
         .observe(freeze_on_arrow_collision);
+
+    commands
+        .spawn((
+            CollisionLayers::new(GameLayer::Sphere, GameLayer::Sphere),
+            Collider::sphere(1.),
+            CollisionEventsEnabled,
+            ChildOf(trigger.target()),
+        ))
+        .observe(super::debug_collision);
 }
 
 fn freeze_on_arrow_collision(
@@ -48,15 +65,4 @@ fn freeze_on_arrow_collision(
     info!("timefreeze collision: freezing time");
     commands.entity(arrow).despawn();
     commands.trigger(FreezeTime::new(trigger.target()));
-}
-
-// ignore if the hit comes from an arrow
-fn start_despawn(
-    trigger: Trigger<BeginDespawning>,
-    mut commands: Commands,
-    normals: Query<Entity, With<TimeFreeze>>,
-    arrows: Query<(), With<Arrow>>,
-) {
-    let normal = normals.get(trigger.target()).unwrap();
-    commands.entity(normal).try_despawn();
 }
