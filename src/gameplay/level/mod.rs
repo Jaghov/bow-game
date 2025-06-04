@@ -61,8 +61,14 @@ pub enum LevelState {
     NextLevel,
 }
 
-#[derive(Resource, Default)]
+#[derive(Resource)]
 pub struct Level(pub usize);
+
+impl Default for Level {
+    fn default() -> Self {
+        Self(1)
+    }
+}
 
 pub struct LevelProps {
     arrow_count: Option<u32>,
@@ -99,6 +105,7 @@ impl Levels {
             return level;
         }
 
-        todo!("generate dynamic random levels")
+        self.levels.get(&1).unwrap()
+        //todo!("generate dynamic random levels")
     }
 }

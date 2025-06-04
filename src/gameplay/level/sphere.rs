@@ -17,7 +17,7 @@ impl SpawnSphere {
 
 #[macro_export]
 macro_rules! sphere {
-    ($type:ident, $x:literal, $y:literal) => {
+    ($type:ident, $x:expr, $y:expr) => {
         $crate::gameplay::level::sphere::SpawnSphere::new(
             bevy::prelude::Vec2::new($x, $y),
             $crate::gameplay::sphere::SphereType::$type,
