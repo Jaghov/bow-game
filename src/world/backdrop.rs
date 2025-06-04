@@ -1,5 +1,9 @@
+use std::time::Duration;
+
 use avian3d::prelude::{Collider, RigidBody};
 use bevy::{color::palettes::tailwind::GREEN_400, prelude::*};
+use bevy_easings::EasingState;
+use bevy_tweening::{Animator, Tween, lens::TransformPositionLens};
 
 use crate::{
     rand,
@@ -72,5 +76,21 @@ fn update_backdrop_z(mut blocks: Query<(&mut Transform, &mut ZState)>, time: Res
             trns.translation.z -= TRVL * time.delta_secs()
             //backward
         }
+    }
+}
+
+fn pulse_out_backdrop_on_win(
+    mut commands: Commands,
+    mut blocks: Query<(Entity, &mut Transform), With<ZState>>,
+) {
+    for (block, transform) in blocks {
+        commands.entity(block).insert(Animator::new(Tween::new(
+            EaseFunction::SineInOut,
+            Duration::from_millis(500),
+            TransformPositionLens {
+                start: Vec3::ZERO,
+                end: Vec3::new(0., 0., BLOCK_LEN / 2.),
+            },
+        )));
     }
 }
