@@ -21,7 +21,14 @@ fn create_level(mut levels: ResMut<Levels>) {
                 vert!(-8., -5., 5.),
                 horz!(-6., -8., 8.),
             ],
-            vec![sphere!(Normal, 0., 0.)],
+            vec![
+                sphere!(Normal, 0., 0.),
+                sphere!(Exploder, 10., 0.),
+                sphere!(TimeFreeze, -10., 0.),
+                sphere!(Multiplier, 40., 0.),
+                sphere!(Bouncy, 20., 0.),
+                sphere!(Gravity, -40., 0.),
+            ],
         ),
     );
 

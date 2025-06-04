@@ -19,7 +19,10 @@ pub use multiplier::*;
 mod timefreeze;
 pub use timefreeze::*;
 
-use crate::{asset_tracking::LoadResource, gameplay::arrow::Arrow};
+use crate::{
+    asset_tracking::LoadResource,
+    gameplay::arrow::{Arrow, NockedOn},
+};
 
 pub(super) fn plugin(app: &mut App) {
     app.add_plugins((
@@ -199,7 +202,7 @@ fn debug_collision(trigger: Trigger<OnCollisionStart>, arrows: Query<&Arrow>) {
 fn despawn_on_arrow(
     trigger: Trigger<OnCollisionStart>,
     mut commands: Commands,
-    arrows: Query<&Arrow>,
+    arrows: Query<&Arrow, Without<NockedOn>>,
     child_of: Query<&ChildOf>,
 ) {
     let event = trigger.event();
