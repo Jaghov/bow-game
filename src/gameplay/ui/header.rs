@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use bevy::color::palettes::tailwind::GRAY_700;
 
 use crate::gameplay::{bow::Quiver, sphere::Sphere};
@@ -5,29 +7,63 @@ use crate::gameplay::{bow::Quiver, sphere::Sphere};
 use super::*;
 
 pub(super) fn plugin(app: &mut App) {
-    app.add_systems(
+    app.init_resource::<BallCountState>().add_systems(
         Update,
         (
             update_restart_text.run_if(resource_changed::<Quiver>),
-            update_ball_count,
+            (tick_bctimer, update_ball_count).chain(),
         ),
     );
+}
+
+#[derive(Resource)]
+struct BallCountState {
+    timer: Timer,
+    count: i32,
+    abs_diff: i32,
+}
+impl Default for BallCountState {
+    fn default() -> Self {
+        Self {
+            timer: Timer::new(Duration::from_millis(500), TimerMode::Once),
+            count: 0,
+            abs_diff: 0,
+        }
+    }
+}
+
+fn tick_bctimer(mut state: ResMut<BallCountState>, time: Res<Time>) {
+    state.timer.tick(time.delta());
 }
 
 fn update_ball_count(
     balls: Query<(), With<Sphere>>,
     mut ball_count: Single<&mut Text, With<BallCountText>>,
-    mut gradual_count: Local<usize>,
+    mut state: ResMut<BallCountState>,
 ) {
-    let count = balls.iter().count();
+    let count = balls.iter().count() as i32;
 
-    if count > *gradual_count {
-        *gradual_count += 1;
-    } else if count < *gradual_count {
-        *gradual_count -= 1;
+    if state.timer.just_finished() {
+        if count > state.count {
+            state.count += 1;
+        } else if count < state.count {
+            state.count -= 1;
+        }
+
+        ball_count.0 = state.count.to_string();
     }
 
-    ball_count.0 = gradual_count.to_string();
+    if state.count == count {
+        return;
+    }
+
+    let diff = (state.count - count).abs();
+    if state.abs_diff != diff {
+        state.abs_diff = diff;
+        let duration = 250. / (diff as f64);
+        let duration = Duration::from_millis(duration as u64);
+        state.timer = Timer::new(duration, TimerMode::Once);
+    }
 }
 
 fn update_restart_text(quiver: Res<Quiver>, mut restart: Single<&mut Text, With<RestartText>>) {
