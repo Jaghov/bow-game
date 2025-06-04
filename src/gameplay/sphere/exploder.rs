@@ -55,7 +55,7 @@ fn insert_exploder(trigger: Trigger<OnAdd, Exploder>, mut commands: Commands) {
 
     commands
         .spawn((
-            CollisionLayers::new(GameLayer::Arrow, GameLayer::Arrow),
+            CollisionLayers::new(GameLayer::ArrowSensors, GameLayer::ArrowSensors),
             Collider::sphere(1.),
             Sensor,
             CollisionEventsEnabled,

@@ -15,7 +15,7 @@ pub(super) fn plugin(app: &mut App) {
 fn insert_bouncy(trigger: Trigger<OnAdd, Bouncy>, mut commands: Commands) {
     commands
         .spawn((
-            CollisionLayers::new(GameLayer::Arrow, GameLayer::Arrow),
+            CollisionLayers::new(GameLayer::ArrowSensors, GameLayer::ArrowSensors),
             Collider::sphere(1.),
             CollisionEventsEnabled,
             ChildOf(trigger.target()),
