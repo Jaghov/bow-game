@@ -52,5 +52,7 @@ fn start_gameplay(timer: Res<TransitionTimer>, mut screen: ResMut<NextState<Scre
 }
 
 fn move_light(mut commands: Commands) {
-    commands.trigger(SetLightPosition::to_center().with_duration(Duration::from_millis(700)));
+    commands.trigger(
+        SetLightPosition::to_wall_load_position().with_duration(Duration::from_millis(700)),
+    );
 }

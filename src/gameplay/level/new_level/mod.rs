@@ -18,13 +18,16 @@ mod timer;
 pub(super) fn plugin(app: &mut App) {
     app.add_plugins(timer::plugin);
 
-    app.add_systems(OnEnter(LevelState::NewLevel), load_level)
-        .add_systems(
-            Update,
-            (update_wall_transform, update_light_position)
-                .in_set(GameSet::Update)
-                .run_if(in_state(LevelState::NewLevel)),
-        );
+    app.add_systems(
+        OnEnter(LevelState::NewLevel),
+        (load_level, update_light_position).chain(),
+    )
+    .add_systems(
+        Update,
+        (update_wall_transform)
+            .in_set(GameSet::Update)
+            .run_if(in_state(LevelState::NewLevel)),
+    );
 }
 
 #[derive(Component)]
@@ -82,14 +85,14 @@ fn update_wall_transform(
 
 fn update_light_position(
     mut commands: Commands,
-    time: Res<LevelSetupTimer>,
-    mut done: Local<bool>,
+    //time: Res<LevelSetupTimer>,
+    //mut done: Local<bool>,
 ) {
-    if *done || !time.should_move_light() {
-        return;
-    }
+    // if *done || !time.should_move_light() {
+    //     return;
+    // }
 
     commands.trigger(SetLightPosition::to_above().with_duration(Duration::from_millis(700)));
 
-    *done = true;
+    //*done = true;
 }

@@ -34,10 +34,10 @@ impl SetLightPosition {
             duration: Duration::from_secs(2),
         }
     }
-    pub fn to_center() -> Self {
+    pub fn to_wall_load_position() -> Self {
         SetLightPosition {
-            to: Transform::from_xyz(0., 0., GAMEPLAY_CAMERA_OFFSET + 5.)
-                .looking_at(Vec3::ZERO, Vec3::Y),
+            to: Transform::from_xyz(0., 50., GAMEPLAY_CAMERA_OFFSET + 5.)
+                .looking_at(Vec3::new(0., -50., 0.), Vec3::Y),
             duration: Duration::from_secs(2),
         }
     }

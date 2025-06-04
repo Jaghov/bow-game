@@ -39,7 +39,6 @@ fn spawn_world_camera(mut commands: Commands) {
             fov: 45.0_f32.to_radians(),
             ..default()
         }),
-        ShadowFilteringMethod::Temporal,
         RenderLayers::from(RenderLayer::DEFAULT | RenderLayer::PARTICLES | RenderLayer::GIZMO3),
         Bloom::NATURAL,
     ));
