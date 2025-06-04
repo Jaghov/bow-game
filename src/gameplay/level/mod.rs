@@ -1,9 +1,14 @@
 use bevy::{platform::collections::HashMap, prelude::*};
 
-use crate::{Screen, gameplay::level::wall::WallBuilder};
+use crate::{
+    Screen,
+    gameplay::level::{sphere::SpawnSphere, wall::WallBuilder},
+};
 
 #[macro_use]
 mod wall;
+#[macro_use]
+mod sphere;
 mod zero;
 
 mod new_level;
@@ -42,12 +47,22 @@ pub enum LevelState {
 pub struct Level(pub usize);
 
 pub struct LevelProps {
+    arrow_count: Option<u32>,
     walls: Vec<WallBuilder>,
+    spheres: Vec<SpawnSphere>,
 }
 
 impl LevelProps {
-    pub fn new(walls: Vec<WallBuilder>) -> Self {
-        Self { walls }
+    pub fn new(
+        arrow_count: Option<u32>,
+        walls: Vec<WallBuilder>,
+        spheres: Vec<SpawnSphere>,
+    ) -> Self {
+        Self {
+            arrow_count,
+            walls,
+            spheres,
+        }
     }
 }
 

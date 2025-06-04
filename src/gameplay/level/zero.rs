@@ -13,12 +13,16 @@ fn create_level(mut levels: ResMut<Levels>) {
 
     levels.insert(
         0,
-        LevelProps::new(vec![
-            vert!(8., -5., 5.),
-            horz!(6., -8., 8.),
-            vert!(-8., -5., 5.),
-            horz!(-6., -8., 8.),
-        ]),
+        LevelProps::new(
+            Some(3),
+            vec![
+                vert!(8., -5., 5.),
+                horz!(6., -8., 8.),
+                vert!(-8., -5., 5.),
+                horz!(-6., -8., 8.),
+            ],
+            vec![sphere!(Normal, 0., 0.), sphere!(Normal, 0., 2.)],
+        ),
     );
 
     //todo

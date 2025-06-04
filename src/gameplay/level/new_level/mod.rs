@@ -6,12 +6,14 @@ use bevy::prelude::*;
 use crate::{
     gameplay::{
         GAMEPLAY_CAMERA_OFFSET, GameSet,
+        bow::Quiver,
         level::{Level, LevelState, Levels, WallMaterial, new_level::timer::LevelSetupTimer},
     },
     world::{GAME_PLANE, light::SetLightPosition},
 };
 
 const WALL_START_PLANE: f32 = GAMEPLAY_CAMERA_OFFSET + 20.;
+const SPHERE_START_PLANE: f32 = GAME_PLANE - 20.;
 
 mod timer;
 
@@ -38,6 +40,7 @@ fn load_level(
     mut meshes: ResMut<Assets<Mesh>>,
     material: Res<WallMaterial>,
     mut levels: ResMut<Levels>,
+    mut quiver: ResMut<Quiver>,
     level: Res<Level>,
 ) {
     let props = levels.get(level.0);
@@ -51,6 +54,8 @@ fn load_level(
         ))
         .id();
 
+    quiver.set_arrow_count(props.arrow_count);
+
     for wall in props.walls.iter() {
         let collider = wall.collider.clone();
         let mesh = meshes.add(wall.mesh);
@@ -61,6 +66,12 @@ fn load_level(
             MeshMaterial3d(material),
             wall.transform,
             ChildOf(root),
+        ));
+    }
+    for sphere in props.spheres.iter() {
+        commands.spawn((
+            sphere.sphere_type,
+            Transform::from_xyz(sphere.location.x, sphere.location.y, SPHERE_START_PLANE),
         ));
     }
 

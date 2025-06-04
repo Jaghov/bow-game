@@ -24,7 +24,7 @@ pub use timefreeze::*;
 mod despawn;
 pub use despawn::*;
 
-use crate::{asset_tracking::LoadResource, world::GAME_PLANE};
+use crate::asset_tracking::LoadResource;
 
 pub(super) fn plugin(app: &mut App) {
     app.add_plugins((
@@ -140,7 +140,7 @@ enum KeepOnCollideWith {
     NeverKeep,
 }
 
-#[derive(Component)]
+#[derive(Component, Clone, Copy)]
 #[allow(dead_code)]
 pub enum SphereType {
     Normal,
@@ -166,20 +166,6 @@ pub struct Bouncy;
 #[require(KeepOnCollideWith = KeepOnCollideWith::Sphere)]
 pub struct GravitySphere;
 
-#[derive(Event)]
-pub struct SpawnSphere {
-    location: Vec2,
-    sphere_type: SphereType,
-}
-impl SpawnSphere {
-    pub fn new(location: Vec2, sphere_type: SphereType) -> Self {
-        Self {
-            location,
-            sphere_type,
-        }
-    }
-}
-
 fn sphere_defaults(assets: &SphereAssets) -> impl Bundle {
     (
         Sphere,
@@ -191,36 +177,60 @@ fn sphere_defaults(assets: &SphereAssets) -> impl Bundle {
     )
 }
 
-fn spawn_sphere(trigger: Trigger<SpawnSphere>, mut commands: Commands, assets: Res<SphereAssets>) {
-    let event = trigger.event();
-    let transform = Transform::from_xyz(event.location.x, event.location.y, GAME_PLANE);
-
-    let bundle = (
-        Sphere,
-        transform,
-        Mesh3d(assets.mesh.clone()),
-        Collider::sphere(1.),
-        RigidBody::Dynamic,
-        LockedAxes::default().lock_translation_z(),
-        GravityScale(0.),
-        CollidingEntities::default(),
-    );
-
-    match event.sphere_type {
-        SphereType::Normal => commands.spawn((normal(&assets), transform)),
-        SphereType::Multiplier => commands.spawn((multiplier(&assets), transform)),
-        SphereType::TimeFreeze => commands.spawn((timefreeze(&assets), transform)),
-        SphereType::Bouncy => {
-            commands.spawn((bundle, (Bouncy, MeshMaterial3d(assets.time_freeze.clone()))))
+fn spawn_sphere(
+    trigger: Trigger<OnAdd, SphereType>,
+    mut commands: Commands,
+    spheres: Query<&SphereType>,
+    assets: Res<SphereAssets>,
+) {
+    let sphere_type = spheres.get(trigger.target()).unwrap();
+    let mut ec = commands.entity(trigger.target());
+    ec.insert(Mesh3d(assets.mesh.clone()));
+    match sphere_type {
+        SphereType::Normal => ec.insert((Normal, MeshMaterial3d(assets.normal.clone()))),
+        SphereType::Multiplier => {
+            ec.insert((Multiplier, MeshMaterial3d(assets.multiplier.clone())))
         }
-        SphereType::Gravity => commands.spawn((
-            bundle,
-            (GravitySphere, MeshMaterial3d(assets.time_freeze.clone())),
-        )),
-        SphereType::Absorber => commands.spawn((
-            bundle,
-            (Absorber, MeshMaterial3d(assets.time_freeze.clone())),
-        )),
-        SphereType::Exploder => commands.spawn((exploder(&assets), transform)),
+        SphereType::TimeFreeze => {
+            ec.insert((TimeFreeze, MeshMaterial3d(assets.time_freeze.clone())))
+        }
+        SphereType::Bouncy => ec.insert((Bouncy, MeshMaterial3d(assets.bouncy.clone()))),
+        SphereType::Gravity => ec.insert((GravitySphere, MeshMaterial3d(assets.gravity.clone()))),
+        SphereType::Absorber => ec.insert((Absorber, MeshMaterial3d(assets.absorber.clone()))),
+        SphereType::Exploder => ec.insert((Exploder, MeshMaterial3d(assets.exploder.clone()))),
     };
 }
+
+// fn spawn_sphere(trigger: Trigger<SpawnSphere>, mut commands: Commands, assets: Res<SphereAssets>) {
+//     let event = trigger.event();
+//     let transform = Transform::from_xyz(event.location.x, event.location.y, GAME_PLANE);
+
+//     let bundle = (
+//         Sphere,
+//         transform,
+//         Mesh3d(assets.mesh.clone()),
+//         Collider::sphere(1.),
+//         RigidBody::Dynamic,
+//         LockedAxes::default().lock_translation_z(),
+//         GravityScale(0.),
+//         CollidingEntities::default(),
+//     );
+
+//     match event.sphere_type {
+//         SphereType::Normal => commands.spawn((normal(&assets), transform)),
+//         SphereType::Multiplier => commands.spawn((multiplier(&assets), transform)),
+//         SphereType::TimeFreeze => commands.spawn((timefreeze(&assets), transform)),
+//         SphereType::Bouncy => {
+//             commands.spawn((bundle, (Bouncy, MeshMaterial3d(assets.time_freeze.clone()))))
+//         }
+//         SphereType::Gravity => commands.spawn((
+//             bundle,
+//             (GravitySphere, MeshMaterial3d(assets.time_freeze.clone())),
+//         )),
+//         SphereType::Absorber => commands.spawn((
+//             bundle,
+//             (Absorber, MeshMaterial3d(assets.time_freeze.clone())),
+//         )),
+//         SphereType::Exploder => commands.spawn((exploder(&assets), transform)),
+//     };
+// }
