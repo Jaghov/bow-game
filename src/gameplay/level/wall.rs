@@ -1,12 +1,12 @@
 use avian3d::prelude::Collider;
 use bevy::prelude::*;
 
-use crate::world::{BLOCK_LEN, GAME_PLANE};
+use crate::world::BLOCK_LEN;
 // this is a builder.
 pub struct WallBuilder {
-    mesh: Cuboid,
-    collider: Collider,
-    transform: Transform, //start:
+    pub mesh: Cuboid,
+    pub collider: Collider,
+    pub transform: Transform, //start:
 }
 impl WallBuilder {
     // note that these values are not multiplied by `BLOCK_LEN`.
@@ -25,7 +25,7 @@ impl WallBuilder {
 
         let collider = Collider::cuboid(length, BLOCK_LEN, BLOCK_LEN);
 
-        let transform = Transform::from_xyz(middle_x, y, GAME_PLANE);
+        let transform = Transform::from_xyz(middle_x, y, 0.);
         Self {
             mesh,
             collider,
@@ -47,7 +47,7 @@ impl WallBuilder {
 
         let collider = Collider::cuboid(BLOCK_LEN, length, BLOCK_LEN);
 
-        let transform = Transform::from_xyz(x, middle_y, GAME_PLANE);
+        let transform = Transform::from_xyz(x, middle_y, 0.);
         Self {
             mesh,
             collider,

@@ -6,9 +6,9 @@ use crate::{
     world::{BLOCK_LEN, GAME_PLANE},
 };
 
-pub(super) fn plugin(app: &mut App) {
-    app.add_systems(OnEnter(Screen::Gameplay), spawn_walls)
-        .add_systems(Update, set_wall_locs.run_if(in_state(Screen::Gameplay)));
+pub(super) fn plugin(_app: &mut App) {
+    // app.add_systems(OnEnter(Screen::Gameplay), spawn_walls)
+    //     .add_systems(Update, set_wall_locs.run_if(in_state(Screen::Gameplay)));
 }
 
 #[derive(Component)]
