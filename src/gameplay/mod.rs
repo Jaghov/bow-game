@@ -93,14 +93,12 @@ fn move_camera(mut camera: Query<&mut Transform, With<WorldCamera>>) {
 fn hide_cursor(mut q_windows: Query<&mut Window, With<PrimaryWindow>>) {
     let mut primary_window = q_windows.single_mut().unwrap();
 
-    // also hide the cursor
     primary_window.cursor_options.visible = false;
 }
 
 fn show_cursor(mut q_windows: Query<&mut Window, With<PrimaryWindow>>) {
     let mut primary_window = q_windows.single_mut().unwrap();
 
-    // also hide the cursor
     primary_window.cursor_options.visible = true;
 }
 
