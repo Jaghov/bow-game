@@ -42,7 +42,11 @@ struct ExploderAssets {
 impl FromWorld for ExploderAssets {
     fn from_world(world: &mut World) -> Self {
         let mut meshes = world.resource_mut::<Assets<Mesh>>();
-        let torus = meshes.add(Torus::new(EXPLOSION_RADIUS - 0.5, EXPLOSION_RADIUS));
+
+        let torus = meshes.add(Extrusion::new(
+            Annulus::new(EXPLOSION_RADIUS - 0.5, EXPLOSION_RADIUS),
+            0.2,
+        ));
 
         Self { torus }
     }
@@ -87,7 +91,7 @@ struct Fuse {
 impl Fuse {
     fn new(ticks: usize) -> Self {
         Self {
-            timer: Timer::new(Duration::from_millis(500), TimerMode::Repeating),
+            timer: Timer::new(Duration::from_millis(200), TimerMode::Repeating),
             countdown: ticks,
         }
     }
@@ -103,7 +107,7 @@ fn indicator(assets: &ExploderAssets, materials: &mut Assets<StandardMaterial>) 
     (
         Mesh3d(assets.torus.clone()),
         MeshMaterial3d(materials.add(Color::from(YELLOW))),
-        Transform::from_rotation(Quat::from_rotation_x(FRAC_PI_2)),
+        Transform::from_rotation(Quat::from_rotation_z(FRAC_PI_2)),
     )
 }
 
@@ -116,7 +120,6 @@ fn light_fuse_on_collision(
     if ignore.get(trigger.event().collider).is_ok() {
         return;
     }
-    info!("FUSE LIT BY COLLISION");
     commands.trigger_targets(
         LightFuse(3),
         children.get(trigger.target()).unwrap().parent(),
@@ -148,7 +151,6 @@ fn tick_explosion(mut fuses: Query<&mut Fuse>, time: Res<Time>) {
     for mut fuse in &mut fuses {
         fuse.timer.tick(time.delta());
         if fuse.timer.just_finished() {
-            info!("fuse: {:?}", fuse.countdown);
             fuse.countdown = fuse.countdown.saturating_sub(1);
         }
     }
@@ -186,8 +188,6 @@ fn explode(
         if fuse.countdown != 0 {
             continue;
         }
-
-        info!("boom.");
 
         let shape = Collider::sphere(EXPLOSION_RADIUS);
         let origin = transform.translation;
