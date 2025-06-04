@@ -4,13 +4,9 @@ use crate::gameplay::level::{LevelProps, Levels};
 
 pub(super) fn plugin(app: &mut App) {
     app.add_systems(Startup, create_level);
-    //todo
 }
 
 fn create_level(mut levels: ResMut<Levels>) {
-    //
-    //level number, quiver count, wall component
-
     levels.insert(
         0,
         LevelProps::new(
@@ -31,6 +27,4 @@ fn create_level(mut levels: ResMut<Levels>) {
             ],
         ),
     );
-
-    //todo
 }

@@ -104,8 +104,6 @@ fn update_unfired_arrow_transform(
         let (z, _, _) = bow.rotation.to_euler(EulerRot::ZXY);
         arrow.rotation = Quat::from_rotation_z(z + FRAC_PI_2);
     }
-
-    //todo
 }
 
 /// the arrow will be fired, but will be canceled if this velocity is not reached

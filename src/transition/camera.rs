@@ -8,7 +8,6 @@ pub(super) fn plugin(app: &mut App) {
     app.add_systems(OnEnter(Screen::Transition), start_tracking_camera)
         .add_systems(OnExit(Screen::Transition), stop_tracking_camera)
         .add_systems(Update, move_camera.run_if(in_state(Screen::Transition)));
-    //todo
 }
 
 #[derive(Resource)]

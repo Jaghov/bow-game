@@ -72,7 +72,5 @@ fn update_backdrop_z(mut blocks: Query<(&mut Transform, &mut ZState)>, time: Res
             trns.translation.z -= TRVL * time.delta_secs()
             //backward
         }
-
-        //todo
     }
 }

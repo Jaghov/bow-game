@@ -9,7 +9,6 @@ pub(super) fn plugin(app: &mut App) {
         .add_observer(start_light_animation);
 
     app.add_systems(Update, move_light.run_if(resource_exists::<LightAnimation>));
-    //todo
 }
 
 #[derive(Event)]

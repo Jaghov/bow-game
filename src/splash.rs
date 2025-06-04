@@ -49,7 +49,6 @@ pub fn plugin(app: &mut App) {
 }
 
 fn spawn_splash_screen(mut commands: Commands, asset_server: Res<AssetServer>) {
-    //todo
     commands.spawn((
         widgets::ui_root("Splash Screen"),
         BackgroundColor(Color::srgb_u8(43, 44, 47)),

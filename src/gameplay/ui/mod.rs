@@ -11,8 +11,6 @@ pub use header::*;
 pub(super) fn plugin(app: &mut App) {
     app.add_plugins((header::plugin, footer::plugin));
     app.add_systems(OnEnter(Screen::Gameplay), setup);
-
-    //todo
 }
 
 fn setup(mut commands: Commands, assets: Res<AssetServer>) {

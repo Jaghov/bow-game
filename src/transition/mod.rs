@@ -25,7 +25,6 @@ pub(super) fn plugin(app: &mut App) {
         PostUpdate,
         start_gameplay.run_if(in_state(Screen::Transition)),
     );
-    //todo
 }
 
 #[derive(Resource)]
