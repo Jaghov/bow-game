@@ -44,13 +44,21 @@ pub struct ShouldMultiply {
     pub rot_offset: Vec<f32>,
 }
 
+#[derive(Component)]
+struct AlreadyHit;
+
 fn multiply_collider_on_hit(
     trigger: Trigger<OnCollisionStart>,
-    transforms: Query<&Transform>,
+    already_hit: Query<&AlreadyHit>,
+    transforms: Query<&GlobalTransform>,
     mut commands: Commands,
+    colliders: Query<&ColliderOf>,
     collisions: Collisions,
 ) {
     info!("In multiplier on hit");
+    if already_hit.get(trigger.target()).is_ok() {
+        return;
+    }
 
     // if point to use is true, use local point 2.
     // else, use 1.
@@ -73,9 +81,9 @@ fn multiply_collider_on_hit(
 
     commands.trigger_targets(
         ShouldMultiply {
-            local_point: hit_trns.translation + local_point,
+            local_point: hit_trns.translation() + local_point,
             rot_offset: vec![35.0_f32.to_radians(), -35.0_f32.to_radians()],
         },
-        trigger.collider,
+        colliders.get(trigger.collider).unwrap().body,
     );
 }

@@ -141,9 +141,9 @@ fn light_fuse(
 
 fn tick_explosion(mut fuses: Query<&mut Fuse>, time: Res<Time>) {
     for mut fuse in &mut fuses {
-        info!("fuse: {:?}", fuse);
         fuse.timer.tick(time.delta());
         if fuse.timer.just_finished() {
+            info!("fuse: {:?}", fuse.countdown);
             fuse.countdown = fuse.countdown.saturating_sub(1);
         }
     }
@@ -173,7 +173,7 @@ fn explode(
     spheres: Query<Has<Exploder>, With<Sphere>>,
 
     mut shake: Single<&mut Shake>,
-    children: Query<&ChildOf>,
+    colliders: Query<&ColliderOf>,
     spatial_query: SpatialQuery,
 ) {
     let mut should_shake = false;
@@ -191,9 +191,9 @@ fn explode(
         let hits = spatial_query.shape_intersections(&shape, origin, rotation, &filter);
 
         for hit in hits {
-            let parent = children.get(hit).unwrap().parent();
-            if parent == entity {
-                commands.entity(entity).try_despawn();
+            let body = colliders.get(hit).unwrap().body;
+            if body == entity {
+                commands.entity(entity).trigger(DestroySphere);
                 continue;
             }
             let Ok(is_exploder) = spheres.get(hit) else {
@@ -204,7 +204,7 @@ fn explode(
             if is_exploder {
                 commands.trigger_targets(LightFuse(1), hit);
             } else {
-                commands.entity(parent).trigger(DestroySphere);
+                commands.entity(body).trigger(DestroySphere);
             }
         }
         should_shake = true;

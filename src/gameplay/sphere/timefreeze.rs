@@ -27,7 +27,6 @@ fn insert_timefreeze(trigger: Trigger<OnAdd, TimeFreeze>, mut commands: Commands
             ChildOf(trigger.target()),
         ))
         .observe(super::debug_collision)
-        .observe(super::despawn_on_arrow)
         .observe(freeze_on_arrow_collision);
 
     commands
@@ -42,6 +41,7 @@ fn insert_timefreeze(trigger: Trigger<OnAdd, TimeFreeze>, mut commands: Commands
 
 fn freeze_on_arrow_collision(
     trigger: Trigger<OnCollisionStart>,
+    colliders: Query<&ColliderOf>,
     mut commands: Commands,
     arrows: Query<Entity, (With<Arrow>, Without<Canceled>, Without<NockedOn>)>,
 ) {
@@ -51,5 +51,7 @@ fn freeze_on_arrow_collision(
     };
     info!("timefreeze collision: freezing time");
     commands.entity(arrow).despawn();
-    commands.trigger(FreezeTime::new(trigger.target()));
+    commands.trigger(FreezeTime::new(
+        colliders.get(trigger.target()).unwrap().body,
+    ));
 }

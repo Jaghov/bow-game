@@ -203,13 +203,13 @@ fn despawn_on_arrow(
     trigger: Trigger<OnCollisionStart>,
     mut commands: Commands,
     arrows: Query<&Arrow, Without<NockedOn>>,
-    child_of: Query<&ChildOf>,
+    colliders: Query<&ColliderOf>,
 ) {
     let event = trigger.event();
     if arrows.get(event.collider).is_err() {
         return;
     }
-    let parent = child_of.get(trigger.target()).unwrap().parent();
+    let parent = colliders.get(trigger.target()).unwrap().body;
 
     commands.entity(parent).trigger(DestroySphere);
 }
@@ -224,39 +224,5 @@ pub struct DestroySphere;
 fn destroy_sphere(trigger: Trigger<DestroySphere>, mut commands: Commands) {
     // this will make the thing break into a million pieces.
     // TODO
-    commands.entity(trigger.target()).despawn();
+    commands.entity(trigger.target()).try_despawn();
 }
-
-// fn spawn_sphere(trigger: Trigger<SpawnSphere>, mut commands: Commands, assets: Res<SphereAssets>) {
-//     let event = trigger.event();
-//     let transform = Transform::from_xyz(event.location.x, event.location.y, GAME_PLANE);
-
-//     let bundle = (
-//         Sphere,
-//         transform,
-//         Mesh3d(assets.mesh.clone()),
-//         Collider::sphere(1.),
-//         RigidBody::Dynamic,
-//         LockedAxes::default().lock_translation_z(),
-//         GravityScale(0.),
-//         CollidingEntities::default(),
-//     );
-
-//     match event.sphere_type {
-//         SphereType::Normal => commands.spawn((normal(&assets), transform)),
-//         SphereType::Multiplier => commands.spawn((multiplier(&assets), transform)),
-//         SphereType::TimeFreeze => commands.spawn((timefreeze(&assets), transform)),
-//         SphereType::Bouncy => {
-//             commands.spawn((bundle, (Bouncy, MeshMaterial3d(assets.time_freeze.clone()))))
-//         }
-//         SphereType::Gravity => commands.spawn((
-//             bundle,
-//             (GravitySphere, MeshMaterial3d(assets.time_freeze.clone())),
-//         )),
-//         SphereType::Absorber => commands.spawn((
-//             bundle,
-//             (Absorber, MeshMaterial3d(assets.time_freeze.clone())),
-//         )),
-//         SphereType::Exploder => commands.spawn((exploder(&assets), transform)),
-//     };
-// }
