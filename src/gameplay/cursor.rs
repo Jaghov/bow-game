@@ -1,11 +1,58 @@
+use std::f32::consts::PI;
+
 use bevy::prelude::*;
 
-use crate::{camera::WorldCamera, gameplay::GameSet, world::GAME_PLANE};
+use crate::{
+    camera::WorldCamera,
+    gameplay::{GameSet, arrow::NockedOn},
+    world::GAME_PLANE,
+};
 
 pub(super) fn plugin(app: &mut App) {
     app.register_type::<CursorPosition>()
         .init_resource::<CursorPosition>();
     app.add_systems(Update, set_cursor_position.in_set(GameSet::RecordInput));
+    app.add_systems(
+        Update,
+        show_cursor_if_readying_arrow.in_set(GameSet::Update),
+    );
+}
+
+#[derive(Component)]
+struct NockCursor;
+
+fn show_cursor_if_readying_arrow(
+    mut commands: Commands,
+    arrows: Query<(), With<NockedOn>>,
+    pointer: Res<CursorPosition>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
+    mut cursor: Query<(Entity, &mut Transform), With<NockCursor>>,
+) {
+    if arrows.is_empty() {
+        for (cursor, _) in cursor {
+            commands.entity(cursor).despawn();
+        }
+        return;
+    }
+
+    let Some(point) = pointer.current() else {
+        return;
+    };
+
+    if cursor.is_empty() {
+        commands.spawn((
+            NockCursor,
+            Transform::from_translation(point).with_rotation(Quat::from_rotation_y(PI)),
+            Mesh3d(meshes.add(Extrusion::new(Annulus::new(0.2, 0.3), 0.2))),
+            MeshMaterial3d(materials.add(Color::WHITE)),
+        ));
+        return;
+    }
+
+    for (_, mut transform) in &mut cursor {
+        transform.translation = point;
+    }
 }
 
 /// Tells us where the pointer would be on the game plane
