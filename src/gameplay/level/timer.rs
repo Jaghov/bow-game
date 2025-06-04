@@ -1,24 +1,34 @@
 use bevy::prelude::*;
 use std::time::Duration;
 
-use crate::gameplay::{GameSet, level::LevelState};
+use crate::gameplay::GameSet;
 
 pub(super) fn plugin(app: &mut App) {
-    app.add_systems(OnEnter(LevelState::NewLevel), init_timer)
-        .add_systems(
-            Update,
-            tick_timer
-                .in_set(GameSet::TickTimers)
-                .run_if(in_state(LevelState::NewLevel)),
-        )
-        .add_systems(
-            PostUpdate,
-            update_level_state.run_if(in_state(LevelState::NewLevel)),
-        );
+    app.add_systems(
+        Update,
+        tick_timer
+            .in_set(GameSet::TickTimers)
+            .run_if(resource_exists::<LevelSetupTimer>),
+    )
+    .add_systems(
+        Last,
+        (|mut commands: Commands, timer: Res<LevelSetupTimer>| {
+            if timer.finished() {
+                commands.remove_resource::<LevelSetupTimer>();
+            }
+        })
+        .run_if(resource_exists::<LevelSetupTimer>),
+    );
 }
 
 #[derive(Resource)]
 pub struct LevelSetupTimer(Timer);
+
+impl LevelSetupTimer {
+    pub fn new(duration: Duration) -> Self {
+        Self(Timer::new(duration, TimerMode::Once))
+    }
+}
 
 impl LevelSetupTimer {
     /// 0.0 to 1.
@@ -40,6 +50,9 @@ impl LevelSetupTimer {
 
         amt / total_of_frac
     }
+    pub fn finished(&self) -> bool {
+        self.0.finished()
+    }
 }
 
 impl Default for LevelSetupTimer {
@@ -48,21 +61,6 @@ impl Default for LevelSetupTimer {
     }
 }
 
-fn init_timer(mut commands: Commands) {
-    commands.init_resource::<LevelSetupTimer>();
-}
 fn tick_timer(mut timer: ResMut<LevelSetupTimer>, time: Res<Time>) {
     timer.0.tick(time.delta());
-}
-
-fn update_level_state(
-    mut commands: Commands,
-    timer: Res<LevelSetupTimer>,
-    mut level_state: ResMut<NextState<LevelState>>,
-) {
-    if !timer.0.finished() {
-        return;
-    }
-    commands.remove_resource::<LevelSetupTimer>();
-    level_state.set(LevelState::Playing);
 }

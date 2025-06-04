@@ -1,40 +1,56 @@
 use std::time::Duration;
 
-use avian3d::prelude::RigidBody;
+use avian3d::prelude::{CollisionLayers, RigidBody};
 use bevy::prelude::*;
 
 use crate::{
     gameplay::{
-        GAMEPLAY_CAMERA_OFFSET, GameSet,
+        GameSet,
         bow::Quiver,
-        level::{Level, LevelState, Levels, WallMaterial, new_level::timer::LevelSetupTimer},
+        level::{
+            Level, LevelState, Levels, SPHERE_START_PLANE, WALL_START_PLANE, WallMaterial, Walls,
+            timer::LevelSetupTimer,
+        },
         sphere::Sphere,
     },
+    third_party::avian3d::GameLayer,
     world::{GAME_PLANE, light::SetLightPosition},
 };
 
-const WALL_START_PLANE: f32 = GAMEPLAY_CAMERA_OFFSET + 20.;
-const SPHERE_START_PLANE: f32 = GAME_PLANE - 20.;
-
-mod timer;
-
 pub(super) fn plugin(app: &mut App) {
-    app.add_plugins(timer::plugin);
-
     app.add_systems(
         OnEnter(LevelState::NewLevel),
-        (load_level, set_light_position).chain(),
+        (init_timer, (load_level, set_light_position).chain()),
     )
     .add_systems(
         Update,
         (update_wall_transform, update_sphere_transform)
             .in_set(GameSet::Update)
             .run_if(in_state(LevelState::NewLevel)),
+    )
+    .add_systems(
+        PostUpdate,
+        update_level_state.run_if(in_state(LevelState::NewLevel)),
+    )
+    .add_systems(
+        Update,
+        observe_level_completion.run_if(in_state(LevelState::Playing)),
     );
 }
+fn init_timer(mut commands: Commands) {
+    commands.init_resource::<LevelSetupTimer>();
+}
 
-#[derive(Component)]
-struct Walls;
+fn observe_level_completion(
+    balls: Query<(), With<Sphere>>,
+    mut level: ResMut<Level>,
+    mut next_state: ResMut<NextState<LevelState>>,
+) {
+    if balls.is_empty() {
+        level.0 += 1;
+        next_state.set(LevelState::NextLevel);
+    }
+}
 
 fn load_level(
     mut commands: Commands,
@@ -49,6 +65,7 @@ fn load_level(
     let root = commands
         .spawn((
             Walls,
+            CollisionLayers::new(GameLayer::Default, GameLayer::Default),
             Transform::from_xyz(0., 0., WALL_START_PLANE),
             InheritedVisibility::VISIBLE,
             RigidBody::Static,
@@ -108,4 +125,10 @@ fn update_sphere_transform(
 
 fn set_light_position(mut commands: Commands) {
     commands.trigger(SetLightPosition::to_above().with_duration(Duration::from_millis(700)));
+}
+
+fn update_level_state(timer: Res<LevelSetupTimer>, mut level_state: ResMut<NextState<LevelState>>) {
+    if timer.finished() {
+        level_state.set(LevelState::Playing);
+    }
 }

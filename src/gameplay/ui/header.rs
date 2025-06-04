@@ -2,7 +2,10 @@ use std::time::Duration;
 
 use bevy::color::palettes::tailwind::GRAY_700;
 
-use crate::gameplay::{bow::Quiver, sphere::Sphere};
+use crate::{
+    gameplay::{bow::Quiver, sphere::Sphere},
+    keybinds::Keybinds,
+};
 
 use super::*;
 
@@ -43,7 +46,11 @@ fn update_ball_count(
 ) {
     let count = balls.iter().count() as i32;
 
-    if state.timer.just_finished() {
+    if state.count == count {
+        return;
+    }
+
+    if state.timer.finished() {
         if count > state.count {
             state.count += 1;
         } else if count < state.count {
@@ -51,10 +58,6 @@ fn update_ball_count(
         }
 
         ball_count.0 = state.count.to_string();
-    }
-
-    if state.count == count {
-        return;
     }
 
     let diff = (state.count - count).abs();
@@ -66,9 +69,14 @@ fn update_ball_count(
     }
 }
 
-fn update_restart_text(quiver: Res<Quiver>, mut restart: Single<&mut Text, With<RestartText>>) {
+fn update_restart_text(
+    quiver: Res<Quiver>,
+    mut restart: Single<&mut Text, With<RestartText>>,
+    keybinds: Res<Keybinds>,
+) {
     let text = if quiver.arrow_count().is_some_and(|count| count == 0) {
-        "Press R to restart".to_string()
+        let mut key_str = format!("{:?}", keybinds.restart);
+        format!("Press [{}] to restart", key_str.split_off(3))
     } else {
         String::new()
     };

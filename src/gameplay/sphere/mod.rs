@@ -19,6 +19,9 @@ pub use multiplier::*;
 mod timefreeze;
 pub use timefreeze::*;
 
+mod bouncy;
+pub use bouncy::*;
+
 use crate::{
     asset_tracking::LoadResource,
     gameplay::arrow::{Arrow, NockedOn},
@@ -30,6 +33,7 @@ pub(super) fn plugin(app: &mut App) {
         multiplier::plugin,
         timefreeze::plugin,
         exploder::plugin,
+        bouncy::plugin,
     ));
 
     app.register_type::<SphereAssets>()
@@ -151,9 +155,6 @@ pub struct Sphere;
 pub struct Absorber;
 
 #[derive(Component)]
-pub struct Bouncy;
-
-#[derive(Component)]
 pub struct GravitySphere;
 
 fn spawn_sphere(
@@ -190,13 +191,63 @@ fn spawn_sphere(
     }
 }
 
-fn debug_collision(trigger: Trigger<OnCollisionStart>, arrows: Query<&Arrow>) {
+fn debug_collision(
+    trigger: Trigger<OnCollisionStart>,
+    arrows: Query<&Arrow>,
+    spheres: Query<&Sphere>,
+    children: Query<&ChildOf>,
+    colliders: Query<&ColliderOf>,
+) {
     let event = trigger.event();
+    let mut message = "COLLISION EVENT:".to_string();
 
-    info!(
-        "Collision event: was arrow? {}",
-        arrows.get(event.collider).is_ok()
-    );
+    let target = trigger.target();
+
+    let mut sph1 = None;
+
+    if let Ok(child) = children.get(target) {
+        message.push_str(" is_child");
+        if spheres.get(child.parent()).is_ok() {
+            sph1 = Some(child.parent());
+            message.push_str("_of_sphere");
+        } else {
+            message.push_str("_of_non_sphere");
+        }
+    } else {
+        message.push_str(" not_child");
+    }
+
+    let mut sph2 = None;
+
+    let collider = event.collider;
+    if arrows.get(collider).is_ok() {
+        message.push_str(" collider_is_arrow");
+    } else if spheres.get(collider).is_ok() {
+        message.push_str(" collider_is_sphere");
+    } else if let Ok(collider) = colliders.get(collider) {
+        message.push_str(" collider_body");
+        if arrows.get(collider.body).is_ok() {
+            message.push_str("_is_arrow");
+        } else if spheres.get(collider.body).is_ok() {
+            sph2 = Some(collider.body);
+            message.push_str("_is_sphere");
+        } else {
+            message.push_str("_is_unknown");
+        }
+    } else {
+        message.push_str(" collider_is_unknown");
+    }
+    match (sph1, sph2) {
+        (Some(sph1), Some(sph2)) if sph1 == sph2 => {
+            message.push_str(" self_collision");
+        }
+        (Some(_), Some(_)) => {
+            message.push_str(" not_self_collision");
+        }
+        _ => {}
+    }
+
+    info!("{}", message);
 }
 
 fn despawn_on_arrow(

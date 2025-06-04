@@ -85,9 +85,10 @@ fn spawn_items(
     }
 
     let mesh = Mesh3d(sphere.mesh.clone());
-
+    // need to add initial transforms because these things will collide.
     commands.spawn((
         SphereCount(0),
+        Transform::from_xyz(0., 0., -100.),
         Sphere,
         mesh.clone(),
         Prop,
@@ -97,6 +98,7 @@ fn spawn_items(
     commands.spawn((
         SphereCount(1),
         Sphere,
+        Transform::from_xyz(0., 0., -200.),
         Multiplier,
         Prop,
         mesh.clone(),
@@ -104,6 +106,7 @@ fn spawn_items(
     ));
     commands.spawn((
         SphereCount(2),
+        Transform::from_xyz(0., 0., -300.),
         Sphere,
         TimeFreeze,
         Prop,
@@ -112,6 +115,7 @@ fn spawn_items(
     ));
     commands.spawn((
         SphereCount(3),
+        Transform::from_xyz(0., 0., -400.),
         Sphere,
         Absorber,
         Prop,
@@ -120,14 +124,7 @@ fn spawn_items(
     ));
     commands.spawn((
         SphereCount(4),
-        Sphere,
-        Bouncy,
-        Prop,
-        mesh.clone(),
-        MeshMaterial3d(sphere.bouncy.clone()),
-    ));
-    commands.spawn((
-        SphereCount(5),
+        Transform::from_xyz(0., 0., -500.),
         Sphere,
         GravitySphere,
         Prop,
@@ -140,8 +137,18 @@ fn spawn_items(
         },
     ));
     commands.spawn((
+        SphereCount(5),
+        Transform::from_xyz(0., 0., -600.),
+        Sphere,
+        Bouncy,
+        Prop,
+        mesh.clone(),
+        MeshMaterial3d(sphere.bouncy.clone()),
+    ));
+    commands.spawn((
         SphereCount(6),
         Sphere,
+        Transform::from_xyz(0., 0., -700.),
         Prop,
         Exploder,
         mesh.clone(),

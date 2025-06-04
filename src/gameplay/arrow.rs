@@ -68,7 +68,7 @@ pub struct NockedOn(Entity);
 #[require(LockedAxes = LockedAxes::new().lock_translation_z())]
 #[require(MaxFlightTime)]
 #[require(CollisionLayers =
-    CollisionLayers::new(GameLayer::Arrow, [GameLayer::Default, GameLayer::Arrow]))]
+    CollisionLayers::new(GameLayer::ArrowSensors, [GameLayer::Default, GameLayer::ArrowSensors]))]
 pub struct Arrow {
     pub bounces: u8,
 }

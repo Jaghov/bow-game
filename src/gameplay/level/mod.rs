@@ -2,24 +2,42 @@ use bevy::{platform::collections::HashMap, prelude::*};
 
 use crate::{
     Screen,
-    gameplay::level::{sphere::SpawnSphere, wall::WallBuilder},
+    gameplay::{
+        GAMEPLAY_CAMERA_OFFSET,
+        level::{sphere::SpawnSphere, wall::WallBuilder},
+    },
+    world::GAME_PLANE,
 };
 
 #[macro_use]
 mod wall;
 #[macro_use]
 mod sphere;
+mod new_level;
+mod next_level;
+mod restart;
+mod timer;
 mod zero;
 
-mod new_level;
+const WALL_START_PLANE: f32 = GAMEPLAY_CAMERA_OFFSET + 20.;
+const SPHERE_START_PLANE: f32 = GAME_PLANE - 20.;
 
 pub(super) fn plugin(app: &mut App) {
-    app.add_plugins((zero::plugin, new_level::plugin));
+    app.add_plugins((
+        zero::plugin,
+        new_level::plugin,
+        next_level::plugin,
+        restart::plugin,
+        timer::plugin,
+    ));
     app.add_sub_state::<LevelState>()
         .init_resource::<Level>()
         .init_resource::<Levels>();
     app.add_systems(Startup, setup_wall_material);
 }
+
+#[derive(Component)]
+struct Walls;
 
 #[derive(Resource)]
 struct WallMaterial(Handle<StandardMaterial>);

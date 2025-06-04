@@ -55,7 +55,7 @@ fn insert_exploder(trigger: Trigger<OnAdd, Exploder>, mut commands: Commands) {
 
     commands
         .spawn((
-            CollisionLayers::new(GameLayer::Arrow, GameLayer::Arrow),
+            CollisionLayers::new(GameLayer::ArrowSensors, GameLayer::ArrowSensors),
             Collider::sphere(1.),
             Sensor,
             CollisionEventsEnabled,
@@ -111,6 +111,7 @@ fn light_fuse_on_collision(
     mut commands: Commands,
     children: Query<&ChildOf>,
 ) {
+    info!("FUSE LIT BY COLLISION");
     commands.trigger_targets(
         LightFuse(3),
         children.get(trigger.target()).unwrap().parent(),
@@ -191,7 +192,11 @@ fn explode(
         let hits = spatial_query.shape_intersections(&shape, origin, rotation, &filter);
 
         for hit in hits {
-            let body = colliders.get(hit).unwrap().body;
+            let Ok(collider) = colliders.get(hit) else {
+                //means the collider has been despawned already.
+                continue;
+            };
+            let body = collider.body;
             if body == entity {
                 commands.entity(entity).trigger(DestroySphere);
                 continue;
