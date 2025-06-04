@@ -13,19 +13,21 @@ pub(super) fn plugin(app: &mut App) {
     app.add_observer(insert_bouncy);
 }
 fn insert_bouncy(trigger: Trigger<OnAdd, Bouncy>, mut commands: Commands) {
+    // todo: you figured out that going through the floor does weird things to
+    // bouncy ball linear velocity
     commands
         .spawn((
-            CollisionLayers::new(GameLayer::ArrowSensors, GameLayer::ArrowSensors),
-            Collider::sphere(1.),
-            CollisionEventsEnabled,
-            ChildOf(trigger.target()),
+            // CollisionLayers::new(GameLayer::ArrowSensors, GameLayer::ArrowSensors),
+            // Collider::sphere(1.),
+            // CollisionEventsEnabled,
+            // ChildOf(trigger.target()),
         ))
         .observe(super::debug_collision)
         .observe(on_arrow_contact);
 
     commands
         .spawn((
-            CollisionLayers::new(GameLayer::Sphere, GameLayer::Sphere),
+            CollisionLayers::new(GameLayer::Sphere, [GameLayer::Sphere, GameLayer::Default]),
             Collider::sphere(1.),
             CollisionEventsEnabled,
             ChildOf(trigger.target()),

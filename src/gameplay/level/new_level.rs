@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use avian3d::prelude::{CollisionLayers, PhysicsLayer, RigidBody};
+use avian3d::prelude::{CollisionLayers, RigidBody};
 use bevy::prelude::*;
 
 use crate::{
@@ -31,10 +31,25 @@ pub(super) fn plugin(app: &mut App) {
     .add_systems(
         PostUpdate,
         update_level_state.run_if(in_state(LevelState::NewLevel)),
+    )
+    .add_systems(
+        Update,
+        observe_level_completion.run_if(in_state(LevelState::Playing)),
     );
 }
 fn init_timer(mut commands: Commands) {
     commands.init_resource::<LevelSetupTimer>();
+}
+
+fn observe_level_completion(
+    balls: Query<(), With<Sphere>>,
+    mut level: ResMut<Level>,
+    mut next_state: ResMut<NextState<LevelState>>,
+) {
+    if balls.is_empty() {
+        level.0 += 1;
+        next_state.set(LevelState::NextLevel);
+    }
 }
 
 fn load_level(
@@ -50,7 +65,7 @@ fn load_level(
     let root = commands
         .spawn((
             Walls,
-            CollisionLayers::new(GameLayer::Default, GameLayer::all_bits()),
+            CollisionLayers::new(GameLayer::Default, GameLayer::Default),
             Transform::from_xyz(0., 0., WALL_START_PLANE),
             InheritedVisibility::VISIBLE,
             RigidBody::Static,
