@@ -40,12 +40,6 @@ impl LevelSetupTimer {
 
         amt / total_of_frac
     }
-    pub fn elapsed(&self) -> Duration {
-        self.0.elapsed()
-    }
-    pub fn duration(&self) -> Duration {
-        self.0.duration()
-    }
 }
 
 impl Default for LevelSetupTimer {
