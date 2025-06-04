@@ -10,6 +10,7 @@ use bevy_trauma_shake::Shake;
 use crate::{
     gameplay::{
         GameSet, GameState,
+        arrow::NockedOn,
         sphere::{DestroySphere, Sphere},
     },
     third_party::avian3d::GameLayer,
@@ -108,9 +109,13 @@ fn indicator(assets: &ExploderAssets, materials: &mut Assets<StandardMaterial>) 
 
 fn light_fuse_on_collision(
     trigger: Trigger<OnCollisionStart>,
+    ignore: Query<(), With<NockedOn>>,
     mut commands: Commands,
     children: Query<&ChildOf>,
 ) {
+    if ignore.get(trigger.event().collider).is_ok() {
+        return;
+    }
     info!("FUSE LIT BY COLLISION");
     commands.trigger_targets(
         LightFuse(3),
