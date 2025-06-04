@@ -49,6 +49,13 @@ fn sandbox(mut commands: Commands, footer: Single<Entity, With<Footer>>, assets:
             ..default()
         },
         BackgroundColor(LinearRgba::new(0.253, 0.619, 0.810, 0.5).into()),
+        BoxShadow::new(
+            Color::srgba(0., 0., 0., 0.08),
+            Px(0.),
+            Px(2.),
+            Px(4.),
+            Px(4.),
+        ),
         //BorderColor(Color::BLACK),
         BorderRadius::all(Px(12.)),
         children![quiver_image, quiver_text],
@@ -64,7 +71,11 @@ fn sandbox(mut commands: Commands, footer: Single<Entity, With<Footer>>, assets:
         BackgroundColor(GRAY_700.into()),
     );
 
-    let item_count = (Text::new("x0"), TextColor(Color::BLACK));
+    let item_count = (
+        Text::new("x0"),
+        TextColor(Color::BLACK),
+        TextFont::from_font_size(16.),
+    );
 
     let item = || {
         (
@@ -77,6 +88,13 @@ fn sandbox(mut commands: Commands, footer: Single<Entity, With<Footer>>, assets:
                 column_gap: Px(2.),
                 ..default()
             },
+            BoxShadow::new(
+                Color::srgba(0., 0., 0., 0.08),
+                Px(0.),
+                Px(2.),
+                Px(4.),
+                Px(4.),
+            ),
             //BorderColor(Color::BLACK),
             BackgroundColor(LinearRgba::new(1., 1., 1., 0.6).into()),
             BorderRadius::all(Px(8.)),
