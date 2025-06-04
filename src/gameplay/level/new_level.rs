@@ -2,6 +2,7 @@ use std::time::Duration;
 
 use avian3d::prelude::{CollisionLayers, RigidBody};
 use bevy::prelude::*;
+use bevy_tweening::{Animator, Tween, lens::TransformPositionLens};
 
 use crate::{
     gameplay::{
@@ -24,7 +25,10 @@ pub(super) fn plugin(app: &mut App) {
     )
     .add_systems(
         Update,
-        (update_wall_transform, update_sphere_transform)
+        (
+            // update_wall_transform,
+            update_sphere_transform
+        )
             .in_set(GameSet::Update)
             .run_if(in_state(LevelState::NewLevel)),
     )
@@ -62,11 +66,25 @@ fn load_level(
 ) {
     let props = levels.get(level.0);
 
+    let tween = Tween::new(
+        EaseFunction::BounceOut,
+        Duration::from_secs(2),
+        TransformPositionLens {
+            start: Vec3 {
+                x: 0.,
+                y: 0.,
+                z: WALL_START_PLANE,
+            },
+            end: Vec3::ZERO,
+        },
+    );
+
     let root = commands
         .spawn((
             Walls,
             CollisionLayers::new(GameLayer::Default, GameLayer::Default),
             Transform::from_xyz(0., 0., WALL_START_PLANE),
+            Animator::new(tween),
             InheritedVisibility::VISIBLE,
             RigidBody::Static,
         ))
