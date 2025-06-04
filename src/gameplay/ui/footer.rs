@@ -78,7 +78,7 @@ pub fn quiver_node(assets: &AssetServer) -> impl Bundle {
             (Text::new("Arrows"), TextColor(GRAY_700.into())),
             (
                 UiQuiverCountText,
-                Text::new("5"),
+                Text::default(),
                 TextColor(Color::BLACK),
                 TextFont::from_font_size(40.),
             )

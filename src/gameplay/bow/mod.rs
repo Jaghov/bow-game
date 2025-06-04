@@ -4,7 +4,7 @@ use bevy::prelude::*;
 
 use crate::{
     asset_tracking::LoadResource,
-    gameplay::{ArrowSet, arrow::ArrowOf, cursor::CursorPosition},
+    gameplay::{ArrowSet, arrow::NockedOn, cursor::CursorPosition},
 };
 
 mod animation;
@@ -54,7 +54,7 @@ const STRENGTH_MULT: f32 = 60.;
 
 #[derive(Component, Reflect)]
 #[reflect(Component)]
-#[relationship_target(relationship = ArrowOf)]
+#[relationship_target(relationship = NockedOn)]
 pub struct BowArrow {
     #[relationship]
     arrow: Entity,

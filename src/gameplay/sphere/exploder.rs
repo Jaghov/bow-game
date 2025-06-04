@@ -1,33 +1,21 @@
 use std::{f32::consts::FRAC_PI_2, time::Duration};
 
-use avian3d::prelude::{Collider, Sensor, SpatialQuery, SpatialQueryFilter};
+use avian3d::prelude::*;
 use bevy::{
     color::palettes::css::{ORANGE, RED, YELLOW},
     prelude::*,
 };
 use bevy_trauma_shake::Shake;
 
-use crate::gameplay::{
-    GameSet, GameState,
-    sphere::{
-        BeginDespawning, DespawnStarted, KeepOnCollideWith, Sphere, SphereAssets, SphereType,
-        sphere_defaults,
+use crate::{
+    gameplay::{
+        GameSet, GameState,
+        sphere::{DestroySphere, Sphere},
     },
+    third_party::avian3d::GameLayer,
 };
 
 const EXPLOSION_RADIUS: f32 = 8.;
-
-pub fn exploder(assets: &SphereAssets) -> impl Bundle {
-    (
-        sphere_defaults(assets),
-        (
-            Exploder,
-            SphereType::Exploder,
-            Sensor,
-            MeshMaterial3d(assets.exploder.clone()),
-        ),
-    )
-}
 
 pub(super) fn plugin(app: &mut App) {
     app.init_resource::<ExploderAssets>();
@@ -60,15 +48,33 @@ impl FromWorld for ExploderAssets {
 }
 
 #[derive(Component)]
-#[require(KeepOnCollideWith = KeepOnCollideWith::Sphere)]
 pub struct Exploder;
 
 fn insert_exploder(trigger: Trigger<OnAdd, Exploder>, mut commands: Commands) {
     info!("observed new normal insert");
+
     commands
-        .entity(trigger.target())
-        .observe(start_despawn)
-        .observe(light_fuse);
+        .spawn((
+            CollisionLayers::new(GameLayer::Arrow, GameLayer::Arrow),
+            Collider::sphere(1.),
+            Sensor,
+            CollisionEventsEnabled,
+            ChildOf(trigger.target()),
+        ))
+        .observe(super::debug_collision)
+        .observe(light_fuse_on_collision);
+
+    commands
+        .spawn((
+            CollisionLayers::new(GameLayer::Sphere, GameLayer::Sphere),
+            Collider::sphere(1.),
+            CollisionEventsEnabled,
+            ChildOf(trigger.target()),
+        ))
+        .observe(super::debug_collision)
+        .observe(light_fuse_on_collision);
+
+    commands.entity(trigger.target()).observe(light_fuse);
 }
 
 #[derive(Component, Debug)]
@@ -100,18 +106,30 @@ fn indicator(assets: &ExploderAssets, materials: &mut Assets<StandardMaterial>) 
     )
 }
 
-fn start_despawn(trigger: Trigger<BeginDespawning>, mut commands: Commands) {
-    commands.trigger_targets(LightFuse(3), trigger.target());
+fn light_fuse_on_collision(
+    trigger: Trigger<OnCollisionStart>,
+    mut commands: Commands,
+    children: Query<&ChildOf>,
+) {
+    commands.trigger_targets(
+        LightFuse(3),
+        children.get(trigger.target()).unwrap().parent(),
+    );
 }
 
 fn light_fuse(
     trigger: Trigger<LightFuse>,
     mut commands: Commands,
-    exploders: Query<Entity, With<Exploder>>,
+    mut exploders: Query<(Entity, Option<&mut Fuse>), With<Exploder>>,
     assets: Res<ExploderAssets>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    let exploder = exploders.get(trigger.target()).unwrap();
+    let (exploder, current_fuse) = exploders.get_mut(trigger.target()).unwrap();
+
+    if let Some(mut lit_fuse) = current_fuse {
+        lit_fuse.countdown = 0;
+        return;
+    }
 
     let indicator = commands.spawn(indicator(&assets, &mut materials)).id();
 
@@ -123,9 +141,9 @@ fn light_fuse(
 
 fn tick_explosion(mut fuses: Query<&mut Fuse>, time: Res<Time>) {
     for mut fuse in &mut fuses {
-        info!("fuse: {:?}", fuse);
         fuse.timer.tick(time.delta());
         if fuse.timer.just_finished() {
+            info!("fuse: {:?}", fuse.countdown);
             fuse.countdown = fuse.countdown.saturating_sub(1);
         }
     }
@@ -155,6 +173,7 @@ fn explode(
     spheres: Query<Has<Exploder>, With<Sphere>>,
 
     mut shake: Single<&mut Shake>,
+    colliders: Query<&ColliderOf>,
     spatial_query: SpatialQuery,
 ) {
     let mut should_shake = false;
@@ -168,24 +187,24 @@ fn explode(
         let shape = Collider::sphere(EXPLOSION_RADIUS);
         let origin = transform.translation;
         let rotation = Quat::default();
-        let filter = SpatialQueryFilter::default();
+        let filter = SpatialQueryFilter::from_mask(GameLayer::Sphere);
         let hits = spatial_query.shape_intersections(&shape, origin, rotation, &filter);
 
         for hit in hits {
-            if hit == entity {
-                commands.entity(entity).try_despawn();
+            let body = colliders.get(hit).unwrap().body;
+            if body == entity {
+                commands.entity(entity).trigger(DestroySphere);
                 continue;
             }
-            let Ok(is_exploder) = spheres.get(hit) else {
+            let Ok(is_exploder) = spheres.get(body) else {
                 continue;
             };
 
-            commands.entity(hit).try_insert(DespawnStarted);
             // if it's an exploder, it'll explode in 1 second. otherwise, lfg
             if is_exploder {
-                commands.trigger_targets(LightFuse(1), hit);
+                commands.trigger_targets(LightFuse(1), body);
             } else {
-                commands.entity(hit).trigger(BeginDespawning);
+                commands.entity(body).trigger(DestroySphere);
             }
         }
         should_shake = true;

@@ -1,17 +1,17 @@
 use avian3d::prelude::{Collider, RigidBody};
 use bevy::{color::palettes::tailwind::GREEN_400, prelude::*};
 
-use crate::{rand, world::GAME_PLANE};
+use crate::{
+    rand,
+    world::{BACKDROP_OFFSET, BLOCK_LEN, GAME_PLANE},
+};
 
 pub fn plugin(app: &mut App) {
     app.add_systems(Startup, spawn_backdrop);
     //.add_systems(Update, update_backdrop_z.in_set(GameSet::Update));
 }
 
-pub const BACKDROP_OFFSET: f32 = 5.;
 const PERIOD: f32 = 0.3;
-
-pub const BLOCK_LEN: f32 = 6.;
 
 #[derive(Component)]
 struct ZState {
@@ -72,7 +72,5 @@ fn update_backdrop_z(mut blocks: Query<(&mut Transform, &mut ZState)>, time: Res
             trns.translation.z -= TRVL * time.delta_secs()
             //backward
         }
-
-        //todo
     }
 }

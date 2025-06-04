@@ -1,23 +1,9 @@
 use avian3d::prelude::*;
 use bevy::prelude::*;
 
-use crate::gameplay::sphere::{
-    KeepOnCollideWith, SphereAssets, SphereType, despawn::BeginDespawning, sphere_defaults,
-};
+use crate::third_party::avian3d::GameLayer;
 
-pub fn normal(assets: &SphereAssets) -> impl Bundle {
-    (
-        sphere_defaults(assets),
-        (
-            Normal,
-            SphereType::Normal,
-            Sensor,
-            MeshMaterial3d(assets.normal.clone()),
-        ),
-    )
-}
 #[derive(Component)]
-#[require(KeepOnCollideWith = KeepOnCollideWith::NeverKeep)]
 pub struct Normal;
 
 pub(super) fn plugin(app: &mut App) {
@@ -25,14 +11,24 @@ pub(super) fn plugin(app: &mut App) {
 }
 fn insert_normal(trigger: Trigger<OnAdd, Normal>, mut commands: Commands) {
     info!("observed new normal insert");
-    commands.entity(trigger.target()).observe(start_despawn);
-}
 
-fn start_despawn(
-    trigger: Trigger<BeginDespawning>,
-    mut commands: Commands,
-    normals: Query<Entity, With<Normal>>,
-) {
-    let normal = normals.get(trigger.target()).unwrap();
-    commands.entity(normal).try_despawn();
+    commands
+        .spawn((
+            CollisionLayers::new(GameLayer::Arrow, GameLayer::Arrow),
+            Collider::sphere(1.),
+            Sensor,
+            CollisionEventsEnabled,
+            ChildOf(trigger.target()),
+        ))
+        .observe(super::debug_collision)
+        .observe(super::despawn_on_arrow);
+
+    commands
+        .spawn((
+            CollisionLayers::new(GameLayer::Sphere, GameLayer::Sphere),
+            Collider::sphere(1.),
+            CollisionEventsEnabled,
+            ChildOf(trigger.target()),
+        ))
+        .observe(super::debug_collision);
 }

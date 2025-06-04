@@ -13,7 +13,7 @@ use crate::{
             TimeFreeze,
         },
     },
-    world::backdrop::{BACKDROP_OFFSET, BLOCK_LEN},
+    world::{BACKDROP_OFFSET, BLOCK_LEN},
 };
 
 pub(super) fn plugin(app: &mut App) {
@@ -29,7 +29,6 @@ pub(super) fn plugin(app: &mut App) {
         )
         .add_systems(OnExit(Screen::Transition), remove_transition_clock)
         .add_systems(Update, set_locations.run_if(in_state(Screen::Title)));
-    //todo
 }
 
 #[derive(Resource)]
@@ -148,8 +147,6 @@ fn spawn_items(
         mesh.clone(),
         MeshMaterial3d(sphere.exploder.clone()),
     ));
-
-    //todo
 }
 
 #[cfg_attr(feature = "hot", bevy_simple_subsecond_system::prelude::hot)]
@@ -216,6 +213,4 @@ fn set_locations(
         ))
         .with_scale(Vec3::splat(0.3));
     }
-
-    //todod
 }

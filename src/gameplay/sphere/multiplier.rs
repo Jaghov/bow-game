@@ -1,45 +1,38 @@
 use avian3d::prelude::*;
 use bevy::prelude::*;
 
-use crate::gameplay::sphere::{
-    KeepOnCollideWith, SphereAssets, SphereType, despawn::BeginDespawning, sphere_defaults,
-};
-
-pub fn multiplier(assets: &SphereAssets) -> impl Bundle {
-    (
-        sphere_defaults(assets),
-        (
-            Multiplier,
-            SphereType::Multiplier,
-            Sensor,
-            MeshMaterial3d(assets.multiplier.clone()),
-        ),
-    )
-}
+use crate::third_party::avian3d::GameLayer;
 
 pub(super) fn plugin(app: &mut App) {
     app.add_observer(insert_multiplier);
 }
 
 #[derive(Component)]
-#[require(KeepOnCollideWith = KeepOnCollideWith::NeverKeep)]
 pub struct Multiplier;
 
 fn insert_multiplier(trigger: Trigger<OnAdd, Multiplier>, mut commands: Commands) {
-    info!("observed new normal insert");
-    commands
-        .entity(trigger.target())
-        .observe(start_despawn)
-        .observe(on_hit);
-}
+    info!("observed new multiplier insert");
 
-fn start_despawn(
-    trigger: Trigger<BeginDespawning>,
-    mut commands: Commands,
-    multipliers: Query<Entity, With<Multiplier>>,
-) {
-    let multiplier = multipliers.get(trigger.target()).unwrap();
-    commands.entity(multiplier).try_despawn();
+    commands
+        .spawn((
+            CollisionLayers::new(GameLayer::Arrow, GameLayer::Arrow),
+            Collider::sphere(1.),
+            Sensor,
+            CollisionEventsEnabled,
+            ChildOf(trigger.target()),
+        ))
+        .observe(super::debug_collision)
+        .observe(super::despawn_on_arrow)
+        .observe(multiply_collider_on_hit);
+
+    commands
+        .spawn((
+            CollisionLayers::new(GameLayer::Sphere, GameLayer::Sphere),
+            Collider::sphere(1.),
+            CollisionEventsEnabled,
+            ChildOf(trigger.target()),
+        ))
+        .observe(super::debug_collision);
 }
 
 /// An event that tells an observer to multiply with an array
@@ -51,13 +44,21 @@ pub struct ShouldMultiply {
     pub rot_offset: Vec<f32>,
 }
 
-fn on_hit(
+#[derive(Component)]
+struct AlreadyHit;
+
+fn multiply_collider_on_hit(
     trigger: Trigger<OnCollisionStart>,
-    transforms: Query<&Transform>,
+    already_hit: Query<&AlreadyHit>,
+    transforms: Query<&GlobalTransform>,
     mut commands: Commands,
+    colliders: Query<&ColliderOf>,
     collisions: Collisions,
 ) {
     info!("In multiplier on hit");
+    if already_hit.get(trigger.target()).is_ok() {
+        return;
+    }
 
     // if point to use is true, use local point 2.
     // else, use 1.
@@ -80,9 +81,9 @@ fn on_hit(
 
     commands.trigger_targets(
         ShouldMultiply {
-            local_point: hit_trns.translation + local_point,
+            local_point: hit_trns.translation() + local_point,
             rot_offset: vec![35.0_f32.to_radians(), -35.0_f32.to_radians()],
         },
-        trigger.collider,
+        colliders.get(trigger.collider).unwrap().body,
     );
 }

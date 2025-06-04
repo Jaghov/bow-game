@@ -1,46 +1,86 @@
-use bevy::prelude::*;
+use bevy::{platform::collections::HashMap, prelude::*};
 
-use crate::Screen;
+use crate::{
+    Screen,
+    gameplay::level::{sphere::SpawnSphere, wall::WallBuilder},
+};
 
-#[cfg(feature = "dev")]
-mod debug;
+#[macro_use]
+mod wall;
+#[macro_use]
+mod sphere;
+mod zero;
 
-mod infinite;
-mod one;
-mod three;
-mod two;
-
-/// I'm so sorry levels start at one
-#[derive(SubStates, Clone, PartialEq, Eq, Hash, Debug, Default, Reflect)]
-#[source(Screen = Screen::Gameplay)]
-#[states(scoped_entities)]
-pub enum LevelState {
-    #[cfg(feature = "dev")]
-    #[default]
-    Debug,
-    #[cfg_attr(not(feature = "dev"), default)]
-    One,
-    Two,
-    Three,
-    Infinite,
-}
+mod new_level;
 
 pub(super) fn plugin(app: &mut App) {
-    app.init_resource::<Level>().add_sub_state::<LevelState>();
-
-    app.add_plugins((one::plugin, two::plugin, three::plugin, infinite::plugin));
-
-    #[cfg(feature = "dev")]
-    app.add_plugins(debug::plugin);
+    app.add_plugins((zero::plugin, new_level::plugin));
+    app.add_sub_state::<LevelState>()
+        .init_resource::<Level>()
+        .init_resource::<Levels>();
+    app.add_systems(Startup, setup_wall_material);
 }
 
 #[derive(Resource)]
-#[cfg_attr(feature = "dev", derive(Default))]
+struct WallMaterial(Handle<StandardMaterial>);
+
+fn setup_wall_material(mut commands: Commands, mut materials: ResMut<Assets<StandardMaterial>>) {
+    let material = materials.add(StandardMaterial {
+        base_color: Color::WHITE,
+        ..default()
+    });
+
+    commands.insert_resource(WallMaterial(material));
+}
+
+#[derive(SubStates, Debug, Hash, PartialEq, Eq, Clone, Copy, Default, Reflect)]
+#[source(Screen = Screen::Gameplay)]
+#[states(scoped_entities)]
+pub enum LevelState {
+    #[default]
+    NewLevel,
+    Playing,
+    NextLevel,
+}
+
+#[derive(Resource, Default)]
 pub struct Level(pub usize);
 
-#[cfg(not(feature = "dev"))]
-impl Default for Level {
-    fn default() -> Self {
-        Level(1)
+pub struct LevelProps {
+    arrow_count: Option<u32>,
+    walls: Vec<WallBuilder>,
+    spheres: Vec<SpawnSphere>,
+}
+
+impl LevelProps {
+    pub fn new(
+        arrow_count: Option<u32>,
+        walls: Vec<WallBuilder>,
+        spheres: Vec<SpawnSphere>,
+    ) -> Self {
+        Self {
+            arrow_count,
+            walls,
+            spheres,
+        }
+    }
+}
+
+#[derive(Resource, Default)]
+pub struct Levels {
+    levels: HashMap<usize, LevelProps>,
+}
+
+impl Levels {
+    pub fn insert(&mut self, level: usize, props: LevelProps) {
+        self.levels.insert(level, props);
+    }
+    /// will get or insert a new random level based on the value
+    pub fn get(&mut self, level: usize) -> &LevelProps {
+        if let Some(level) = self.levels.get(&level) {
+            return level;
+        }
+
+        todo!("generate dynamic random levels")
     }
 }

@@ -1,17 +1,13 @@
 use bevy::prelude::*;
 
 use crate::{
-    Screen,
-    camera::WorldCamera,
-    gameplay::GAMEPLAY_CAMERA_OFFSET,
-    transition::{TRANSITION_DURATION, TransitionTimer},
+    Screen, camera::WorldCamera, gameplay::GAMEPLAY_CAMERA_OFFSET, transition::TransitionTimer,
 };
 
 pub(super) fn plugin(app: &mut App) {
     app.add_systems(OnEnter(Screen::Transition), start_tracking_camera)
         .add_systems(OnExit(Screen::Transition), stop_tracking_camera)
         .add_systems(Update, move_camera.run_if(in_state(Screen::Transition)));
-    //todo
 }
 
 #[derive(Resource)]
@@ -35,13 +31,10 @@ fn move_camera(
     mut camera: Query<&mut Transform, With<WorldCamera>>,
     tracking: Res<CameraTracking>,
 ) {
-    let total_duration = TRANSITION_DURATION;
-    let elapsed = time.0.elapsed();
-
     let mut camera_transform = camera.single_mut().unwrap();
 
     // Calculate progress (0.0 to 1.0)
-    let progress = (elapsed.as_secs_f32() / total_duration.as_secs_f32()).clamp(0.0, 1.0);
+    let progress = time.0.fraction();
 
     // Apply ease-in-out curve (smoothstep)
     let eased_progress = progress * progress * (3.0 - 2.0 * progress);

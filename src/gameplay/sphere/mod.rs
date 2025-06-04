@@ -1,6 +1,4 @@
-use avian3d::prelude::{
-    Collider, CollidingEntities, CollisionEventsEnabled, GravityScale, LockedAxes, RigidBody,
-};
+use avian3d::prelude::*;
 use bevy::{
     color::palettes::{
         css::{GREEN, ORANGE, YELLOW},
@@ -21,16 +19,15 @@ pub use multiplier::*;
 mod timefreeze;
 pub use timefreeze::*;
 
-mod despawn;
-pub use despawn::*;
-
-use crate::{asset_tracking::LoadResource, world::GAME_PLANE};
+use crate::{
+    asset_tracking::LoadResource,
+    gameplay::arrow::{Arrow, NockedOn},
+};
 
 pub(super) fn plugin(app: &mut App) {
     app.add_plugins((
         normal::plugin,
         multiplier::plugin,
-        despawn::plugin,
         timefreeze::plugin,
         exploder::plugin,
     ));
@@ -38,7 +35,8 @@ pub(super) fn plugin(app: &mut App) {
     app.register_type::<SphereAssets>()
         .load_resource::<SphereAssets>();
 
-    app.add_observer(spawn_sphere);
+    app.add_observer(spawn_sphere)
+        .add_observer(add_destroyable_sphere);
 }
 
 #[derive(Resource, Asset, Reflect, Clone)]
@@ -131,16 +129,9 @@ impl FromWorld for SphereAssets {
         }
     }
 }
-#[derive(Component, Default)]
-enum KeepOnCollideWith {
-    Arrow,
-    Sphere,
-    Both,
-    #[default]
-    NeverKeep,
-}
 
-#[derive(Component)]
+#[derive(Component, Clone, Copy)]
+#[require(Sphere)]
 #[allow(dead_code)]
 pub enum SphereType {
     Normal,
@@ -151,76 +142,87 @@ pub enum SphereType {
     Gravity,
     Absorber,
 }
-#[derive(Component)]
+#[derive(Component, Default)]
+#[require(RigidBody = RigidBody::Dynamic)]
+#[require(LockedAxes = LockedAxes::new().lock_translation_z())]
 pub struct Sphere;
 
 #[derive(Component)]
-#[require(KeepOnCollideWith = KeepOnCollideWith::Both)]
 pub struct Absorber;
 
 #[derive(Component)]
-#[require(KeepOnCollideWith = KeepOnCollideWith::Both)]
 pub struct Bouncy;
 
 #[derive(Component)]
-#[require(KeepOnCollideWith = KeepOnCollideWith::Sphere)]
 pub struct GravitySphere;
 
-#[derive(Event)]
-pub struct SpawnSphere {
-    location: Vec2,
-    sphere_type: SphereType,
-}
-impl SpawnSphere {
-    pub fn new(location: Vec2, sphere_type: SphereType) -> Self {
-        Self {
-            location,
-            sphere_type,
+fn spawn_sphere(
+    trigger: Trigger<OnAdd, SphereType>,
+    mut commands: Commands,
+    spheres: Query<&SphereType>,
+    assets: Res<SphereAssets>,
+) {
+    let sphere_type = spheres.get(trigger.target()).unwrap();
+    let mut ec = commands.entity(trigger.target());
+    ec.insert(Mesh3d(assets.mesh.clone()));
+    match sphere_type {
+        SphereType::Normal => {
+            ec.insert((Normal, MeshMaterial3d(assets.normal.clone())));
+        }
+        SphereType::Multiplier => {
+            ec.insert((Multiplier, MeshMaterial3d(assets.multiplier.clone())));
+        }
+        SphereType::TimeFreeze => {
+            ec.insert((TimeFreeze, MeshMaterial3d(assets.time_freeze.clone())));
+        }
+        SphereType::Bouncy => {
+            ec.insert((Bouncy, MeshMaterial3d(assets.bouncy.clone())));
+        }
+        SphereType::Gravity => {
+            ec.insert((GravitySphere, MeshMaterial3d(assets.gravity.clone())));
+        }
+        SphereType::Absorber => {
+            ec.insert((Absorber, MeshMaterial3d(assets.absorber.clone())));
+        }
+        SphereType::Exploder => {
+            ec.insert((Exploder, MeshMaterial3d(assets.exploder.clone())));
         }
     }
 }
 
-fn sphere_defaults(assets: &SphereAssets) -> impl Bundle {
-    (
-        Sphere,
-        Mesh3d(assets.mesh.clone()),
-        Collider::sphere(1.),
-        LockedAxes::default().lock_translation_z(),
-        GravityScale(0.),
-        CollisionEventsEnabled,
-    )
+fn debug_collision(trigger: Trigger<OnCollisionStart>, arrows: Query<&Arrow>) {
+    let event = trigger.event();
+
+    info!(
+        "Collision event: was arrow? {}",
+        arrows.get(event.collider).is_ok()
+    );
 }
 
-fn spawn_sphere(trigger: Trigger<SpawnSphere>, mut commands: Commands, assets: Res<SphereAssets>) {
+fn despawn_on_arrow(
+    trigger: Trigger<OnCollisionStart>,
+    mut commands: Commands,
+    arrows: Query<&Arrow, Without<NockedOn>>,
+    colliders: Query<&ColliderOf>,
+) {
     let event = trigger.event();
-    let transform = Transform::from_xyz(event.location.x, event.location.y, GAME_PLANE);
+    if arrows.get(event.collider).is_err() {
+        return;
+    }
+    let parent = colliders.get(trigger.target()).unwrap().body;
 
-    let bundle = (
-        Sphere,
-        transform,
-        Mesh3d(assets.mesh.clone()),
-        Collider::sphere(1.),
-        RigidBody::Dynamic,
-        LockedAxes::default().lock_translation_z(),
-        GravityScale(0.),
-        CollidingEntities::default(),
-    );
+    commands.entity(parent).trigger(DestroySphere);
+}
 
-    match event.sphere_type {
-        SphereType::Normal => commands.spawn((normal(&assets), transform)),
-        SphereType::Multiplier => commands.spawn((multiplier(&assets), transform)),
-        SphereType::TimeFreeze => commands.spawn((timefreeze(&assets), transform)),
-        SphereType::Bouncy => {
-            commands.spawn((bundle, (Bouncy, MeshMaterial3d(assets.time_freeze.clone()))))
-        }
-        SphereType::Gravity => commands.spawn((
-            bundle,
-            (GravitySphere, MeshMaterial3d(assets.time_freeze.clone())),
-        )),
-        SphereType::Absorber => commands.spawn((
-            bundle,
-            (Absorber, MeshMaterial3d(assets.time_freeze.clone())),
-        )),
-        SphereType::Exploder => commands.spawn((exploder(&assets), transform)),
-    };
+fn add_destroyable_sphere(trigger: Trigger<OnAdd, Sphere>, mut commands: Commands) {
+    commands.entity(trigger.target()).observe(destroy_sphere);
+}
+
+#[derive(Event)]
+pub struct DestroySphere;
+// listener should ONLY be on the Sphere component.
+fn destroy_sphere(trigger: Trigger<DestroySphere>, mut commands: Commands) {
+    // this will make the thing break into a million pieces.
+    // TODO
+    commands.entity(trigger.target()).try_despawn();
 }
