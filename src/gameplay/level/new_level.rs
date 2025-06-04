@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use avian3d::prelude::RigidBody;
+use avian3d::prelude::{CollisionLayers, PhysicsLayer, RigidBody};
 use bevy::prelude::*;
 
 use crate::{
@@ -13,6 +13,7 @@ use crate::{
         },
         sphere::Sphere,
     },
+    third_party::avian3d::GameLayer,
     world::{GAME_PLANE, light::SetLightPosition},
 };
 
@@ -49,6 +50,7 @@ fn load_level(
     let root = commands
         .spawn((
             Walls,
+            CollisionLayers::new(GameLayer::Default, GameLayer::all_bits()),
             Transform::from_xyz(0., 0., WALL_START_PLANE),
             InheritedVisibility::VISIBLE,
             RigidBody::Static,

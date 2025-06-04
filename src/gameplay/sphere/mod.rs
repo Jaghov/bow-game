@@ -19,6 +19,9 @@ pub use multiplier::*;
 mod timefreeze;
 pub use timefreeze::*;
 
+mod bouncy;
+pub use bouncy::*;
+
 use crate::{
     asset_tracking::LoadResource,
     gameplay::arrow::{Arrow, NockedOn},
@@ -30,6 +33,7 @@ pub(super) fn plugin(app: &mut App) {
         multiplier::plugin,
         timefreeze::plugin,
         exploder::plugin,
+        bouncy::plugin,
     ));
 
     app.register_type::<SphereAssets>()
@@ -149,9 +153,6 @@ pub struct Sphere;
 
 #[derive(Component)]
 pub struct Absorber;
-
-#[derive(Component)]
-pub struct Bouncy;
 
 #[derive(Component)]
 pub struct GravitySphere;
