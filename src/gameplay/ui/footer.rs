@@ -7,7 +7,11 @@ pub struct Footer;
 
 pub fn footer(assets: &AssetServer) -> impl Bundle {
     (
-        Node::default(),
+        Node {
+            justify_content: JustifyContent::SpaceBetween,
+            margin: UiRect::all(Px(10.)),
+            ..default()
+        },
         Pickable::IGNORE,
         Footer,
         children![
