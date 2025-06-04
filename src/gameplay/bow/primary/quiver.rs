@@ -1,7 +1,10 @@
 use bevy::prelude::*;
 
+use crate::gameplay::ui::UiQuiverCountText;
+
 pub(super) fn plugin(app: &mut App) {
-    app.init_resource::<Quiver>();
+    app.init_resource::<Quiver>()
+        .add_systems(Update, update_ui_quiver_count);
     //
 }
 
@@ -29,4 +32,16 @@ impl Quiver {
             *num_arrows = num_arrows.saturating_sub(1);
         }
     }
+}
+
+fn update_ui_quiver_count(
+    quiver: Res<Quiver>,
+    mut text: Single<&mut Text, With<UiQuiverCountText>>,
+) {
+    let value = match quiver.arrow_count() {
+        Some(count) => count.to_string(),
+        None => "inf".to_string(),
+    };
+
+    text.0 = value;
 }

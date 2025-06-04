@@ -29,6 +29,9 @@ pub fn footer(assets: &AssetServer) -> impl Bundle {
     )
 }
 
+#[derive(Component)]
+pub struct UiQuiverCountText;
+
 pub fn quiver_node(assets: &AssetServer) -> impl Bundle {
     let quiver_image = (
         ImageNode::new(assets.load("images/quiver.png")),
@@ -49,6 +52,7 @@ pub fn quiver_node(assets: &AssetServer) -> impl Bundle {
         children![
             (Text::new("Arrows"), TextColor(GRAY_700.into())),
             (
+                UiQuiverCountText,
                 Text::new("5"),
                 TextColor(Color::BLACK),
                 TextFont::from_font_size(40.),
