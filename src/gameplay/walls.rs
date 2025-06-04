@@ -3,7 +3,7 @@ use bevy::prelude::*;
 
 use crate::{
     Screen,
-    world::{GAME_PLANE, backdrop::BLOCK_LEN},
+    world::{BLOCK_LEN, GAME_PLANE},
 };
 
 pub(super) fn plugin(app: &mut App) {

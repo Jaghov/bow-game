@@ -13,7 +13,7 @@ use crate::{
             TimeFreeze,
         },
     },
-    world::backdrop::{BACKDROP_OFFSET, BLOCK_LEN},
+    world::{BACKDROP_OFFSET, BLOCK_LEN},
 };
 
 pub(super) fn plugin(app: &mut App) {

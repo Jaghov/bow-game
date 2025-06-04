@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::world::backdrop::{BACKDROP_OFFSET, BLOCK_LEN};
+use crate::world::{BACKDROP_OFFSET, BLOCK_LEN};
 
 mod camera;
 mod items;
