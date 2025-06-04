@@ -5,8 +5,7 @@ use bevy::prelude::*;
 use crate::gameplay::GAMEPLAY_CAMERA_OFFSET;
 
 pub(super) fn plugin(app: &mut App) {
-    app.init_resource::<LightPositions>()
-        .add_systems(Startup, spawn_light)
+    app.add_systems(Startup, spawn_light)
         .add_observer(start_light_animation);
 
     app.add_systems(Update, move_light.run_if(resource_exists::<LightAnimation>));
@@ -15,7 +14,7 @@ pub(super) fn plugin(app: &mut App) {
 
 #[derive(Event)]
 pub struct SetLightPosition {
-    above: bool,
+    to: Transform,
     pub duration: Duration,
 }
 
@@ -23,13 +22,22 @@ pub struct SetLightPosition {
 impl SetLightPosition {
     pub fn to_above() -> Self {
         SetLightPosition {
-            above: true,
+            to: Transform::from_xyz(0., 50., GAMEPLAY_CAMERA_OFFSET + 5.)
+                .looking_at(Vec3::ZERO, Vec3::Y),
             duration: Duration::from_secs(2),
         }
     }
     pub fn to_below() -> Self {
         SetLightPosition {
-            above: false,
+            to: Transform::from_xyz(4., -50., GAMEPLAY_CAMERA_OFFSET + 5.)
+                .looking_at(Vec3::ZERO, Vec3::Y),
+            duration: Duration::from_secs(2),
+        }
+    }
+    pub fn to_center() -> Self {
+        SetLightPosition {
+            to: Transform::from_xyz(0., 0., GAMEPLAY_CAMERA_OFFSET + 5.)
+                .looking_at(Vec3::ZERO, Vec3::Y),
             duration: Duration::from_secs(2),
         }
     }
@@ -39,30 +47,14 @@ impl SetLightPosition {
     }
 }
 
-#[derive(Resource)]
-struct LightPositions {
-    above: Transform,
-    below: Transform,
-}
-impl Default for LightPositions {
-    fn default() -> Self {
-        Self {
-            above: Transform::from_xyz(0., 50., GAMEPLAY_CAMERA_OFFSET + 5.)
-                .looking_at(Vec3::ZERO, Vec3::Y),
-            below: Transform::from_xyz(4., -50., GAMEPLAY_CAMERA_OFFSET + 5.)
-                .looking_at(Vec3::ZERO, Vec3::Y),
-        }
-    }
-}
-
-fn spawn_light(mut commands: Commands, pos: Res<LightPositions>) {
+fn spawn_light(mut commands: Commands) {
     commands.spawn((
         DirectionalLight {
             illuminance: light_consts::lux::OVERCAST_DAY,
             shadows_enabled: true,
             ..default()
         },
-        pos.above,
+        SetLightPosition::to_above().to,
     ));
 }
 
@@ -76,7 +68,6 @@ pub struct LightAnimation {
 fn start_light_animation(
     trigger: Trigger<SetLightPosition>,
     mut commands: Commands,
-    positions: Res<LightPositions>,
     light: Query<&Transform, With<DirectionalLight>>,
 ) {
     info!("Starting light animation");
@@ -84,20 +75,11 @@ fn start_light_animation(
     let event = trigger.event();
     let light = light.single().unwrap();
     let timer = Timer::new(event.duration, TimerMode::Once);
-    let animation = if event.above {
-        LightAnimation {
-            start: *light,
-            end: positions.above,
-            timer,
-        }
-    } else {
-        LightAnimation {
-            start: *light,
-            end: positions.below,
-            timer,
-        }
-    };
-    commands.insert_resource(animation);
+    commands.insert_resource(LightAnimation {
+        start: *light,
+        end: event.to,
+        timer,
+    });
 }
 fn move_light(
     mut commands: Commands,
