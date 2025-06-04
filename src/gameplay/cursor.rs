@@ -1,10 +1,13 @@
 use std::f32::consts::PI;
 
-use bevy::prelude::*;
+use bevy::{color::palettes::css::RED, prelude::*};
 
 use crate::{
     camera::WorldCamera,
-    gameplay::{GameSet, arrow::NockedOn},
+    gameplay::{
+        GameSet,
+        bow::{Bow, BowArrow},
+    },
     world::GAME_PLANE,
 };
 
@@ -23,14 +26,17 @@ struct NockCursor;
 
 fn show_cursor_if_readying_arrow(
     mut commands: Commands,
-    arrows: Query<(), With<NockedOn>>,
+    bows: Query<&BowArrow>,
     pointer: Res<CursorPosition>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
-    mut cursor: Query<(Entity, &mut Transform), With<NockCursor>>,
+    mut cursor: Query<
+        (Entity, &mut Transform, &MeshMaterial3d<StandardMaterial>),
+        (With<NockCursor>, Without<Bow>),
+    >,
 ) {
-    if arrows.is_empty() {
-        for (cursor, _) in cursor {
+    if bows.is_empty() {
+        for (cursor, _, _) in cursor {
             commands.entity(cursor).despawn();
         }
         return;
@@ -40,18 +46,28 @@ fn show_cursor_if_readying_arrow(
         return;
     };
 
+    let Ok(bow) = bows.single() else {
+        return;
+    };
+
+    let max_color = Color::Srgba(RED);
+
+    let color = Color::WHITE.mix(&max_color, bow.strength());
+
     if cursor.is_empty() {
         commands.spawn((
             NockCursor,
             Transform::from_translation(point).with_rotation(Quat::from_rotation_y(PI)),
             Mesh3d(meshes.add(Extrusion::new(Annulus::new(0.2, 0.3), 0.2))),
-            MeshMaterial3d(materials.add(Color::WHITE)),
+            MeshMaterial3d(materials.add(color)),
         ));
         return;
     }
 
-    for (_, mut transform) in &mut cursor {
+    for (_, mut transform, material) in &mut cursor {
         transform.translation = point;
+        let material = materials.get_mut(&material.0).unwrap();
+        material.base_color = color;
     }
 }
 
