@@ -2,7 +2,10 @@ use bevy::prelude::{Val::*, *};
 
 use crate::Screen;
 
+mod sandbox;
+
 pub(super) fn plugin(app: &mut App) {
+    app.add_plugins(sandbox::plugin);
     app.add_systems(OnEnter(Screen::Gameplay), setup);
 
     //todo
