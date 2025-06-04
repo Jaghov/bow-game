@@ -1,8 +1,11 @@
 use avian3d::prelude::*;
 use bevy::prelude::*;
 
-use crate::gameplay::sphere::{
-    KeepOnCollideWith, SphereAssets, SphereType, despawn::BeginDespawning, sphere_defaults,
+use crate::{
+    gameplay::sphere::{
+        KeepOnCollideWith, SphereAssets, SphereType, despawn::BeginDespawning, sphere_defaults,
+    },
+    third_party::avian3d::GameLayer,
 };
 
 pub fn normal(assets: &SphereAssets) -> impl Bundle {
@@ -17,7 +20,6 @@ pub fn normal(assets: &SphereAssets) -> impl Bundle {
     )
 }
 #[derive(Component)]
-#[require(KeepOnCollideWith = KeepOnCollideWith::NeverKeep)]
 pub struct Normal;
 
 pub(super) fn plugin(app: &mut App) {
@@ -25,6 +27,7 @@ pub(super) fn plugin(app: &mut App) {
 }
 fn insert_normal(trigger: Trigger<OnAdd, Normal>, mut commands: Commands) {
     info!("observed new normal insert");
+
     commands.entity(trigger.target()).observe(start_despawn);
 }
 

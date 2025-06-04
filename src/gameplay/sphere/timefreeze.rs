@@ -2,7 +2,7 @@ use avian3d::prelude::*;
 use bevy::prelude::*;
 
 use crate::gameplay::{
-    arrow::{Arrow, Canceled, NockedIn},
+    arrow::{Arrow, Canceled, NockedOn},
     sphere::{
         KeepOnCollideWith, SphereAssets, SphereType, despawn::BeginDespawning, sphere_defaults,
     },

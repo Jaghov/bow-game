@@ -8,6 +8,7 @@ use crate::{
         GAMEPLAY_CAMERA_OFFSET, GameSet,
         bow::Quiver,
         level::{Level, LevelState, Levels, WallMaterial, new_level::timer::LevelSetupTimer},
+        sphere::Sphere,
     },
     world::{GAME_PLANE, light::SetLightPosition},
 };
@@ -26,7 +27,7 @@ pub(super) fn plugin(app: &mut App) {
     )
     .add_systems(
         Update,
-        (update_wall_transform)
+        (update_wall_transform, update_sphere_transform)
             .in_set(GameSet::Update)
             .run_if(in_state(LevelState::NewLevel)),
     );
@@ -80,7 +81,7 @@ fn load_level(
 
 fn update_wall_transform(
     time: Res<LevelSetupTimer>,
-    mut walls: Query<&mut Transform, With<Walls>>,
+    mut walls: Query<&mut Transform, (With<Walls>, Without<Sphere>)>,
 ) {
     let mut walls = walls
         .single_mut()
@@ -92,6 +93,19 @@ fn update_wall_transform(
     let wall_z = WALL_START_PLANE.lerp(GAME_PLANE, eased_progress);
 
     walls.translation.z = wall_z;
+}
+
+fn update_sphere_transform(
+    time: Res<LevelSetupTimer>,
+    mut spheres: Query<&mut Transform, (With<Sphere>, Without<Walls>)>,
+) {
+    let progress = time.sphere_progress();
+    let eased_progress = progress * progress * (3.0 - 2.0 * progress);
+
+    let sphere_z = SPHERE_START_PLANE.lerp(GAME_PLANE, eased_progress);
+    for mut sphere in &mut spheres {
+        sphere.translation.z = sphere_z;
+    }
 }
 
 fn update_light_position(

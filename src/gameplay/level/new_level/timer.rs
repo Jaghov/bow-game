@@ -20,7 +20,6 @@ pub(super) fn plugin(app: &mut App) {
 #[derive(Resource)]
 pub struct LevelSetupTimer(Timer);
 
-#[allow(dead_code)]
 impl LevelSetupTimer {
     /// 0.0 to 1.
     pub fn fraction(&self) -> f32 {
@@ -32,7 +31,15 @@ impl LevelSetupTimer {
         let wall_done_at = 0.7;
         (self.fraction() / wall_done_at).clamp(0.0, 1.0)
     }
+    pub fn sphere_progress(&self) -> f32 {
+        //light will start moving at 0.7
+        let light_start = 0.7;
 
+        let total_of_frac = 1. - light_start;
+        let amt = (self.fraction() - light_start).clamp(0., total_of_frac);
+
+        amt / total_of_frac
+    }
     pub fn elapsed(&self) -> Duration {
         self.0.elapsed()
     }

@@ -6,6 +6,7 @@ use bevy::prelude::*;
 use crate::{
     asset_tracking::LoadResource,
     gameplay::{GameSet, bow::BowArrow, sphere::ShouldMultiply},
+    third_party::avian3d::GameLayer,
     world::GAME_PLANE,
 };
 
@@ -66,6 +67,8 @@ pub struct NockedOn(Entity);
 #[require(GravityScale = GravityScale(0.))]
 #[require(LockedAxes = LockedAxes::new().lock_translation_z())]
 #[require(MaxFlightTime)]
+#[require(CollisionLayers =
+    CollisionLayers::new(GameLayer::Arrow, [GameLayer::Default, GameLayer::Arrow]))]
 pub struct Arrow {
     pub bounces: u8,
 }

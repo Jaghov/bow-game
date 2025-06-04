@@ -24,7 +24,9 @@ pub use timefreeze::*;
 mod despawn;
 pub use despawn::*;
 
-use crate::asset_tracking::LoadResource;
+mod arrow_layer;
+
+use crate::{asset_tracking::LoadResource, gameplay::sphere::arrow_layer::ArrowSensor};
 
 pub(super) fn plugin(app: &mut App) {
     app.add_plugins((
@@ -33,6 +35,7 @@ pub(super) fn plugin(app: &mut App) {
         despawn::plugin,
         timefreeze::plugin,
         exploder::plugin,
+        arrow_layer::plugin,
     ));
 
     app.register_type::<SphereAssets>()
@@ -188,18 +191,29 @@ fn spawn_sphere(
     let mut ec = commands.entity(trigger.target());
     ec.insert(Mesh3d(assets.mesh.clone()));
     match sphere_type {
-        SphereType::Normal => ec.insert((Normal, MeshMaterial3d(assets.normal.clone()))),
+        SphereType::Normal => {
+            ec.insert((Normal, MeshMaterial3d(assets.normal.clone())));
+            commands.trigger_targets(ArrowSensor, trigger.target());
+        }
         SphereType::Multiplier => {
-            ec.insert((Multiplier, MeshMaterial3d(assets.multiplier.clone())))
+            ec.insert((Multiplier, MeshMaterial3d(assets.multiplier.clone())));
         }
         SphereType::TimeFreeze => {
-            ec.insert((TimeFreeze, MeshMaterial3d(assets.time_freeze.clone())))
+            ec.insert((TimeFreeze, MeshMaterial3d(assets.time_freeze.clone())));
         }
-        SphereType::Bouncy => ec.insert((Bouncy, MeshMaterial3d(assets.bouncy.clone()))),
-        SphereType::Gravity => ec.insert((GravitySphere, MeshMaterial3d(assets.gravity.clone()))),
-        SphereType::Absorber => ec.insert((Absorber, MeshMaterial3d(assets.absorber.clone()))),
-        SphereType::Exploder => ec.insert((Exploder, MeshMaterial3d(assets.exploder.clone()))),
-    };
+        SphereType::Bouncy => {
+            ec.insert((Bouncy, MeshMaterial3d(assets.bouncy.clone())));
+        }
+        SphereType::Gravity => {
+            ec.insert((GravitySphere, MeshMaterial3d(assets.gravity.clone())));
+        }
+        SphereType::Absorber => {
+            ec.insert((Absorber, MeshMaterial3d(assets.absorber.clone())));
+        }
+        SphereType::Exploder => {
+            ec.insert((Exploder, MeshMaterial3d(assets.exploder.clone())));
+        }
+    }
 }
 
 // fn spawn_sphere(trigger: Trigger<SpawnSphere>, mut commands: Commands, assets: Res<SphereAssets>) {
