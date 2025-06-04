@@ -46,7 +46,7 @@ fn update_ball_count(
 ) {
     let count = balls.iter().count() as i32;
 
-    if state.timer.just_finished() {
+    if state.timer.finished() {
         if count > state.count {
             state.count += 1;
         } else if count < state.count {
