@@ -4,6 +4,9 @@ use crate::Screen;
 
 mod sandbox;
 
+mod footer;
+pub use footer::*;
+
 pub(super) fn plugin(app: &mut App) {
     app.add_plugins(sandbox::plugin);
     app.add_systems(OnEnter(Screen::Gameplay), setup);
@@ -11,7 +14,7 @@ pub(super) fn plugin(app: &mut App) {
     //todo
 }
 
-fn setup(mut commands: Commands) {
+fn setup(mut commands: Commands, assets: Res<AssetServer>) {
     commands.spawn((
         Name::new("UI Root"),
         StateScoped(Screen::Gameplay),
@@ -22,7 +25,7 @@ fn setup(mut commands: Commands) {
             flex_direction: FlexDirection::Column,
             ..default()
         },
-        children![header(), content(), footer()],
+        children![header(), content(), footer(&assets)],
         Pickable::IGNORE,
     ));
 }
@@ -36,9 +39,6 @@ pub struct Header;
 #[derive(Component)]
 pub struct Content;
 
-#[derive(Component)]
-pub struct Footer;
-
 fn header() -> impl Bundle {
     (Node::default(), Pickable::IGNORE, Header)
 }
@@ -51,7 +51,4 @@ fn content() -> impl Bundle {
         Pickable::IGNORE,
         Content,
     )
-}
-fn footer() -> impl Bundle {
-    (Node::default(), Pickable::IGNORE, Footer)
 }
