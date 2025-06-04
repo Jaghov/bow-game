@@ -1574,6 +1574,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "bevy_tweening"
+version = "0.13.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "09645a8e66e45f2869fdcbe89a23cd83d030ac647248917bf8512fa86b03ae7a"
+dependencies = [
+ "bevy",
+]
+
+[[package]]
 name = "bevy_ui"
 version = "0.16.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1819,6 +1828,7 @@ dependencies = [
  "bevy_mod_outline",
  "bevy_simple_subsecond_system",
  "bevy_trauma_shake",
+ "bevy_tweening",
  "bitflags 2.9.1",
  "egui_dock",
  "getrandom 0.3.3",

@@ -1,9 +1,9 @@
 use bevy::prelude::*;
-use bevy_easings::EasingsPlugin;
 use bevy_gltf_animation::GltfAnimationPlugin;
 use bevy_hanabi::HanabiPlugin;
 use bevy_mod_outline::OutlinePlugin;
 use bevy_trauma_shake::TraumaPlugin;
+use bevy_tweening::TweeningPlugin;
 
 pub mod avian3d;
 
@@ -15,7 +15,7 @@ pub fn plugin(app: &mut App) {
         GltfAnimationPlugin,
         HanabiPlugin,
         OutlinePlugin,
-        EasingsPlugin::default(),
+        TweeningPlugin,
     ));
     #[cfg(feature = "hot")]
     app.add_plugins(bevy_simple_subsecond_system::prelude::SimpleSubsecondPlugin::default());
