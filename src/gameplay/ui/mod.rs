@@ -7,8 +7,11 @@ mod sandbox;
 mod footer;
 pub use footer::*;
 
+mod header;
+pub use header::*;
+
 pub(super) fn plugin(app: &mut App) {
-    app.add_plugins(sandbox::plugin);
+    app.add_plugins((sandbox::plugin, header::plugin, footer::plugin));
     app.add_systems(OnEnter(Screen::Gameplay), setup);
 
     //todo
@@ -34,14 +37,8 @@ fn setup(mut commands: Commands, assets: Res<AssetServer>) {
 pub struct UiRoot;
 
 #[derive(Component)]
-pub struct Header;
-
-#[derive(Component)]
 pub struct Content;
 
-fn header() -> impl Bundle {
-    (Node::default(), Pickable::IGNORE, Header)
-}
 fn content() -> impl Bundle {
     (
         Node {

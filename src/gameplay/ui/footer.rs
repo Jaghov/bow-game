@@ -1,6 +1,27 @@
 use bevy::color::palettes::tailwind::GRAY_700;
 
+use crate::gameplay::bow::Quiver;
+
 use super::*;
+
+pub(super) fn plugin(app: &mut App) {
+    app.add_systems(
+        Update,
+        update_ui_quiver_count.run_if(resource_changed::<Quiver>),
+    );
+}
+
+fn update_ui_quiver_count(
+    quiver: Res<Quiver>,
+    mut text: Single<&mut Text, With<UiQuiverCountText>>,
+) {
+    let value = match quiver.arrow_count() {
+        Some(count) => count.to_string(),
+        None => "inf".to_string(),
+    };
+
+    text.0 = value;
+}
 
 #[derive(Component)]
 pub struct Footer;
