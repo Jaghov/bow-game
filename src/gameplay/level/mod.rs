@@ -1,20 +1,19 @@
-use avian3d::prelude::{ColliderConstructorHierarchy, RigidBody};
 use bevy::{platform::collections::HashMap, prelude::*};
 
-use crate::{Screen, gameplay::level::wall::WallBuilder, world::GAME_PLANE};
+use crate::{Screen, gameplay::level::wall::WallBuilder};
 
 #[macro_use]
 mod wall;
 mod zero;
 
+mod new_level;
+
 pub(super) fn plugin(app: &mut App) {
-    app.add_plugins((zero::plugin));
+    app.add_plugins((zero::plugin, new_level::plugin));
     app.add_sub_state::<LevelState>()
         .init_resource::<Level>()
         .init_resource::<Levels>();
-    app.add_systems(Startup, setup_wall_material)
-        .add_systems(OnEnter(LevelState::NewLevel), load_level);
-    //todo
+    app.add_systems(Startup, setup_wall_material);
 }
 
 #[derive(Resource)]
@@ -69,37 +68,4 @@ impl Levels {
 
         todo!("generate dynamic random levels")
     }
-}
-
-fn load_level(
-    mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    material: Res<WallMaterial>,
-    mut levels: ResMut<Levels>,
-    level: Res<Level>,
-) {
-    let props = levels.get(level.0);
-
-    let root = commands
-        .spawn((
-            Transform::from_xyz(0., 0., GAME_PLANE),
-            InheritedVisibility::VISIBLE,
-            RigidBody::Static,
-        ))
-        .id();
-
-    for wall in props.walls.iter() {
-        let collider = wall.collider.clone();
-        let mesh = meshes.add(wall.mesh);
-        let material = material.0.clone();
-        commands.spawn((
-            Mesh3d(mesh),
-            collider,
-            MeshMaterial3d(material),
-            wall.transform,
-            ChildOf(root),
-        ));
-    }
-
-    //todo
 }

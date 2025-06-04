@@ -1,6 +1,7 @@
 use bevy::{
     color::palettes::tailwind::SKY_300,
     core_pipeline::{bloom::Bloom, tonemapping::Tonemapping},
+    pbr::ShadowFilteringMethod,
     prelude::*,
     render::view::RenderLayers,
 };
@@ -38,6 +39,7 @@ fn spawn_world_camera(mut commands: Commands) {
             fov: 45.0_f32.to_radians(),
             ..default()
         }),
+        ShadowFilteringMethod::Temporal,
         RenderLayers::from(RenderLayer::DEFAULT | RenderLayer::PARTICLES | RenderLayer::GIZMO3),
         Bloom::NATURAL,
     ));

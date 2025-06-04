@@ -12,17 +12,19 @@ pub mod camera;
 
 pub(super) fn plugin(app: &mut App) {
     app.add_plugins(camera::plugin);
-    app.add_systems(OnEnter(Screen::Transition), start_transition_timer)
-        .add_systems(OnExit(Screen::Transition), remove_duration_timer)
-        .add_systems(
-            PreUpdate,
-            tick_duration_timer.run_if(in_state(Screen::Transition)),
-        )
-        .add_systems(Update, move_light.run_if(in_state(Screen::Transition)))
-        .add_systems(
-            PostUpdate,
-            start_gameplay.run_if(in_state(Screen::Transition)),
-        );
+    app.add_systems(
+        OnEnter(Screen::Transition),
+        (start_transition_timer, move_light),
+    )
+    .add_systems(OnExit(Screen::Transition), remove_duration_timer)
+    .add_systems(
+        PreUpdate,
+        tick_duration_timer.run_if(in_state(Screen::Transition)),
+    )
+    .add_systems(
+        PostUpdate,
+        start_gameplay.run_if(in_state(Screen::Transition)),
+    );
     //todo
 }
 
@@ -49,10 +51,6 @@ fn start_gameplay(timer: Res<TransitionTimer>, mut screen: ResMut<NextState<Scre
     screen.set(Screen::Gameplay);
 }
 
-fn move_light(mut commands: Commands, timer: Res<TransitionTimer>) {
-    if !timer.0.just_finished() {
-        return;
-    }
-    info!("moving light up");
-    commands.trigger(SetLightPosition::to_above().with_duration(Duration::from_millis(700)));
+fn move_light(mut commands: Commands) {
+    commands.trigger(SetLightPosition::to_center().with_duration(Duration::from_millis(700)));
 }
