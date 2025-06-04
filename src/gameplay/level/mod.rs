@@ -9,12 +9,20 @@ use crate::{
 mod wall;
 #[macro_use]
 mod sphere;
+mod new_level;
+mod next_level;
+mod restart;
+mod timer;
 mod zero;
 
-mod new_level;
-
 pub(super) fn plugin(app: &mut App) {
-    app.add_plugins((zero::plugin, new_level::plugin));
+    app.add_plugins((
+        zero::plugin,
+        new_level::plugin,
+        next_level::plugin,
+        restart::plugin,
+        timer::plugin,
+    ));
     app.add_sub_state::<LevelState>()
         .init_resource::<Level>()
         .init_resource::<Levels>();

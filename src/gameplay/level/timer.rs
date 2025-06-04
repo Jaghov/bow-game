@@ -10,10 +10,6 @@ pub(super) fn plugin(app: &mut App) {
             tick_timer
                 .in_set(GameSet::TickTimers)
                 .run_if(in_state(LevelState::NewLevel)),
-        )
-        .add_systems(
-            PostUpdate,
-            update_level_state.run_if(in_state(LevelState::NewLevel)),
         );
 }
 
@@ -40,6 +36,9 @@ impl LevelSetupTimer {
 
         amt / total_of_frac
     }
+    pub fn finished(&self) -> bool {
+        self.0.finished()
+    }
 }
 
 impl Default for LevelSetupTimer {
@@ -53,16 +52,4 @@ fn init_timer(mut commands: Commands) {
 }
 fn tick_timer(mut timer: ResMut<LevelSetupTimer>, time: Res<Time>) {
     timer.0.tick(time.delta());
-}
-
-fn update_level_state(
-    mut commands: Commands,
-    timer: Res<LevelSetupTimer>,
-    mut level_state: ResMut<NextState<LevelState>>,
-) {
-    if !timer.0.finished() {
-        return;
-    }
-    commands.remove_resource::<LevelSetupTimer>();
-    level_state.set(LevelState::Playing);
 }

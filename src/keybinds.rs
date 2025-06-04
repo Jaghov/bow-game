@@ -15,6 +15,8 @@ pub struct Keybinds {
     pub key_rotate_left: KeyCode,
     pub key_rotate_right: KeyCode,
 
+    pub restart: KeyCode,
+
     #[cfg(feature = "dev")]
     pub debug_toggle: KeyCode,
     #[cfg(feature = "dev")]
@@ -30,6 +32,9 @@ impl Keybinds {
             key_right: KeyCode::KeyL,
             key_rotate_left: KeyCode::KeyU,
             key_rotate_right: KeyCode::KeyO,
+
+            restart: KeyCode::KeyU,
+
             #[cfg(feature = "dev")]
             debug_toggle: KeyCode::KeyY,
             #[cfg(feature = "dev")]
@@ -47,6 +52,9 @@ impl Default for Keybinds {
             key_right: KeyCode::KeyD,
             key_rotate_left: KeyCode::KeyQ,
             key_rotate_right: KeyCode::KeyE,
+
+            restart: KeyCode::KeyR,
+
             #[cfg(feature = "dev")]
             debug_toggle: KeyCode::KeyF,
             #[cfg(feature = "dev")]

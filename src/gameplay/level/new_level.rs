@@ -7,7 +7,7 @@ use crate::{
     gameplay::{
         GAMEPLAY_CAMERA_OFFSET, GameSet,
         bow::Quiver,
-        level::{Level, LevelState, Levels, WallMaterial, new_level::timer::LevelSetupTimer},
+        level::{Level, LevelState, Levels, WallMaterial, timer::LevelSetupTimer},
         sphere::Sphere,
     },
     world::{GAME_PLANE, light::SetLightPosition},
@@ -16,11 +16,7 @@ use crate::{
 const WALL_START_PLANE: f32 = GAMEPLAY_CAMERA_OFFSET + 20.;
 const SPHERE_START_PLANE: f32 = GAME_PLANE - 20.;
 
-mod timer;
-
 pub(super) fn plugin(app: &mut App) {
-    app.add_plugins(timer::plugin);
-
     app.add_systems(
         OnEnter(LevelState::NewLevel),
         (load_level, set_light_position).chain(),
@@ -30,6 +26,10 @@ pub(super) fn plugin(app: &mut App) {
         (update_wall_transform, update_sphere_transform)
             .in_set(GameSet::Update)
             .run_if(in_state(LevelState::NewLevel)),
+    )
+    .add_systems(
+        PostUpdate,
+        update_level_state.run_if(in_state(LevelState::NewLevel)),
     );
 }
 
@@ -108,4 +108,16 @@ fn update_sphere_transform(
 
 fn set_light_position(mut commands: Commands) {
     commands.trigger(SetLightPosition::to_above().with_duration(Duration::from_millis(700)));
+}
+
+fn update_level_state(
+    mut commands: Commands,
+    timer: Res<LevelSetupTimer>,
+    mut level_state: ResMut<NextState<LevelState>>,
+) {
+    if !timer.finished() {
+        return;
+    }
+    commands.remove_resource::<LevelSetupTimer>();
+    level_state.set(LevelState::Playing);
 }
