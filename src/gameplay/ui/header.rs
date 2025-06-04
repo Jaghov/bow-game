@@ -105,7 +105,6 @@ pub fn header() -> impl Bundle {
                 Node {
                     display: Display::Flex,
                     flex_grow: 1.,
-                    //align_items: AlignItems::Center,
                     justify_content: JustifyContent::FlexEnd,
                     ..default()
                 },
@@ -154,7 +153,6 @@ fn ball_count() -> impl Bundle {
             Px(4.),
             Px(4.),
         ),
-        //BorderColor(Color::BLACK),
         BorderRadius::all(Px(12.)),
         children![ball_count_text],
     )

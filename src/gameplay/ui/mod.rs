@@ -2,8 +2,6 @@ use bevy::prelude::{Val::*, *};
 
 use crate::Screen;
 
-mod sandbox;
-
 mod footer;
 pub use footer::*;
 
@@ -11,7 +9,7 @@ mod header;
 pub use header::*;
 
 pub(super) fn plugin(app: &mut App) {
-    app.add_plugins((sandbox::plugin, header::plugin, footer::plugin));
+    app.add_plugins((header::plugin, footer::plugin));
     app.add_systems(OnEnter(Screen::Gameplay), setup);
 
     //todo
