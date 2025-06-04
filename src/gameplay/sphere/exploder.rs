@@ -10,24 +10,12 @@ use bevy_trauma_shake::Shake;
 use crate::{
     gameplay::{
         GameSet, GameState,
-        sphere::{KeepOnCollideWith, Sphere, SphereAssets, SphereType, sphere_defaults},
+        sphere::{DestroySphere, Sphere},
     },
     third_party::avian3d::GameLayer,
 };
 
 const EXPLOSION_RADIUS: f32 = 8.;
-
-pub fn exploder(assets: &SphereAssets) -> impl Bundle {
-    (
-        sphere_defaults(assets),
-        (
-            Exploder,
-            SphereType::Exploder,
-            Sensor,
-            MeshMaterial3d(assets.exploder.clone()),
-        ),
-    )
-}
 
 pub(super) fn plugin(app: &mut App) {
     app.init_resource::<ExploderAssets>();
@@ -60,7 +48,6 @@ impl FromWorld for ExploderAssets {
 }
 
 #[derive(Component)]
-#[require(KeepOnCollideWith = KeepOnCollideWith::Sphere)]
 pub struct Exploder;
 
 fn insert_exploder(trigger: Trigger<OnAdd, Exploder>, mut commands: Commands) {
@@ -217,7 +204,7 @@ fn explode(
             if is_exploder {
                 commands.trigger_targets(LightFuse(1), hit);
             } else {
-                commands.entity(parent).despawn();
+                commands.entity(parent).trigger(DestroySphere);
             }
         }
         should_shake = true;

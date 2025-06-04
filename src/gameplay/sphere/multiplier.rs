@@ -1,29 +1,13 @@
 use avian3d::prelude::*;
 use bevy::prelude::*;
 
-use crate::{
-    gameplay::sphere::{KeepOnCollideWith, SphereAssets, SphereType, sphere_defaults},
-    third_party::avian3d::GameLayer,
-};
-
-pub fn multiplier(assets: &SphereAssets) -> impl Bundle {
-    (
-        sphere_defaults(assets),
-        (
-            Multiplier,
-            SphereType::Multiplier,
-            Sensor,
-            MeshMaterial3d(assets.multiplier.clone()),
-        ),
-    )
-}
+use crate::third_party::avian3d::GameLayer;
 
 pub(super) fn plugin(app: &mut App) {
     app.add_observer(insert_multiplier);
 }
 
 #[derive(Component)]
-#[require(KeepOnCollideWith = KeepOnCollideWith::NeverKeep)]
 pub struct Multiplier;
 
 fn insert_multiplier(trigger: Trigger<OnAdd, Multiplier>, mut commands: Commands) {

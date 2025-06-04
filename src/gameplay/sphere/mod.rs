@@ -1,6 +1,4 @@
-use avian3d::prelude::{
-    Collider, CollisionEventsEnabled, GravityScale, LockedAxes, OnCollisionStart, RigidBody,
-};
+use avian3d::prelude::*;
 use bevy::{
     color::palettes::{
         css::{GREEN, ORANGE, YELLOW},
@@ -34,7 +32,8 @@ pub(super) fn plugin(app: &mut App) {
     app.register_type::<SphereAssets>()
         .load_resource::<SphereAssets>();
 
-    app.add_observer(spawn_sphere);
+    app.add_observer(spawn_sphere)
+        .add_observer(add_destroyable_sphere);
 }
 
 #[derive(Resource, Asset, Reflect, Clone)]
@@ -127,14 +126,6 @@ impl FromWorld for SphereAssets {
         }
     }
 }
-#[derive(Component, Default)]
-enum KeepOnCollideWith {
-    Arrow,
-    Sphere,
-    Both,
-    #[default]
-    NeverKeep,
-}
 
 #[derive(Component, Clone, Copy)]
 #[require(Sphere)]
@@ -154,27 +145,13 @@ pub enum SphereType {
 pub struct Sphere;
 
 #[derive(Component)]
-#[require(KeepOnCollideWith = KeepOnCollideWith::Both)]
 pub struct Absorber;
 
 #[derive(Component)]
-#[require(KeepOnCollideWith = KeepOnCollideWith::Both)]
 pub struct Bouncy;
 
 #[derive(Component)]
-#[require(KeepOnCollideWith = KeepOnCollideWith::Sphere)]
 pub struct GravitySphere;
-
-fn sphere_defaults(assets: &SphereAssets) -> impl Bundle {
-    (
-        Sphere,
-        Mesh3d(assets.mesh.clone()),
-        Collider::sphere(1.),
-        LockedAxes::default().lock_translation_z(),
-        GravityScale(0.),
-        CollisionEventsEnabled,
-    )
-}
 
 fn spawn_sphere(
     trigger: Trigger<OnAdd, SphereType>,
@@ -231,7 +208,20 @@ fn despawn_on_arrow(
     }
     let parent = child_of.get(trigger.target()).unwrap().parent();
 
-    commands.entity(parent).try_despawn();
+    commands.entity(parent).trigger(DestroySphere);
+}
+
+fn add_destroyable_sphere(trigger: Trigger<OnAdd, Sphere>, mut commands: Commands) {
+    commands.entity(trigger.target()).observe(destroy_sphere);
+}
+
+#[derive(Event)]
+pub struct DestroySphere;
+// listener should ONLY be on the Sphere component.
+fn destroy_sphere(trigger: Trigger<DestroySphere>, mut commands: Commands) {
+    // this will make the thing break into a million pieces.
+    // TODO
+    commands.entity(trigger.target()).despawn();
 }
 
 // fn spawn_sphere(trigger: Trigger<SpawnSphere>, mut commands: Commands, assets: Res<SphereAssets>) {

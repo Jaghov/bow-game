@@ -1,22 +1,8 @@
 use avian3d::prelude::*;
 use bevy::prelude::*;
 
-use crate::{
-    gameplay::sphere::{SphereAssets, SphereType, sphere_defaults},
-    third_party::avian3d::GameLayer,
-};
+use crate::third_party::avian3d::GameLayer;
 
-pub fn normal(assets: &SphereAssets) -> impl Bundle {
-    (
-        sphere_defaults(assets),
-        (
-            Normal,
-            SphereType::Normal,
-            Sensor,
-            MeshMaterial3d(assets.normal.clone()),
-        ),
-    )
-}
 #[derive(Component)]
 pub struct Normal;
 

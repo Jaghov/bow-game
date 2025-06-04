@@ -4,26 +4,13 @@ use bevy::prelude::*;
 use crate::{
     gameplay::{
         arrow::{Arrow, Canceled, NockedOn},
-        sphere::{KeepOnCollideWith, SphereAssets, SphereType, sphere_defaults},
         timefreeze::FreezeTime,
     },
     third_party::avian3d::GameLayer,
 };
 
-pub fn timefreeze(assets: &SphereAssets) -> impl Bundle {
-    (
-        sphere_defaults(assets),
-        (
-            TimeFreeze,
-            SphereType::TimeFreeze,
-            Sensor,
-            MeshMaterial3d(assets.time_freeze.clone()),
-        ),
-    )
-}
 /// Notice this remains if collided on arrow
 #[derive(Component)]
-#[require(KeepOnCollideWith = KeepOnCollideWith::Arrow)]
 pub struct TimeFreeze;
 
 pub(super) fn plugin(app: &mut App) {
