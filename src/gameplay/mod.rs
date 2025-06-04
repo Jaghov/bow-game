@@ -9,6 +9,8 @@ pub mod sphere;
 pub mod timefreeze;
 pub mod walls;
 
+mod ui;
+
 use crate::{Screen, camera::WorldCamera};
 
 /// camera z-offset from the gameplay plane.
@@ -75,6 +77,7 @@ pub fn plugin(app: &mut App) {
         arrow::plugin,
         cursor::plugin,
         timefreeze::plugin,
+        ui::plugin,
     ))
     .add_systems(OnEnter(Screen::Gameplay), move_camera)
     .add_systems(OnEnter(GameState::Paused), pause_physics_time)

@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 
 use crate::gameplay::{
+    bow::Quiver,
     level::LevelState,
     sphere::{SpawnSphere, SphereType},
 };
@@ -9,7 +10,9 @@ pub(super) fn plugin(app: &mut App) {
     app.add_systems(OnEnter(LevelState::Debug), setup_debug_level);
 }
 
-fn setup_debug_level(mut commands: Commands) {
+fn setup_debug_level(mut commands: Commands, mut quiver: ResMut<Quiver>) {
+    quiver.set_arrow_count(Some(1));
+
     commands.trigger(SpawnSphere::new(Vec2::new(10., 0.), SphereType::Multiplier));
 
     let l2 = 18.;
@@ -23,8 +26,8 @@ fn setup_debug_level(mut commands: Commands) {
     ));
 
     commands.trigger(SpawnSphere::new(Vec2::new(24., 7.), SphereType::Normal));
-    commands.trigger(SpawnSphere::new(Vec2::new(21., 3.), SphereType::Normal));
-    commands.trigger(SpawnSphere::new(Vec2::new(27., -4.), SphereType::Exploder));
+    commands.trigger(SpawnSphere::new(Vec2::new(21., 3.), SphereType::Exploder));
+    commands.trigger(SpawnSphere::new(Vec2::new(27., -2.), SphereType::Exploder));
     commands.trigger(SpawnSphere::new(Vec2::new(28., 3.), SphereType::Multiplier));
     commands.trigger(SpawnSphere::new(Vec2::new(37., 8.5), SphereType::Exploder));
     commands.trigger(SpawnSphere::new(
@@ -33,9 +36,4 @@ fn setup_debug_level(mut commands: Commands) {
     ));
 
     commands.trigger(SpawnSphere::new(Vec2::new(-9., 8.5), SphereType::Normal));
-
-    // commands.trigger(SpawnSphere::new(Vec2::new(11., 0.), SphereType::Exploder));
-    // commands.trigger(SpawnSphere::new(Vec2::new(12., 0.), SphereType::Exploder));
-    // commands.trigger(SpawnSphere::new(Vec2::new(13., 0.), SphereType::Exploder));
-    // commands.trigger(SpawnSphere::new(Vec2::new(15., 0.), SphereType::Exploder));
 }

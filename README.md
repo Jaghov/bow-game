@@ -26,3 +26,7 @@ A bouncy ball that will absorb the other balls' capabilities on impact
 - Animate backdrop on level start and finish
 - Animate walls during the screen transition period
 - Animate spheres upon entering a level
+
+
+## Credits to add
+quiver: https://kubuz520.itch.io/low-polly-bow-arrow-and-quiver

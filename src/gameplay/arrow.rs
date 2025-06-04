@@ -105,12 +105,9 @@ fn update_unfired_arrow_transform(
     //todo
 }
 
-/// the max linear velocity speed of the arrow
-const STRENGTH_MULT: f32 = 60.;
-
 /// the arrow will be fired, but will be canceled if this velocity is not reached
 //TODO: set this back to 15ish
-const THRESHOLD: f32 = 0.;
+pub const ARROW_VELOCITY_THRESHOLD: f32 = 0.;
 
 #[derive(Event)]
 pub struct FireArrow;
@@ -136,13 +133,14 @@ fn fire_arrow(
     let Ok(pull_strength) = pull_strength.get_mut(arrow_of.0) else {
         return;
     };
-    let adjusted_strength = pull_strength.strength().powi(2) * STRENGTH_MULT;
 
-    let velocity = rotation.0 * Vec3::new(0., adjusted_strength, 0.);
+    let arrow_velocity = pull_strength.arrow_velocity();
+
+    let velocity = rotation.0 * Vec3::new(0., arrow_velocity, 0.);
     lvel.0 = velocity;
     let mut arrow_commands = commands.entity(trigger.target());
     arrow_commands.remove::<ArrowOf>();
-    if adjusted_strength >= THRESHOLD {
+    if arrow_velocity >= ARROW_VELOCITY_THRESHOLD {
         arrow_commands.observe(on_multiply);
     } else {
         commands.trigger_targets(CancelArrow, trigger.target());

@@ -23,8 +23,8 @@ fn setup_level_one(mut commands: Commands) {
     ));
 
     commands.trigger(SpawnSphere::new(Vec2::new(24., 7.), SphereType::Normal));
-    commands.trigger(SpawnSphere::new(Vec2::new(21., 3.), SphereType::Normal));
-    commands.trigger(SpawnSphere::new(Vec2::new(27., -4.), SphereType::Exploder));
+    commands.trigger(SpawnSphere::new(Vec2::new(21., 3.), SphereType::Exploder));
+    commands.trigger(SpawnSphere::new(Vec2::new(27., -2.), SphereType::Exploder));
     commands.trigger(SpawnSphere::new(Vec2::new(28., 3.), SphereType::Multiplier));
     commands.trigger(SpawnSphere::new(Vec2::new(37., 8.5), SphereType::Exploder));
     commands.trigger(SpawnSphere::new(
