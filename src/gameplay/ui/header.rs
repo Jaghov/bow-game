@@ -46,6 +46,10 @@ fn update_ball_count(
 ) {
     let count = balls.iter().count() as i32;
 
+    if state.count == count {
+        return;
+    }
+
     if state.timer.finished() {
         if count > state.count {
             state.count += 1;
@@ -54,10 +58,6 @@ fn update_ball_count(
         }
 
         ball_count.0 = state.count.to_string();
-    }
-
-    if state.count == count {
-        return;
     }
 
     let diff = (state.count - count).abs();
