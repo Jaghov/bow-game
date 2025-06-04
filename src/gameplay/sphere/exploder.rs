@@ -196,13 +196,13 @@ fn explode(
                 commands.entity(entity).trigger(DestroySphere);
                 continue;
             }
-            let Ok(is_exploder) = spheres.get(hit) else {
+            let Ok(is_exploder) = spheres.get(body) else {
                 continue;
             };
 
             // if it's an exploder, it'll explode in 1 second. otherwise, lfg
             if is_exploder {
-                commands.trigger_targets(LightFuse(1), hit);
+                commands.trigger_targets(LightFuse(1), body);
             } else {
                 commands.entity(body).trigger(DestroySphere);
             }
