@@ -53,6 +53,7 @@ impl FromWorld for ExploderAssets {
 }
 
 #[derive(Component)]
+#[require(Sphere)]
 pub struct Exploder;
 
 fn insert_exploder(trigger: Trigger<OnAdd, Exploder>, mut commands: Commands) {

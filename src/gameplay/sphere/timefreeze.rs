@@ -4,6 +4,7 @@ use bevy::prelude::*;
 use crate::{
     gameplay::{
         arrow::{Arrow, Canceled, NockedOn},
+        sphere::Sphere,
         timefreeze::FreezeTime,
     },
     third_party::avian3d::GameLayer,
@@ -11,6 +12,7 @@ use crate::{
 
 /// Notice this remains if collided on arrow
 #[derive(Component)]
+#[require(Sphere)]
 pub struct TimeFreeze;
 
 pub(super) fn plugin(app: &mut App) {

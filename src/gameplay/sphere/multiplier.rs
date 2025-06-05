@@ -1,6 +1,7 @@
 use avian3d::prelude::*;
 use bevy::prelude::*;
 
+use super::Sphere;
 use crate::third_party::avian3d::GameLayer;
 
 pub(super) fn plugin(app: &mut App) {
@@ -8,6 +9,7 @@ pub(super) fn plugin(app: &mut App) {
 }
 
 #[derive(Component)]
+#[require(Sphere)]
 pub struct Multiplier;
 
 fn insert_multiplier(trigger: Trigger<OnAdd, Multiplier>, mut commands: Commands) {

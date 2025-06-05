@@ -154,6 +154,12 @@ fn spawn_items(
         mesh.clone(),
         MeshMaterial3d(sphere.exploder.clone()),
     ));
+
+    commands.spawn((
+        SphereCount(7),
+        Transform::from_xyz(0., 0., -800.),
+        SceneRoot(sphere.gibs.clone()),
+    ));
 }
 
 #[cfg_attr(feature = "hot", bevy_simple_subsecond_system::prelude::hot)]
