@@ -1,5 +1,5 @@
 use avian3d::prelude::{Physics, PhysicsTime};
-use bevy::prelude::*;
+use bevy::{prelude::*, window::PrimaryWindow};
 
 pub mod arrow;
 pub mod bow;
@@ -77,7 +77,8 @@ pub fn plugin(app: &mut App) {
         timefreeze::plugin,
         ui::plugin,
     ))
-    .add_systems(OnEnter(Screen::Gameplay), move_camera)
+    .add_systems(OnEnter(Screen::Gameplay), (move_camera, hide_cursor))
+    .add_systems(OnExit(Screen::Gameplay), show_cursor)
     .add_systems(OnEnter(GameState::Paused), pause_physics_time)
     .add_systems(OnExit(GameState::Paused), resume_physics_time);
 }
@@ -87,6 +88,18 @@ fn move_camera(mut camera: Query<&mut Transform, With<WorldCamera>>) {
     let mut camera = camera.single_mut().unwrap();
 
     *camera = Transform::from_xyz(0., 0., GAMEPLAY_CAMERA_OFFSET).looking_at(Vec3::ZERO, Vec3::Y);
+}
+
+fn hide_cursor(mut q_windows: Query<&mut Window, With<PrimaryWindow>>) {
+    let mut primary_window = q_windows.single_mut().unwrap();
+
+    primary_window.cursor_options.visible = false;
+}
+
+fn show_cursor(mut q_windows: Query<&mut Window, With<PrimaryWindow>>) {
+    let mut primary_window = q_windows.single_mut().unwrap();
+
+    primary_window.cursor_options.visible = true;
 }
 
 fn pause_physics_time(mut time: ResMut<Time<Physics>>) {
