@@ -1,20 +1,24 @@
 use std::time::Duration;
 
 use avian3d::prelude::{Collider, RigidBody};
-use bevy::{color::palettes::tailwind::GREEN_400, prelude::*};
+use bevy::{color::palettes::tailwind::GREEN_400, ecs::system::SystemId, prelude::*};
 use bevy_tweening::{Animator, Delay, Sequence, Tween, lens::TransformPositionLens};
 
 use crate::{
-    gameplay::level::LevelState,
     rand,
     world::{BACKDROP_OFFSET, BLOCK_LEN, GAME_PLANE},
 };
 
 pub fn plugin(app: &mut App) {
-    app.add_systems(Startup, spawn_backdrop)
-        .add_systems(OnEnter((LevelState::NewLevel)), pulse_out_backdrop_on_win);
-    //.add_systems(Update, update_backdrop_z.in_set(GameSet::Update));
+    app.add_systems(Startup, spawn_backdrop);
+
+    let backdrop_win = app.register_system(pulse_out_backdrop_on_win);
+
+    app.insert_resource(RadialBackdropPulse(backdrop_win));
 }
+
+#[derive(Resource)]
+pub struct RadialBackdropPulse(pub SystemId);
 
 const PERIOD: f32 = 0.3;
 
@@ -80,20 +84,18 @@ fn update_backdrop_z(mut blocks: Query<(&mut Transform, &mut ZState)>, time: Res
     }
 }
 
-pub const MIN_DELAY_OFFSET: f32 = 1.0;
 fn pulse_out_backdrop_on_win(
     mut commands: Commands,
     blocks: Query<(Entity, &mut Transform), With<ZState>>,
 ) {
     for (block, transform) in blocks {
-        let delay =
-            Duration::from_secs_f32(transform.translation.xy().length() / 120. + MIN_DELAY_OFFSET);
+        let delay = Duration::from_secs_f32((transform.translation.xy().length() / 120.) + 0.2);
         info!("Delay is {:#?}", delay);
         commands.entity(block).insert(Animator::new(
             Sequence::from_single(Delay::new(delay)).then(
                 Tween::new(
                     EaseFunction::SineIn,
-                    Duration::from_millis(500),
+                    Duration::from_millis(100),
                     TransformPositionLens {
                         start: transform.translation,
                         end: transform.translation - Vec3::new(0., 0., BLOCK_LEN),
@@ -101,7 +103,7 @@ fn pulse_out_backdrop_on_win(
                 )
                 .then(Tween::new(
                     EaseFunction::SineOut,
-                    Duration::from_millis(500),
+                    Duration::from_millis(100),
                     TransformPositionLens {
                         start: transform.translation - Vec3::new(0., 0., BLOCK_LEN),
                         end: transform.translation,
