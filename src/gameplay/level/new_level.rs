@@ -15,13 +15,13 @@ use crate::{
         sphere::Sphere,
     },
     third_party::avian3d::GameLayer,
-    world::{GAME_PLANE, backdrop::MIN_DELAY_OFFSET, light::SetLightPosition},
+    world::{GAME_PLANE, backdrop::RadialBackdropPulse, light::SetLightPosition},
 };
 
 pub(super) fn plugin(app: &mut App) {
     app.add_systems(
         OnEnter(LevelState::NewLevel),
-        (init_timer, (load_level, set_light_position).chain()),
+        (init_timer, load_level, set_light_position).chain(),
     )
     .add_systems(
         Update,
@@ -44,15 +44,38 @@ pub(super) fn plugin(app: &mut App) {
 fn init_timer(mut commands: Commands) {
     commands.init_resource::<LevelSetupTimer>();
 }
-
+#[derive(Default)]
+struct LevelCompletion {
+    timer: Option<Timer>,
+}
 fn observe_level_completion(
+    mut commands: Commands,
     balls: Query<(), With<Sphere>>,
     mut level: ResMut<Level>,
     mut next_state: ResMut<NextState<LevelState>>,
+    backdrop_pulse: Res<RadialBackdropPulse>,
+    mut level_completion: Local<LevelCompletion>,
+    time: Res<Time>,
 ) {
-    if balls.is_empty() {
+    let mut reset_timer = false;
+    if let Some(timer) = &mut level_completion.timer {
+        timer.tick(time.delta());
+        if !timer.just_finished() {
+            return;
+        }
+
         level.0 += 1;
         next_state.set(LevelState::NextLevel);
+        reset_timer = true;
+    }
+    if reset_timer {
+        level_completion.timer = None;
+        return;
+    }
+
+    if balls.is_empty() {
+        commands.run_system(backdrop_pulse.0);
+        level_completion.timer = Some(Timer::new(Duration::from_millis(2000), TimerMode::Once));
     }
 }
 
@@ -63,12 +86,13 @@ fn load_level(
     mut levels: ResMut<Levels>,
     mut quiver: ResMut<Quiver>,
     level: Res<Level>,
+    timer: Res<LevelSetupTimer>,
 ) {
     let props = levels.get(level.0);
 
     let tween = Tween::new(
         EaseFunction::QuadraticOut,
-        Duration::from_secs_f32(MIN_DELAY_OFFSET),
+        timer.wall_duration(),
         TransformPositionLens {
             start: Vec3 {
                 x: 0.,
@@ -110,22 +134,6 @@ fn load_level(
             Transform::from_xyz(sphere.location.x, sphere.location.y, SPHERE_START_PLANE),
         ));
     }
-}
-
-fn update_wall_transform(
-    time: Res<LevelSetupTimer>,
-    mut walls: Query<&mut Transform, (With<Walls>, Without<Sphere>)>,
-) {
-    let mut walls = walls
-        .single_mut()
-        .expect("No wall for level loading. This is unrecoverable!");
-
-    let progress = time.wall_progress();
-    let eased_progress = progress * progress * (3.0 - 2.0 * progress);
-
-    let wall_z = WALL_START_PLANE.lerp(GAME_PLANE, eased_progress);
-
-    walls.translation.z = wall_z;
 }
 
 fn update_sphere_transform(

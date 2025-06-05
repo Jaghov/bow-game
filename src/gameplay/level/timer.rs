@@ -36,6 +36,10 @@ impl LevelSetupTimer {
         self.0.fraction()
     }
 
+    pub fn wall_duration(&self) -> Duration {
+        Duration::from_millis((self.0.duration().as_millis() as f64 * 0.7).round() as u64)
+    }
+
     pub fn wall_progress(&self) -> f32 {
         //wall will be ready at 0.7
         let wall_done_at = 0.7;
