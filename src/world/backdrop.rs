@@ -12,7 +12,7 @@ use crate::{
 
 pub fn plugin(app: &mut App) {
     app.add_systems(Startup, spawn_backdrop)
-        .add_systems(OnEnter(LevelState::NextLevel), pulse_out_backdrop_on_win);
+        .add_systems(OnEnter((LevelState::NewLevel)), pulse_out_backdrop_on_win);
     //.add_systems(Update, update_backdrop_z.in_set(GameSet::Update));
 }
 
@@ -80,7 +80,7 @@ fn update_backdrop_z(mut blocks: Query<(&mut Transform, &mut ZState)>, time: Res
     }
 }
 
-const MIN_DELAY_OFFSET: f32 = 0.5;
+pub const MIN_DELAY_OFFSET: f32 = 1.0;
 fn pulse_out_backdrop_on_win(
     mut commands: Commands,
     blocks: Query<(Entity, &mut Transform), With<ZState>>,

@@ -15,7 +15,7 @@ use crate::{
         sphere::Sphere,
     },
     third_party::avian3d::GameLayer,
-    world::{GAME_PLANE, light::SetLightPosition},
+    world::{GAME_PLANE, backdrop::MIN_DELAY_OFFSET, light::SetLightPosition},
 };
 
 pub(super) fn plugin(app: &mut App) {
@@ -68,7 +68,7 @@ fn load_level(
 
     let tween = Tween::new(
         EaseFunction::QuadraticOut,
-        Duration::from_secs(1),
+        Duration::from_secs_f32(MIN_DELAY_OFFSET),
         TransformPositionLens {
             start: Vec3 {
                 x: 0.,
