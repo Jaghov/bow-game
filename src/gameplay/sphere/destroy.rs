@@ -1,4 +1,4 @@
-use std::time::Duration;
+use std::{collections::VecDeque, time::Duration};
 
 use crate::{
     gameplay::{GameSet, sphere::SphereAssets},
@@ -24,12 +24,13 @@ the position of the despawned sphere. ez.
 pub(super) fn plugin(app: &mut App) {
     app.add_observer(add_destroyable_sphere)
         .init_resource::<GibMeshes>()
+        .init_resource::<GibTracker>()
         .add_systems(OnEnter(LoadingState::Dependencies), spawn_gib_scene)
         .add_systems(
             Update,
             (
                 tick_being_destroyed.in_set(GameSet::TickTimers),
-                despawn_destroyed.in_set(GameSet::Update),
+                (despawn_destroyed, track_despawn).in_set(GameSet::Update),
             ),
         )
         .add_systems(Last, yoink_gib_meshes);
@@ -53,6 +54,8 @@ fn add_destroyable_sphere(trigger: Trigger<OnAdd, Sphere>, mut commands: Command
 #[derive(Component)]
 struct BeingDestroyed(Timer);
 
+#[derive(Component)]
+struct Gib;
 // listener should ONLY be on the Sphere component.
 fn destroy_sphere(
     trigger: Trigger<DestroySphere>,
@@ -73,6 +76,7 @@ fn destroy_sphere(
 
         meshes_to_spawn.push((
             Name::new("Gib Piece"),
+            Gib,
             new_transform,
             Mesh3d(mesh_handle.clone()),
             MeshMaterial3d(sphere_material.0.clone()),
@@ -101,6 +105,21 @@ fn despawn_destroyed(mut commands: Commands, destroyed: Query<(Entity, &BeingDes
     }
 }
 
+#[derive(Resource)]
+struct GibTracker {
+    gibs: VecDeque<Entity>,
+    max: usize,
+}
+impl Default for GibTracker {
+    fn default() -> Self {
+        let max = 500;
+        Self {
+            gibs: VecDeque::with_capacity(max),
+            max,
+        }
+    }
+}
+
 #[derive(Component)]
 struct GibRoot;
 
@@ -110,7 +129,7 @@ fn spawn_gib_scene(mut commands: Commands, assets: Res<SphereAssets>) {
         .spawn((
             Name::new("Gib scene"),
             Visibility::Hidden,
-            ColliderConstructorHierarchy::new(ColliderConstructor::ConvexDecompositionFromMesh),
+            ColliderConstructorHierarchy::new(ColliderConstructor::ConvexHullFromMesh),
             SceneRoot(assets.gibs.clone()),
         ))
         .observe(
@@ -130,6 +149,8 @@ impl GibMeshes {
         self.is_ready
     }
 }
+
+fn track_despawn(new_gibs: Query<Entity, Added<Gib>>, tracker: ResMut<GibTracker>) {}
 
 // need to run this here and not when scene instance is ready. The global transform will be applied in post update, so it's here where we despawn the scene..
 fn yoink_gib_meshes(
