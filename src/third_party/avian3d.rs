@@ -16,4 +16,5 @@ pub enum GameLayer {
     Default,
     ArrowSensors, // colliders that interact with the arrow
     Sphere,       // colliders that interacts with all spheres
+    Gibs,
 }
