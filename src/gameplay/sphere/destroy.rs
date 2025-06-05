@@ -1,8 +1,8 @@
 use std::time::Duration;
 
 use crate::{
-    Screen,
     gameplay::{GameSet, sphere::SphereAssets},
+    loading::LoadingState,
     third_party::avian3d::GameLayer,
 };
 
@@ -23,7 +23,8 @@ the position of the despawned sphere. ez.
 
 pub(super) fn plugin(app: &mut App) {
     app.add_observer(add_destroyable_sphere)
-        .add_systems(OnExit(Screen::Loading), spawn_gib_scene)
+        .init_resource::<GibMeshes>()
+        .add_systems(OnEnter(LoadingState::Dependencies), spawn_gib_scene)
         .add_systems(
             Update,
             (
@@ -53,8 +54,39 @@ fn add_destroyable_sphere(trigger: Trigger<OnAdd, Sphere>, mut commands: Command
 struct BeingDestroyed(Timer);
 
 // listener should ONLY be on the Sphere component.
-fn destroy_sphere(trigger: Trigger<DestroySphere>, mut commands: Commands) {
+fn destroy_sphere(
+    trigger: Trigger<DestroySphere>,
+    mut commands: Commands,
+    meshes: Res<GibMeshes>,
+    transforms: Query<(&Transform, &MeshMaterial3d<StandardMaterial>)>,
+) {
+    let (sphere_transform, sphere_material) = transforms.get(trigger.target()).unwrap();
+
+    let mut meshes_to_spawn = Vec::with_capacity(meshes.meshes.len());
+
+    for (transform, mesh_handle, collider) in meshes.meshes.iter() {
+        let new_transform =
+            Transform::from_translation(sphere_transform.translation + transform.translation)
+                .with_rotation(transform.rotation);
+
+        info!("Spawning gib piece at {:?}", new_transform.translation);
+
+        meshes_to_spawn.push((
+            Name::new("Gib Piece"),
+            new_transform,
+            Mesh3d(mesh_handle.clone()),
+            MeshMaterial3d(sphere_material.0.clone()),
+            collider.clone(),
+            RigidBody::Dynamic,
+            Visibility::Visible,
+            CollisionLayers::new(GameLayer::Gibs, GameLayer::Default),
+            BeingDestroyed(Timer::new(Duration::from_secs(3), TimerMode::Once)),
+        ))
+    }
+
+    info!("spawning gibs!");
     commands.entity(trigger.target()).try_despawn();
+    commands.spawn_batch(meshes_to_spawn);
 }
 fn tick_being_destroyed(mut being_destroyed: Query<&mut BeingDestroyed>, time: Res<Time>) {
     for mut timer in &mut being_destroyed {
@@ -73,29 +105,30 @@ fn despawn_destroyed(mut commands: Commands, destroyed: Query<(Entity, &BeingDes
 struct GibRoot;
 
 fn spawn_gib_scene(mut commands: Commands, assets: Res<SphereAssets>) {
+    info!("Spawning gib scene");
     commands
         .spawn((
             Name::new("Gib scene"),
             Visibility::Hidden,
+            ColliderConstructorHierarchy::new(ColliderConstructor::ConvexDecompositionFromMesh),
             SceneRoot(assets.gibs.clone()),
         ))
-        .observe(init_gib_resource);
+        .observe(
+            |trigger: Trigger<SceneInstanceReady>, mut commands: Commands| {
+                commands.entity(trigger.target()).insert(GibRoot);
+            },
+        );
 }
 
-fn init_gib_resource(
-    trigger: Trigger<SceneInstanceReady>,
-    mut commands: Commands,
-    children: Query<&Children>,
-    meshes: Query<(&Transform, &GlobalTransform)>,
-) {
-    info!("gib scene is ready!");
-
-    commands.entity(trigger.target()).insert(GibRoot);
-}
-
-#[derive(Resource)]
+#[derive(Resource, Default)]
 pub struct GibMeshes {
-    meshes: Vec<(Transform, Handle<Mesh>)>,
+    meshes: Vec<(Transform, Handle<Mesh>, Collider)>,
+    is_ready: bool,
+}
+impl GibMeshes {
+    pub fn is_ready(&self) -> bool {
+        self.is_ready
+    }
 }
 
 // need to run this here and not when scene instance is ready. The global transform will be applied in post update, so it's here where we despawn the scene..
@@ -103,22 +136,33 @@ fn yoink_gib_meshes(
     mut commands: Commands,
     scene: Single<Entity, With<GibRoot>>,
     children: Query<&Children>,
-    meshes: Query<(&GlobalTransform, &Mesh3d)>,
+    mut gib_mesh_res: ResMut<GibMeshes>,
+    meshes: Query<(&GlobalTransform, &Mesh3d, &Collider)>,
 ) {
-    info!("yoinking gib meshes");
+    let mut remaining_mesh_count = 0;
+    info!(
+        "yoinking gib meshes. Progress: {}",
+        gib_mesh_res.meshes.len()
+    );
 
-    let mut mesh_props = Vec::new();
     for child in children.iter_descendants(*scene) {
-        let Ok((globaltransform, mesh3d)) = meshes.get(child) else {
+        let Ok((globaltransform, mesh3d, collider)) = meshes.get(child) else {
             continue;
         };
-        mesh_props.push((globaltransform.compute_transform(), mesh3d.0.clone()));
-        info!(
-            "Mesh Props: \nglobal_trns: {:?}",
-            globaltransform.compute_transform()
-        );
+        remaining_mesh_count += 1;
+
+        gib_mesh_res.meshes.push((
+            globaltransform.compute_transform(),
+            mesh3d.0.clone(),
+            collider.clone(),
+        ));
+
+        commands.entity(child).despawn();
     }
 
-    commands.entity(*scene).despawn();
-    commands.insert_resource(GibMeshes { meshes: mesh_props });
+    if !gib_mesh_res.meshes.is_empty() && remaining_mesh_count == 0 {
+        info!("done! mesh count: {}", gib_mesh_res.meshes.len());
+        gib_mesh_res.is_ready = true;
+        commands.entity(*scene).despawn();
+    }
 }
