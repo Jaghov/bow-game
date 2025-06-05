@@ -14,9 +14,16 @@ pub(super) fn plugin(app: &mut App) {
         Update,
         (
             tick_being_destroyed.in_set(GameSet::TickTimers),
-            despawn_destroyed.in_set(GameSet::Update),
+            (
+                //ready_gib_bodies,
+                //update_gib_transforms,
+                despawn_destroyed,
+                //realize_gib_explosion,
+            )
+                .in_set(GameSet::Update),
         ),
     );
+    //.add_systems(Update, update_gib_transforms);
     //todo
 }
 
@@ -27,12 +34,12 @@ pub struct DestroySphere;
 struct SphereGibScene(Handle<StandardMaterial>);
 
 #[derive(Component)]
-#[relationship(relationship_target = GibParent)]
+#[relationship(relationship_target = GibChild)]
 pub struct GibsOf(Entity);
 
 #[derive(Component)]
 #[relationship_target(relationship = GibsOf)]
-pub struct GibParent(Entity);
+pub struct GibChild(Entity);
 
 fn add_destroyable_sphere(
     trigger: Trigger<OnAdd, Sphere>,
@@ -46,21 +53,24 @@ fn add_destroyable_sphere(
         .spawn((
             SceneRoot(assets.gibs.clone()),
             SphereGibScene(sphere_material.0.clone()),
-            Transform::from_xyz(0., 0., 0.).with_scale(Vec3::splat(1.3)),
-            ChildOf(trigger.target()),
+            Transform::default(),
             GibsOf(trigger.target()),
-            CollisionLayers::NONE,
-            ColliderConstructorHierarchy::new(ColliderConstructor::TrimeshFromMesh),
             RigidBody::Dynamic,
             RigidBodyDisabled,
-            Visibility::Hidden,
+            ColliderConstructorHierarchy::new(ColliderConstructor::TrimeshFromMesh),
         ))
-        .observe(ready_gibs);
+        .observe(when_gib_scene_is_ready);
 
     commands.entity(trigger.target()).observe(destroy_sphere);
 }
 
-fn ready_gibs(
+#[derive(Component)]
+struct BeingDestroyed(Timer);
+
+#[derive(Component)]
+struct GibReady;
+
+fn when_gib_scene_is_ready(
     trigger: Trigger<SceneInstanceReady>,
     mut commands: Commands,
     gibs: Query<&SphereGibScene>,
@@ -76,10 +86,8 @@ fn ready_gibs(
             .entity(mesh_entity)
             .insert(MeshMaterial3d(gib.0.clone()));
     }
+    commands.entity(trigger.target()).insert(GibReady);
 }
-
-#[derive(Component)]
-struct BeingDestroyed(Timer);
 
 /*
 mut gib_scenes: Query<
@@ -88,11 +96,14 @@ mut gib_scenes: Query<
 >,
 */
 
+#[derive(Component)]
+struct GibParentGone;
+
 // listener should ONLY be on the Sphere component.
 fn destroy_sphere(
     trigger: Trigger<DestroySphere>,
     mut commands: Commands,
-    gib_parents: Query<&GibParent>,
+    gib_children: Query<&GibChild>,
     children: Query<&Children>,
     mut gib_meshes: Query<(&mut Transform, &mut Visibility, &GlobalTransform), With<Mesh3d>>,
 ) {
@@ -103,24 +114,29 @@ fn destroy_sphere(
 
     // BeingDestroyed(Timer::new(Duration::from_secs(1), TimerMode::Once)),
 
-    let gib_parent = gib_parents.get(trigger.target()).unwrap();
-    // iterate through all children of the gib. not all children of the gib_parent.
-    for child in children.iter_descendants(gib_parent.0) {
-        let Ok((mut transform, mut visibility, global_transform)) = gib_meshes.get_mut(child)
-        else {
-            continue;
-        };
+    let gib_child = gib_children.get(trigger.target()).unwrap();
 
-        *visibility = Visibility::Visible;
-        *transform = global_transform.compute_transform();
-
-        commands.entity(child).remove::<ChildOf>().insert((
-            RigidBody::Dynamic,
-            CollisionLayers::new(GameLayer::Gibs, GameLayer::Default),
-        ));
-    }
+    commands
+        .entity(gib_child.0)
+        .remove::<GibReady>()
+        .insert(GibParentGone);
 
     commands.entity(trigger.target()).try_despawn();
+    // iterate through all children of the gib. not all children of the gib_parent.
+    // for child in children.iter_descendants(gib_parent.0) {
+    //     let Ok((mut transform, mut visibility, global_transform)) = gib_meshes.get_mut(child)
+    //     else {
+    //         continue;
+    //     };
+
+    //     *visibility = Visibility::Visible;
+    //     *transform = global_transform.compute_transform();
+
+    //     commands.entity(child).remove::<ChildOf>().insert((
+    //         RigidBody::Dynamic,
+    //         CollisionLayers::new(GameLayer::Gibs, GameLayer::Default),
+    //     ));
+    // }
 }
 fn tick_being_destroyed(mut being_destroyed: Query<&mut BeingDestroyed>, time: Res<Time>) {
     for mut timer in &mut being_destroyed {
@@ -131,6 +147,60 @@ fn despawn_destroyed(mut commands: Commands, destroyed: Query<(Entity, &BeingDes
     for (entity, timer) in &destroyed {
         if timer.0.finished() {
             commands.entity(entity).despawn();
+        }
+    }
+}
+
+fn ready_gib_bodies(
+    mut commands: Commands,
+    gibs: Query<Entity, Added<GibReady>>,
+    children: Query<&Children>,
+    meshes: Query<Entity, (With<Mesh3d>, Without<RigidBody>)>,
+) {
+    for gib in gibs {
+        info!("added gib ready");
+        for child in children.iter_descendants(gib) {
+            let Ok(mesh) = meshes.get(child) else {
+                continue;
+            };
+            commands.entity(mesh).insert((
+                CollisionLayers::NONE,
+                RigidBody::Dynamic,
+                RigidBodyDisabled,
+            ));
+        }
+    }
+}
+
+fn update_gib_transforms(
+    mut gibs: Query<(&mut Transform, &GibsOf)>,
+    transforms: Query<&Transform, Without<GibsOf>>,
+) {
+    for (mut gib_transform, gibs_of) in &mut gibs {
+        let Ok(parent_transform) = transforms.get(gibs_of.0) else {
+            continue;
+        };
+        *gib_transform = *parent_transform;
+    }
+    //todo
+}
+
+fn realize_gib_explosion(
+    mut commands: Commands,
+    gibs: Query<Entity, Added<GibParentGone>>,
+    children: Query<&Children>,
+    mut meshes: Query<(Entity, &mut Transform, &mut Visibility, &GlobalTransform), With<Mesh3d>>,
+) {
+    for gib in gibs {
+        for child in children.iter_descendants(gib) {
+            let Ok((mesh, mut trns, mut visibility, glbtrns)) = meshes.get_mut(child) else {
+                continue;
+            };
+            commands
+                .entity(mesh)
+                .remove::<(ChildOf, RigidBodyDisabled)>();
+            *trns = glbtrns.compute_transform();
+            *visibility = Visibility::Visible;
         }
     }
 }
