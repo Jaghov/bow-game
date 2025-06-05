@@ -67,8 +67,8 @@ fn load_level(
     let props = levels.get(level.0);
 
     let tween = Tween::new(
-        EaseFunction::BounceOut,
-        Duration::from_secs(2),
+        EaseFunction::QuadraticOut,
+        Duration::from_secs(1),
         TransformPositionLens {
             start: Vec3 {
                 x: 0.,
