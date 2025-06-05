@@ -45,7 +45,7 @@ fn create_level(mut levels: ResMut<Levels>) {
                 vert!(-6., -5., 5.),
                 horz!(-6., -6., 6.),
             ],
-            vec![sphere!(Normal, 0., 0.)],
+            vec![sphere!(Normal, 5., 5.)],
         ),
     );
 

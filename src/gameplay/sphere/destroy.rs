@@ -48,6 +48,7 @@ fn add_destroyable_sphere(
             GibsOf(trigger.target()),
             CollisionLayers::NONE,
             ColliderConstructorHierarchy::new(ColliderConstructor::TrimeshFromMesh),
+            RigidBody::Dynamic,
             RigidBodyDisabled,
             Visibility::Hidden,
         ))
@@ -83,7 +84,10 @@ fn destroy_sphere(
     mut commands: Commands,
     gib_parents: Query<&GibParent>,
     destroying: Query<&BeingDestroyed>,
-    mut gib_scenes: Query<&mut Visibility, With<SphereGibScene>>,
+    mut gib_scenes: Query<
+        (&mut Transform, &mut Visibility, &GlobalTransform),
+        With<SphereGibScene>,
+    >,
 ) {
     //todo: detach gibs from the sphere, make visible, attach rigid bodies to all the components
     // and apply a fake force in the area based on where the point of contact was for the collider.
@@ -93,19 +97,23 @@ fn destroy_sphere(
         return;
     }
 
+    // BeingDestroyed(Timer::new(Duration::from_secs(1), TimerMode::Once)),
+
     commands
         .entity(trigger.target())
         //.remove::<(RigidBody, Mesh3d)>()
-        .insert((
-            Visibility::Hidden,
-            RigidBodyDisabled,
-            BeingDestroyed(Timer::new(Duration::from_secs(1), TimerMode::Once)),
-        ));
+        .insert((Visibility::Hidden, RigidBodyDisabled));
 
     let gib_parent = gib_parents.get(trigger.target()).unwrap();
-    commands.entity(gib_parent.0).remove::<RigidBodyDisabled>();
-    let mut gib_visibility = gib_scenes.get_mut(gib_parent.0).unwrap();
+    commands
+        .entity(gib_parent.0)
+        .remove::<(ChildOf, RigidBodyDisabled)>();
+    let (mut transform, mut gib_visibility, global_transform) =
+        gib_scenes.get_mut(gib_parent.0).unwrap();
     *gib_visibility = Visibility::Visible;
+    *transform = global_transform.compute_transform();
+
+    commands.entity(trigger.target()).try_despawn();
 }
 fn tick_being_destroyed(mut being_destroyed: Query<&mut BeingDestroyed>, time: Res<Time>) {
     for mut timer in &mut being_destroyed {
