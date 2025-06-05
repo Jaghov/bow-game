@@ -4,7 +4,7 @@ use bevy::{prelude::*, window::PrimaryWindow};
 pub mod arrow;
 pub mod bow;
 pub mod cursor;
-mod level;
+pub mod level;
 pub mod sphere;
 pub mod timefreeze;
 

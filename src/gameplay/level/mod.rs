@@ -54,7 +54,7 @@ fn setup_wall_material(mut commands: Commands, mut materials: ResMut<Assets<Stan
 #[derive(SubStates, Debug, Hash, PartialEq, Eq, Clone, Copy, Default, Reflect)]
 #[source(Screen = Screen::Gameplay)]
 #[states(scoped_entities)]
-pub enum LevelState {
+pub(crate) enum LevelState {
     #[default]
     NewLevel,
     Playing,
