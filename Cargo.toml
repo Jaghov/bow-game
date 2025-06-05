@@ -46,6 +46,7 @@ avian3d = { version = "0.3", default-features = false, features = [
 bevy = { version = "0.16", default-features = false, features = [
     "animation",
     "bevy_audio",
+    "flac",
     "bevy_asset",
     "bevy_animation",
     "bevy_color",

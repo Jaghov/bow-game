@@ -1,10 +1,11 @@
-use std::f32::consts::PI;
+use std::{f32::consts::PI, path::Path};
 
 use bevy::prelude::*;
 
 use crate::{
     asset_tracking::LoadResource,
     gameplay::{ArrowSet, arrow::NockedOn, cursor::CursorPosition},
+    rand::random_range,
 };
 
 mod animation;
@@ -12,6 +13,8 @@ mod timefreeze;
 
 mod primary;
 pub use primary::*;
+
+use super::arrow::{FireArrow, ReadyArrow};
 
 /// how far from the bow the player must draw bow
 const MAX_RADIUS: f32 = 10.;
@@ -26,7 +29,9 @@ pub(super) fn plugin(app: &mut App) {
     app.add_plugins((timefreeze::plugin, animation::plugin, primary::plugin));
 
     app.add_systems(Update, update_pull_strength.in_set(ArrowSet::ProcessInput))
-        .add_systems(Update, update_pull_rotation.in_set(ArrowSet::UpdateBow));
+        .add_systems(Update, update_pull_rotation.in_set(ArrowSet::UpdateBow))
+        .add_observer(play_draw_on_ready_arrow)
+        .add_observer(play_shot_on_fire_arrow);
 }
 
 #[derive(Component, Reflect)]
@@ -38,6 +43,10 @@ pub struct BowAssets {
     pub scene: Handle<Scene>,
     #[dependency]
     pull_string: Handle<AnimationClip>,
+    #[dependency]
+    bow_draw: Handle<AudioSource>,
+    #[dependency]
+    bow_shoot: Handle<AudioSource>,
 }
 impl FromWorld for BowAssets {
     fn from_world(world: &mut World) -> Self {
@@ -45,6 +54,8 @@ impl FromWorld for BowAssets {
         Self {
             scene: assets.load("models/BowFix.glb#Scene0"),
             pull_string: assets.load("models/BowFix.glb#Animation0"),
+            bow_draw: assets.load(Path::new("audio/sfx/BowDrawSFX_V2.flac")),
+            bow_shoot: assets.load(Path::new("audio/sfx/BowShootSFX_V2.flac")),
         }
     }
 }
@@ -79,6 +90,32 @@ impl BowArrow {
     pub fn arrow_velocity(&self) -> f32 {
         self.strength().powi(2) * STRENGTH_MULT
     }
+}
+
+fn play_draw_on_ready_arrow(
+    _: Trigger<ReadyArrow>,
+    assets: Res<BowAssets>,
+    mut commands: Commands,
+) {
+    commands.spawn((
+        AudioPlayer::new(assets.bow_draw.clone()),
+        PlaybackSettings {
+            mode: bevy::audio::PlaybackMode::Once,
+            speed: random_range(0.9..1.1), // Varied sfx speed to keep sounds more interesting
+            ..Default::default()
+        },
+    ));
+}
+
+fn play_shot_on_fire_arrow(_: Trigger<FireArrow>, assets: Res<BowAssets>, mut commands: Commands) {
+    commands.spawn((
+        AudioPlayer::new(assets.bow_shoot.clone()),
+        PlaybackSettings {
+            mode: bevy::audio::PlaybackMode::Once,
+            speed: random_range(0.9..1.1),
+            ..Default::default()
+        },
+    ));
 }
 
 fn update_pull_strength(mut bow: Query<(&mut BowArrow, &Transform)>, cursor: Res<CursorPosition>) {

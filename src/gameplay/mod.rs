@@ -2,6 +2,7 @@ use avian3d::prelude::{Physics, PhysicsTime};
 use bevy::{prelude::*, window::PrimaryWindow};
 
 pub mod arrow;
+mod audio;
 pub mod bow;
 pub mod cursor;
 pub mod level;
@@ -76,6 +77,7 @@ pub fn plugin(app: &mut App) {
         cursor::plugin,
         timefreeze::plugin,
         ui::plugin,
+        audio::plugin,
     ))
     .add_systems(OnEnter(Screen::Gameplay), move_camera)
     .add_systems(OnEnter(GameState::Paused), pause_physics_time)

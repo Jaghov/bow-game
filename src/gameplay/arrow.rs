@@ -1,4 +1,4 @@
-use std::{f32::consts::FRAC_PI_2, time::Duration};
+use std::{f32::consts::FRAC_PI_2, path::Path, time::Duration};
 
 use avian3d::prelude::*;
 use bevy::prelude::*;
@@ -41,6 +41,8 @@ pub struct ArrowAssets {
     pub glowing: Handle<Scene>,
     #[dependency]
     pub normal: Handle<Scene>,
+    #[dependency]
+    arrow_fly: Handle<AudioSource>,
 }
 impl FromWorld for ArrowAssets {
     fn from_world(world: &mut World) -> Self {
@@ -48,6 +50,7 @@ impl FromWorld for ArrowAssets {
         Self {
             glowing: assets.load("models/ArrowGlow.glb#Scene0"),
             normal: assets.load("models/Arrow.glb#Scene0"),
+            arrow_fly: assets.load(Path::new("audio/sfx/ArrowFlyEffect_V2.flac")),
         }
     }
 }
