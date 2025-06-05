@@ -78,6 +78,7 @@ fn spawn_items(
     bow_assets: Res<BowAssets>,
     arrow_assets: Res<ArrowAssets>,
     sphere: Res<SphereAssets>,
+    gltfs: Res<Assets<Gltf>>,
 ) {
     commands.spawn((Bow, Prop, SceneRoot(bow_assets.scene.clone())));
     for i in (0..5) {
@@ -153,12 +154,6 @@ fn spawn_items(
         Exploder,
         mesh.clone(),
         MeshMaterial3d(sphere.exploder.clone()),
-    ));
-
-    commands.spawn((
-        SphereCount(7),
-        Transform::from_xyz(0., 0., -800.),
-        SceneRoot(sphere.gibs.clone()),
     ));
 }
 
