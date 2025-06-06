@@ -28,21 +28,23 @@ fn insert_absorber(trigger: Trigger<OnAdd, Absorber>, mut commands: Commands) {
             CollisionEventsEnabled,
         ))
         .observe(super::debug_collision)
-        .observe(absorb_bouncy);
+        .observe(absorb_property::<Bouncy>);
     commands.entity(trigger.target()).observe(on_multiply);
 }
 
-fn absorb_bouncy(
+fn absorb_property<Prop>(
     trigger: Trigger<OnCollisionStart>,
     mut commands: Commands,
-    spheres: Query<&MeshMaterial3d<StandardMaterial>, (With<Sphere>, With<Bouncy>)>,
+    spheres: Query<&MeshMaterial3d<StandardMaterial>, (With<Sphere>, With<Prop>)>,
     absorbers_without_prop: Query<
         &MeshMaterial3d<StandardMaterial>,
-        (Without<Bouncy>, With<Absorber>),
+        (Without<Prop>, With<Absorber>),
     >,
     colliders: Query<&ColliderOf>,
     mut materials: ResMut<Assets<StandardMaterial>>,
-) {
+) where
+    Prop: Component + Default,
+{
     let Ok(absorber_material) = absorbers_without_prop.get(trigger.target()) else {
         return;
     };
@@ -63,7 +65,7 @@ fn absorb_bouncy(
     absorber_material.base_color.mix_assign(collider_color, 0.3);
 
     info!("inserting bouncy on absorber");
-    commands.entity(trigger.target()).insert(Bouncy);
+    commands.entity(trigger.target()).insert(Prop::default());
 }
 
 fn on_multiply(

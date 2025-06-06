@@ -52,7 +52,7 @@ impl FromWorld for ExploderAssets {
     }
 }
 
-#[derive(Component)]
+#[derive(Component, Default)]
 #[require(Sphere)]
 pub struct Exploder;
 

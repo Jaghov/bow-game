@@ -4,7 +4,7 @@ use bevy::prelude::*;
 use super::Sphere;
 use crate::third_party::avian3d::GameLayer;
 
-#[derive(Component)]
+#[derive(Component, Default)]
 #[require(Sphere)]
 pub struct Normal;
 

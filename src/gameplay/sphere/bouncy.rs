@@ -7,7 +7,7 @@ use crate::{
     world::GAME_PLANE,
 };
 /// WIP: need to fix a few systems
-#[derive(Component)]
+#[derive(Component, Default)]
 #[require(Sphere)]
 pub struct Bouncy;
 

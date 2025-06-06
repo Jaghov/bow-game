@@ -11,7 +11,7 @@ pub(super) fn plugin(app: &mut App) {
     app.add_observer(insert_multiplier);
 }
 
-#[derive(Component)]
+#[derive(Component, Default)]
 #[require(Sphere)]
 pub struct Multiplier;
 

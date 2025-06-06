@@ -11,7 +11,7 @@ use crate::{
 };
 
 /// Notice this remains if collided on arrow
-#[derive(Component)]
+#[derive(Component, Default)]
 #[require(Sphere)]
 pub struct TimeFreeze;
 
