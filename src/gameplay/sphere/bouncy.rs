@@ -40,7 +40,8 @@ fn insert_bouncy(
             Restitution::PERFECTLY_ELASTIC,
             Friction::ZERO,
         ))
-        .observe(on_multiply);
+        .observe(on_multiply)
+        .observe(super::despawn_on_hit_by_explosion);
 }
 
 fn on_multiply(

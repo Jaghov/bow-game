@@ -49,7 +49,8 @@ pub(super) fn plugin(app: &mut App) {
     ));
 
     app.register_type::<SphereAssets>()
-        .load_resource::<SphereAssets>();
+        .load_resource::<SphereAssets>()
+        .add_observer(add_sphere_mesh);
 }
 
 #[derive(Resource, Asset, Reflect, Clone)]
@@ -159,6 +160,16 @@ impl FromWorld for SphereAssets {
 #[require(Collider = Collider::sphere(1.))]
 #[require(CollisionEventsEnabled)]
 pub struct Sphere;
+
+fn add_sphere_mesh(
+    trigger: Trigger<OnAdd, Sphere>,
+    mut commands: Commands,
+    assets: Res<SphereAssets>,
+) {
+    commands
+        .entity(trigger.target())
+        .try_insert(Mesh3d(assets.mesh.clone()));
+}
 
 fn debug_collision(
     trigger: Trigger<OnCollisionStart>,

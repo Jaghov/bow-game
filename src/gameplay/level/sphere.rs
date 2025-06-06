@@ -42,11 +42,9 @@ pub(super) fn spawn_sphere(
     trigger: Trigger<OnAdd, SphereType>,
     mut commands: Commands,
     spheres: Query<&SphereType>,
-    assets: Res<SphereAssets>,
 ) {
     let sphere_type = spheres.get(trigger.target()).unwrap();
     let mut ec = commands.entity(trigger.target());
-    ec.insert(Mesh3d(assets.mesh.clone()));
     match sphere_type {
         SphereType::Normal => {
             ec.insert((Name::new("Normal Sphere"), Normal));

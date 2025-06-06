@@ -225,7 +225,7 @@ fn explode(
         let shape = Collider::sphere(EXPLOSION_RADIUS);
         let origin = transform.translation;
         let rotation = Quat::default();
-        let filter = SpatialQueryFilter::from_mask(GameLayer::Sphere);
+        let filter = SpatialQueryFilter::from_mask([GameLayer::Sphere, GameLayer::Arrow]);
         let hits = spatial_query.shape_intersections(&shape, origin, rotation, &filter);
 
         for hit in hits {

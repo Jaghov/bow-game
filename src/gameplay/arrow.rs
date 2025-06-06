@@ -8,7 +8,7 @@ use crate::{
     gameplay::{
         GameSet,
         bow::BowArrow,
-        sphere::{FromMultiply, ShouldMultiply},
+        sphere::{FromMultiply, HitByExplosion, ShouldMultiply},
     },
     third_party::avian3d::GameLayer,
     world::GAME_PLANE,
@@ -72,7 +72,7 @@ pub struct NockedOn(Entity);
 #[reflect(Component)]
 #[require(RigidBody = RigidBody::Dynamic)]
 #[require(GravityScale = GravityScale(0.))]
-#[require(LockedAxes = LockedAxes::ROTATION_LOCKED.lock_translation_z().unlock_rotation_z())]
+#[require(LockedAxes = LockedAxes::ROTATION_LOCKED.lock_translation_z())]
 #[require(MaxFlightTime)]
 pub struct Arrow {
     pub bounces: u8,
@@ -94,29 +94,32 @@ fn spawn_arrow(trigger: Trigger<ReadyArrow>, mut commands: Commands, assets: Res
 // we will always overwrite children of arrow with 2 colliders
 fn add_arrow_colliders(trigger: Trigger<OnAdd, Arrow>, mut commands: Commands) {
     let collider = Collider::capsule(ARROW_RADIUS, ARROW_LEN);
-    commands.entity(trigger.target()).insert((children![
-        (
-            collider.clone(),
-            Sensor,
-            CollisionLayers::new(
-                GameLayer::ArrowSensor,
-                [GameLayer::ArrowSensor, GameLayer::Sphere]
-            )
-        ),
-        (
-            collider,
-            ColliderDensity(10.),
-            CollisionLayers::new(
-                GameLayer::Arrow,
-                [
+    commands
+        .entity(trigger.target())
+        .insert((children![
+            (
+                collider.clone(),
+                Sensor,
+                CollisionLayers::new(
+                    GameLayer::ArrowSensor,
+                    [GameLayer::ArrowSensor, GameLayer::Sphere]
+                )
+            ),
+            (
+                collider,
+                ColliderDensity(10.),
+                CollisionLayers::new(
                     GameLayer::Arrow,
-                    GameLayer::Sphere,
-                    GameLayer::Walls,
-                    GameLayer::Backdrop
-                ]
+                    [
+                        GameLayer::Arrow,
+                        GameLayer::Sphere,
+                        GameLayer::Walls,
+                        GameLayer::Backdrop
+                    ]
+                )
             )
-        )
-    ],));
+        ],))
+        .observe(despawn_on_explosion);
 }
 
 fn update_unfired_arrow_transform(
@@ -146,13 +149,6 @@ pub const ARROW_VELOCITY_THRESHOLD: f32 = 0.;
 #[derive(Event)]
 pub struct FireArrow;
 
-// impl FireArrow {
-//     // takes in a value 0, 1
-//     pub fn new(pull_strength: f32) -> Self {
-//         Self(pull_strength.powi(2) * STRENGTH_MULT)
-//     }
-// }
-
 fn fire_arrow(
     trigger: Trigger<FireArrow>,
     mut commands: Commands,
@@ -179,6 +175,9 @@ fn fire_arrow(
     } else {
         commands.trigger_targets(CancelArrow, trigger.target());
     }
+}
+fn despawn_on_explosion(trigger: Trigger<HitByExplosion>, mut commands: Commands) {
+    commands.entity(trigger.target()).try_despawn();
 }
 
 fn on_multiply(
@@ -214,7 +213,8 @@ fn on_multiply(
                 FromMultiply::default(),
                 scene_root.clone(),
             ))
-            .observe(on_multiply);
+            .observe(on_multiply)
+            .observe(despawn_on_explosion);
     }
 }
 

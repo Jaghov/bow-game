@@ -61,7 +61,9 @@ fn destroy_sphere(
         return;
     }
 
-    let (sphere_transform, sphere_material) = transforms.get(trigger.target()).unwrap();
+    let Ok((sphere_transform, sphere_material)) = transforms.get(trigger.target()) else {
+        return;
+    };
 
     let mut meshes_to_spawn = Vec::with_capacity(meshes.meshes.len());
 
