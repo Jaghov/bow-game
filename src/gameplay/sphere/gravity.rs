@@ -18,7 +18,8 @@ pub(super) fn plugin(app: &mut App) {
 }
 fn insert_gravity_sphere(trigger: Trigger<OnAdd, GravitySphere>, mut commands: Commands) {
     commands
-        .spawn((
+        .entity(trigger.target())
+        .insert((
             CollisionLayers::new(
                 GameLayer::Sphere,
                 [GameLayer::Arrow, GameLayer::Sphere, GameLayer::Walls],
@@ -26,11 +27,9 @@ fn insert_gravity_sphere(trigger: Trigger<OnAdd, GravitySphere>, mut commands: C
             Collider::sphere(1.),
             Restitution::PERFECTLY_ELASTIC,
             CollisionEventsEnabled,
-            ChildOf(trigger.target()),
+            Dominance(1),
         ))
         .observe(super::debug_collision);
-
-    commands.entity(trigger.target()).insert(Dominance(1));
 }
 /// the min distance for the gravity sphere to emit a force
 const ATTRACTION_RADIUS: f32 = 10.;

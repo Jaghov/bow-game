@@ -16,7 +16,8 @@ fn insert_multiplier(trigger: Trigger<OnAdd, Multiplier>, mut commands: Commands
     info!("observed new multiplier insert");
 
     commands
-        .spawn((
+        .entity(trigger.target())
+        .insert((
             CollisionLayers::new(
                 GameLayer::Sphere,
                 [GameLayer::ArrowSensor, GameLayer::Sphere],
@@ -24,7 +25,6 @@ fn insert_multiplier(trigger: Trigger<OnAdd, Multiplier>, mut commands: Commands
             Collider::sphere(1.),
             Sensor,
             CollisionEventsEnabled,
-            ChildOf(trigger.target()),
         ))
         .observe(super::debug_collision)
         .observe(super::despawn_on_arrow_collision)

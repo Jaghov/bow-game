@@ -60,7 +60,8 @@ fn insert_exploder(trigger: Trigger<OnAdd, Exploder>, mut commands: Commands) {
     info!("observed new normal insert");
 
     commands
-        .spawn((
+        .entity(trigger.target())
+        .insert((
             CollisionLayers::new(
                 GameLayer::Sphere,
                 [GameLayer::ArrowSensor, GameLayer::Sphere],
@@ -68,12 +69,15 @@ fn insert_exploder(trigger: Trigger<OnAdd, Exploder>, mut commands: Commands) {
             Collider::sphere(1.),
             Sensor,
             CollisionEventsEnabled,
-            ChildOf(trigger.target()),
         ))
         .observe(super::debug_collision)
         .observe(light_fuse_on_collision);
 
     commands.entity(trigger.target()).observe(light_fuse);
+}
+
+fn on_hit_by_explosion(trigger: Trigger<HitByExplosion>, mut commands: Commands) {
+    commands.trigger_targets(LightFuse(1), trigger.target());
 }
 
 #[derive(Component, Debug)]
@@ -109,15 +113,11 @@ fn light_fuse_on_collision(
     trigger: Trigger<OnCollisionStart>,
     ignore: Query<(), With<NockedOn>>,
     mut commands: Commands,
-    children: Query<&ChildOf>,
 ) {
     if ignore.get(trigger.event().collider).is_ok() {
         return;
     }
-    commands.trigger_targets(
-        LightFuse(3),
-        children.get(trigger.target()).unwrap().parent(),
-    );
+    commands.trigger_targets(LightFuse(3), trigger.target());
 }
 
 fn light_fuse(
@@ -166,6 +166,9 @@ fn animate_indicator(
         material.base_color = color;
     }
 }
+
+#[derive(Event)]
+pub struct HitByExplosion;
 
 fn explode(
     mut commands: Commands,

@@ -2,14 +2,11 @@ use avian3d::prelude::*;
 use bevy::prelude::*;
 
 use crate::{
-    gameplay::{
-        arrow::Arrow,
-        sphere::{ShouldMultiply, Sphere, SphereType},
-    },
+    gameplay::sphere::{ShouldMultiply, Sphere, SphereType},
     third_party::avian3d::GameLayer,
     world::GAME_PLANE,
 };
-
+/// WIP: need to fix a few systems
 #[derive(Component)]
 #[require(Sphere)]
 pub struct Bouncy;
@@ -19,7 +16,8 @@ pub(super) fn plugin(app: &mut App) {
 }
 fn insert_bouncy(trigger: Trigger<OnAdd, Bouncy>, mut commands: Commands) {
     commands
-        .spawn((
+        .entity(trigger.target())
+        .insert((
             CollisionLayers::new(
                 GameLayer::Sphere,
                 [GameLayer::Arrow, GameLayer::Sphere, GameLayer::Walls],
@@ -27,7 +25,6 @@ fn insert_bouncy(trigger: Trigger<OnAdd, Bouncy>, mut commands: Commands) {
             Collider::sphere(1.),
             Restitution::PERFECTLY_ELASTIC,
             CollisionEventsEnabled,
-            ChildOf(trigger.target()),
         ))
         .observe(super::debug_collision);
     commands.entity(trigger.target()).observe(on_multiply);
