@@ -17,7 +17,10 @@ fn insert_multiplier(trigger: Trigger<OnAdd, Multiplier>, mut commands: Commands
 
     commands
         .spawn((
-            CollisionLayers::new(GameLayer::ArrowSensor, GameLayer::ArrowSensor),
+            CollisionLayers::new(
+                GameLayer::Sphere,
+                [GameLayer::ArrowSensor, GameLayer::Sphere],
+            ),
             Collider::sphere(1.),
             Sensor,
             CollisionEventsEnabled,
@@ -25,6 +28,7 @@ fn insert_multiplier(trigger: Trigger<OnAdd, Multiplier>, mut commands: Commands
         ))
         .observe(super::debug_collision)
         .observe(super::despawn_on_arrow_collision)
+        .observe(super::despawn_on_bouncyball_collision)
         .observe(multiply_collider_on_hit);
 }
 
@@ -72,6 +76,7 @@ fn multiply_collider_on_hit(
         deepest_contact.local_point2
     };
 
+    info!("\n\ntriggering should_multiply!");
     commands.trigger_targets(
         ShouldMultiply {
             local_point: hit_trns.translation() + local_point,

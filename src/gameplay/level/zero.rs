@@ -32,7 +32,8 @@ fn create_level(mut levels: ResMut<Levels>) {
                 sphere!(Normal, 8., 8.),
                 // bouncy column
                 sphere!(Bouncy, 20., 0.),
-                sphere!(Normal, 20., 5.),
+                sphere!(Multiplier, 20., 5.),
+                sphere!(Normal, 20., 10.),
                 // multiplier column
                 sphere!(Multiplier, 40., 0.),
                 sphere!(Multiplier, 40., 5.),

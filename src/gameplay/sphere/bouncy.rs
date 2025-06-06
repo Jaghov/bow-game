@@ -2,8 +2,12 @@ use avian3d::prelude::*;
 use bevy::prelude::*;
 
 use crate::{
-    gameplay::{arrow::Arrow, sphere::Sphere},
+    gameplay::{
+        arrow::Arrow,
+        sphere::{ShouldMultiply, Sphere, SphereType},
+    },
     third_party::avian3d::GameLayer,
+    world::GAME_PLANE,
 };
 
 #[derive(Component)]
@@ -14,18 +18,6 @@ pub(super) fn plugin(app: &mut App) {
     app.add_observer(insert_bouncy);
 }
 fn insert_bouncy(trigger: Trigger<OnAdd, Bouncy>, mut commands: Commands) {
-    // todo: you figured out that going through the floor does weird things to
-    // bouncy ball linear velocity
-    commands
-        .spawn((
-            // CollisionLayers::new(GameLayer::ArrowSensors, GameLayer::ArrowSensors),
-            // Collider::sphere(1.),
-            // CollisionEventsEnabled,
-            // ChildOf(trigger.target()),
-        ))
-        .observe(super::debug_collision)
-        .observe(on_arrow_contact);
-
     commands
         .spawn((
             CollisionLayers::new(
@@ -38,28 +30,34 @@ fn insert_bouncy(trigger: Trigger<OnAdd, Bouncy>, mut commands: Commands) {
             ChildOf(trigger.target()),
         ))
         .observe(super::debug_collision);
+    commands.entity(trigger.target()).observe(on_multiply);
 }
 
-fn on_arrow_contact(
-    trigger: Trigger<OnCollisionEnd>,
-    arrows: Query<&LinearVelocity, (With<Arrow>, Without<Sphere>)>,
-    mut spheres: Query<&mut LinearVelocity, (With<Sphere>, Without<Arrow>)>,
-    colliders: Query<&ColliderOf>,
+fn on_multiply(
+    trigger: Trigger<ShouldMultiply>,
+    mut commands: Commands,
+    bouncy_balls: Query<(&Transform, &LinearVelocity), With<Bouncy>>,
 ) {
-    // let event = trigger.event();
-    // let Ok(arrow_vel) = arrows.get(event.collider) else {
-    //     return;
-    // };
+    info!("in bouncy on multiply");
+    let event = trigger.event();
+    let Ok((arrow_trn, lvel)) = bouncy_balls.get(trigger.target()) else {
+        warn!("Bouncy ball was commanded to multiply, but its required components were not found!");
+        return;
+    };
 
-    // let Ok(collider) = colliders.get(trigger.target()) else {
-    //     return;
-    // };
+    let multiply_origin = event.local_point.with_z(GAME_PLANE);
 
-    // let Ok(mut sphere) = spheres.get_mut(collider.body) else {
-    //     warn!("bouncy ball wasn't a sphere?");
-    //     return;
-    // };
+    for rotation_offset in &event.rot_offset {
+        let quatrot = Quat::from_rotation_z(*rotation_offset);
+        let rotation = arrow_trn.rotation * Quat::from_rotation_z(*rotation_offset);
 
-    // let add_to_velocity = arrow_vel.0 * 2.;
-    // sphere.0 += add_to_velocity;
+        let velocity = quatrot * lvel.0;
+        let offset = velocity.normalize() * 2.2;
+
+        let transform = Transform::from_translation(multiply_origin + offset)
+            .with_rotation(rotation)
+            .with_scale(arrow_trn.scale);
+
+        commands.spawn((SphereType::Bouncy, transform, LinearVelocity(velocity)));
+    }
 }
