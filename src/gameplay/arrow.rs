@@ -5,7 +5,11 @@ use bevy::prelude::*;
 
 use crate::{
     asset_tracking::LoadResource,
-    gameplay::{GameSet, bow::BowArrow, sphere::ShouldMultiply},
+    gameplay::{
+        GameSet,
+        bow::BowArrow,
+        sphere::{FromMultiply, ShouldMultiply},
+    },
     third_party::avian3d::GameLayer,
     world::GAME_PLANE,
 };
@@ -187,7 +191,7 @@ fn on_multiply(
         let rotation = arrow_trn.rotation * Quat::from_rotation_z(*rotation_offset);
 
         let velocity = quatrot * lvel.0;
-        let offset = velocity.normalize() * 2.2;
+        let offset = velocity.normalize_or_zero() * 2.2;
 
         let transform = Transform::from_translation(multiply_origin + offset)
             .with_rotation(rotation)
@@ -198,16 +202,24 @@ fn on_multiply(
                 Arrow::default(),
                 transform,
                 LinearVelocity(velocity),
+                FromMultiply::default(),
                 scene_root.clone(),
                 children![
                     (
                         collider.clone(),
                         Sensor,
-                        CollisionLayers::new(GameLayer::ArrowSensor, GameLayer::ArrowSensor)
+                        CollisionLayers::new(
+                            GameLayer::ArrowSensor,
+                            [GameLayer::ArrowSensor, GameLayer::Sphere]
+                        )
                     ),
                     (
                         collider.clone(),
-                        CollisionLayers::new(GameLayer::Arrow, GameLayer::Arrow)
+                        ColliderDensity(10.),
+                        CollisionLayers::new(
+                            GameLayer::Arrow,
+                            [GameLayer::Arrow, GameLayer::Sphere, GameLayer::Walls]
+                        )
                     )
                 ],
             ))

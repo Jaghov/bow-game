@@ -1,14 +1,38 @@
+use std::time::Duration;
+
 use avian3d::prelude::*;
 use bevy::prelude::*;
 
 use super::Sphere;
 use crate::{
-    gameplay::sphere::{Absorber, DestroySphere, HitByExplosion, LightFuse, SphereType},
+    gameplay::{
+        GameSet,
+        sphere::{Absorber, DestroySphere, HitByExplosion, LightFuse, SphereType},
+    },
     third_party::avian3d::GameLayer,
 };
 
 pub(super) fn plugin(app: &mut App) {
-    app.add_observer(insert_multiplier);
+    app.add_observer(insert_multiplier)
+        .add_systems(
+            Update,
+            (|mut timers: Query<&mut FromMultiply>, time: Res<Time>| {
+                for mut timer in &mut timers {
+                    timer.0.tick(time.delta());
+                }
+            })
+            .in_set(GameSet::TickTimers),
+        )
+        .add_systems(
+            PostUpdate,
+            |mut commands: Commands, timers: Query<(Entity, &FromMultiply)>| {
+                for (entity, timer) in timers {
+                    if timer.0.finished() {
+                        commands.entity(entity).remove::<FromMultiply>();
+                    }
+                }
+            },
+        );
 }
 
 #[derive(Component, Default)]
@@ -35,8 +59,19 @@ fn insert_multiplier(trigger: Trigger<OnAdd, Multiplier>, mut commands: Commands
         .observe(multiply_explosion);
 }
 
+/// adds a cooldown to something multiplied so it won't multiply forever.
 #[derive(Component)]
-pub struct FromMultiply;
+pub struct FromMultiply(Timer);
+impl FromMultiply {
+    pub fn forever() -> Self {
+        Self(Timer::new(Duration::MAX, TimerMode::Once))
+    }
+}
+impl Default for FromMultiply {
+    fn default() -> Self {
+        Self(Timer::new(Duration::from_secs(1), TimerMode::Once))
+    }
+}
 
 fn multiply_explosion(
     trigger: Trigger<HitByExplosion>,
@@ -49,7 +84,7 @@ fn multiply_explosion(
     };
     let explosion_location = trigger.event().location();
 
-    let diff = (location.translation.xy() - explosion_location).normalize();
+    let diff = (location.translation.xy() - explosion_location).normalize_or_zero();
 
     let z_rot = -diff.x.atan2(diff.y);
 
@@ -71,7 +106,7 @@ fn multiply_explosion(
 
         let transform = Transform::from_translation(translation).with_rotation(rotation);
         commands
-            .spawn((SphereType::Exploder, FromMultiply, transform))
+            .spawn((SphereType::Exploder, FromMultiply::forever(), transform))
             .trigger(LightFuse(3));
     }
     commands.trigger_targets(DestroySphere, trigger.target());
@@ -79,6 +114,8 @@ fn multiply_explosion(
 
 /// An event that tells an observer to multiply with an array
 /// of rotations relative to the observing entity's rotation
+///
+/// NOTE: make sure you add `FromMultiply` to your duplicate!!
 #[derive(Event)]
 pub struct ShouldMultiply {
     /// the point of contact relative to the observer's collider
@@ -86,21 +123,15 @@ pub struct ShouldMultiply {
     pub rot_offset: Vec<f32>,
 }
 
-#[derive(Component)]
-struct AlreadyHit;
-
 fn multiply_collider_on_hit(
     trigger: Trigger<OnCollisionStart>,
-    already_hit: Query<&AlreadyHit>,
+    already_hit: Query<(), With<FromMultiply>>,
     transforms: Query<&GlobalTransform>,
     mut commands: Commands,
     colliders: Query<&ColliderOf>,
     collisions: Collisions,
 ) {
     info!("In multiplier on hit");
-    if already_hit.get(trigger.target()).is_ok() {
-        return;
-    }
 
     // if point to use is true, use local point 2.
     // else, use 1.
@@ -108,6 +139,14 @@ fn multiply_collider_on_hit(
         info!("no contact pair!");
         return;
     };
+
+    let Ok(collider) = colliders.get(trigger.collider) else {
+        return;
+    };
+
+    if already_hit.get(collider.body).is_ok() {
+        return;
+    }
 
     let Some(deepest_contact) = contact_pair.find_deepest_contact() else {
         warn!("multiplier was hit, but couldn't find deepest contact point!");
@@ -127,6 +166,6 @@ fn multiply_collider_on_hit(
             local_point: hit_trns.translation() + local_point,
             rot_offset: vec![35.0_f32.to_radians(), -35.0_f32.to_radians()],
         },
-        colliders.get(trigger.collider).unwrap().body,
+        collider.body,
     );
 }

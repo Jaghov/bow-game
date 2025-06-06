@@ -2,7 +2,7 @@ use avian3d::prelude::*;
 use bevy::prelude::*;
 
 use crate::{
-    gameplay::sphere::{ShouldMultiply, Sphere, SphereType},
+    gameplay::sphere::{FromMultiply, ShouldMultiply, Sphere, SphereType},
     third_party::avian3d::GameLayer,
     world::GAME_PLANE,
 };
@@ -49,12 +49,17 @@ fn on_multiply(
         let rotation = transform.rotation * Quat::from_rotation_z(*rotation_offset);
 
         let velocity = quatrot * lvel.0;
-        let offset = velocity.normalize() * 2.2;
+        let offset = velocity.normalize_or_zero() * 2.2;
 
         let transform = Transform::from_translation(multiply_origin + offset)
             .with_rotation(rotation)
             .with_scale(transform.scale);
 
-        commands.spawn((SphereType::Bouncy, transform, LinearVelocity(velocity)));
+        commands.spawn((
+            SphereType::Bouncy,
+            FromMultiply::default(),
+            transform,
+            LinearVelocity(velocity),
+        ));
     }
 }

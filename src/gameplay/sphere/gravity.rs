@@ -67,7 +67,7 @@ fn apply_gravity_forces_to_spheres(
 
             let direction = position.0 - other_sphere_position.0;
             let len = ATTRACTION_RADIUS.powi(2) - direction.length_squared();
-            force.apply_force(direction.normalize() * len);
+            force.apply_force(direction.normalize_or_zero() * len);
         }
     }
 }
