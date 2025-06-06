@@ -86,11 +86,14 @@ fn spawn_arrow(trigger: Trigger<ReadyArrow>, mut commands: Commands, assets: Res
                 (
                     collider.clone(),
                     Sensor,
-                    CollisionLayers::new(GameLayer::ArrowSensor, GameLayer::ArrowSensor)
+                    CollisionLayers::new(
+                        GameLayer::ArrowSensor,
+                        [GameLayer::ArrowSensor, GameLayer::Sphere]
+                    )
                 ),
                 (
                     collider,
-                    CollisionLayers::new(GameLayer::Arrow, GameLayer::Arrow)
+                    CollisionLayers::new(GameLayer::Arrow, [GameLayer::Arrow, GameLayer::Sphere])
                 )
             ],
         ))

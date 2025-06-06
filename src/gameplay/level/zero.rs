@@ -29,7 +29,7 @@ fn create_level(mut levels: ResMut<Levels>) {
                 sphere!(Exploder, 10., 5.),
                 sphere!(Exploder, 10., 10.),
                 sphere!(Normal, 8., 8.),
-                //sphere!(Bouncy, 20., 0.),
+                sphere!(Bouncy, 20., 0.),
                 sphere!(Multiplier, 40., 0.),
             ],
         ),

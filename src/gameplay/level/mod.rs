@@ -64,9 +64,10 @@ pub(crate) enum LevelState {
 #[derive(Resource)]
 pub struct Level(pub usize);
 
+#[allow(clippy::derivable_impls)]
 impl Default for Level {
     fn default() -> Self {
-        Self(1)
+        Self(0)
     }
 }
 

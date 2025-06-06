@@ -28,7 +28,7 @@ fn insert_bouncy(trigger: Trigger<OnAdd, Bouncy>, mut commands: Commands) {
 
     commands
         .spawn((
-            CollisionLayers::new(GameLayer::Sphere, [GameLayer::Sphere, GameLayer::Default]),
+            CollisionLayers::new(GameLayer::Sphere, [GameLayer::Arrow, GameLayer::Sphere]),
             Collider::sphere(1.),
             CollisionEventsEnabled,
             ChildOf(trigger.target()),
