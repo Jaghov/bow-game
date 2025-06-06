@@ -176,25 +176,53 @@ fn spawn_sphere(
     ec.insert(Mesh3d(assets.mesh.clone()));
     match sphere_type {
         SphereType::Normal => {
-            ec.insert((Normal, MeshMaterial3d(assets.normal.clone())));
+            ec.insert((
+                Name::new("Normal Sphere"),
+                Normal,
+                MeshMaterial3d(assets.normal.clone()),
+            ));
         }
         SphereType::Multiplier => {
-            ec.insert((Multiplier, MeshMaterial3d(assets.multiplier.clone())));
+            ec.insert((
+                Name::new("Multiplier Sphere"),
+                Multiplier,
+                MeshMaterial3d(assets.multiplier.clone()),
+            ));
         }
         SphereType::TimeFreeze => {
-            ec.insert((TimeFreeze, MeshMaterial3d(assets.time_freeze.clone())));
+            ec.insert((
+                Name::new("TimeFreeze Sphere"),
+                TimeFreeze,
+                MeshMaterial3d(assets.time_freeze.clone()),
+            ));
         }
         SphereType::Bouncy => {
-            ec.insert((Bouncy, MeshMaterial3d(assets.bouncy.clone())));
+            ec.insert((
+                Name::new("Bouncy Sphere"),
+                Bouncy,
+                MeshMaterial3d(assets.bouncy.clone()),
+            ));
         }
         SphereType::Gravity => {
-            ec.insert((GravitySphere, MeshMaterial3d(assets.gravity.clone())));
+            ec.insert((
+                Name::new("Gravity Sphere"),
+                GravitySphere,
+                MeshMaterial3d(assets.gravity.clone()),
+            ));
         }
         SphereType::Absorber => {
-            ec.insert((Absorber, MeshMaterial3d(assets.absorber.clone())));
+            ec.insert((
+                Name::new("Absorber Sphere"),
+                Absorber,
+                MeshMaterial3d(assets.absorber.clone()),
+            ));
         }
         SphereType::Exploder => {
-            ec.insert((Exploder, MeshMaterial3d(assets.exploder.clone())));
+            ec.insert((
+                Name::new("Exploder Sphere"),
+                Exploder,
+                MeshMaterial3d(assets.exploder.clone()),
+            ));
         }
     }
 }

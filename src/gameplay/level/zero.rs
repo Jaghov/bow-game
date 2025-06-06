@@ -21,7 +21,10 @@ fn create_level(mut levels: ResMut<Levels>) {
                 horz!(-6., -8., 8.),
             ],
             vec![
+                //gravity column
                 sphere!(Gravity, -40., 0.),
+                sphere!(Normal, -40., 5.),
+                //others
                 sphere!(Absorber, -30., 0.),
                 sphere!(TimeFreeze, -10., 0.),
                 sphere!(Normal, 0., 0.),
