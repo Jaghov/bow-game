@@ -236,7 +236,7 @@ fn update_unfired_arrow_transform(
 
 /// the arrow will be fired, but will be canceled if this velocity is not reached
 //TODO: set this back to 15ish
-pub const ARROW_VELOCITY_THRESHOLD: f32 = 0.;
+pub const ARROW_VELOCITY_THRESHOLD: f32 = 15.;
 
 #[derive(Event)]
 pub struct FireArrow;

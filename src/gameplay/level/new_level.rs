@@ -11,6 +11,7 @@ use crate::{
         level::{
             Level, LevelState, Levels, SPHERE_START_PLANE, WALL_START_PLANE, WallMaterial, Walls,
             timer::LevelSetupTimer,
+            sphere::{SphereType},
         },
         sphere::Sphere,
     },
@@ -50,7 +51,7 @@ struct LevelCompletion {
 }
 fn observe_level_completion(
     mut commands: Commands,
-    balls: Query<(), With<Sphere>>,
+    balls: Query<&SphereType, With<Sphere>>,
     mut level: ResMut<Level>,
     mut next_state: ResMut<NextState<LevelState>>,
     backdrop_pulse: Res<RadialBackdropPulse>,
@@ -73,7 +74,12 @@ fn observe_level_completion(
         return;
     }
 
-    if balls.is_empty() {
+    // Check if only bouncy, absorber, or gravity balls remain (these don't count toward completion)
+    let remaining_balls_count = balls.iter().filter(|sphere_type| {
+        !matches!(sphere_type, SphereType::Bouncy | SphereType::Absorber | SphereType::Gravity)
+    }).count();
+    
+    if remaining_balls_count == 0 {
         commands.run_system(backdrop_pulse.0);
         level_completion.timer = Some(Timer::new(Duration::from_millis(2000), TimerMode::Once));
     }
