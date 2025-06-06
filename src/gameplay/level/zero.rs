@@ -34,6 +34,10 @@ fn create_level(mut levels: ResMut<Levels>) {
                 sphere!(Bouncy, 20., 0.),
                 sphere!(Multiplier, 20., 5.),
                 sphere!(Normal, 20., 10.),
+                // bouncy timefreeze column
+                sphere!(Bouncy, 30., 0.),
+                sphere!(TimeFreeze, 30., 5.),
+                sphere!(Multiplier, 30., 10.),
                 // multiplier column
                 sphere!(Multiplier, 40., 0.),
                 sphere!(Multiplier, 40., 5.),

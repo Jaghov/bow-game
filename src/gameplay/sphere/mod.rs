@@ -25,6 +25,9 @@ pub use bouncy::*;
 mod destroy;
 pub use destroy::*;
 
+mod gravity;
+pub use gravity::*;
+
 use crate::{
     asset_tracking::LoadResource,
     gameplay::arrow::{Arrow, NockedOn},
@@ -38,6 +41,7 @@ pub(super) fn plugin(app: &mut App) {
         exploder::plugin,
         bouncy::plugin,
         destroy::plugin,
+        gravity::plugin,
     ));
 
     app.register_type::<SphereAssets>()
@@ -160,10 +164,6 @@ pub struct Sphere;
 #[derive(Component)]
 #[require(Sphere)]
 pub struct Absorber;
-
-#[derive(Component)]
-#[require(Sphere)]
-pub struct GravitySphere;
 
 fn spawn_sphere(
     trigger: Trigger<OnAdd, SphereType>,
