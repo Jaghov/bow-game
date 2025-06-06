@@ -20,13 +20,12 @@ fn insert_multiplier(trigger: Trigger<OnAdd, Multiplier>, mut commands: Commands
 
     commands
         .entity(trigger.target())
-        .insert((
+        .insert_if_new((
             CollisionLayers::new(
                 GameLayer::Sphere,
                 [GameLayer::ArrowSensor, GameLayer::Sphere],
             ),
             Collider::sphere(1.),
-            Sensor,
             CollisionEventsEnabled,
         ))
         .observe(super::debug_collision)

@@ -186,6 +186,7 @@ fn spawn_sphere(
             ec.insert((
                 Name::new("Multiplier Sphere"),
                 Multiplier,
+                Sensor,
                 MeshMaterial3d(assets.multiplier.clone()),
             ));
         }
@@ -289,9 +290,14 @@ fn debug_collision(
 fn despawn_on_arrow_collision(
     trigger: Trigger<OnCollisionStart>,
     mut commands: Commands,
+    absorbers: Query<(), With<Absorber>>,
     arrows: Query<(), (With<Arrow>, Without<NockedOn>)>,
     colliders: Query<&ColliderOf>,
 ) {
+    if absorbers.get(trigger.target()).is_ok() {
+        return;
+    };
+
     let event = trigger.event();
     let Ok(collider) = colliders.get(event.collider) else {
         return;
@@ -307,10 +313,14 @@ fn despawn_on_arrow_collision(
 
 fn despawn_on_bouncyball_collision(
     trigger: Trigger<OnCollisionStart>,
+    absorbers: Query<(), With<Absorber>>,
     mut commands: Commands,
     spheres: Query<(), (With<Sphere>, With<Bouncy>)>,
     colliders: Query<&ColliderOf>,
 ) {
+    if absorbers.get(trigger.target()).is_ok() {
+        return;
+    };
     let event = trigger.event();
     let Ok(collider) = colliders.get(event.collider) else {
         return;

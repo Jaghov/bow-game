@@ -2,7 +2,7 @@ use avian3d::prelude::*;
 use bevy::prelude::*;
 
 use crate::{
-    gameplay::sphere::{Bouncy, ShouldMultiply, Sphere, SphereType},
+    gameplay::sphere::{Bouncy, Multiplier, ShouldMultiply, Sphere, SphereType},
     third_party::avian3d::GameLayer,
     world::GAME_PLANE,
 };
@@ -28,8 +28,8 @@ fn insert_absorber(trigger: Trigger<OnAdd, Absorber>, mut commands: Commands) {
             CollisionEventsEnabled,
         ))
         .observe(super::debug_collision)
-        .observe(absorb_property::<Bouncy>);
-    commands.entity(trigger.target()).observe(on_multiply);
+        .observe(absorb_property::<Bouncy>)
+        .observe(absorb_property::<Multiplier>);
 }
 
 fn absorb_property<Prop>(
@@ -45,6 +45,7 @@ fn absorb_property<Prop>(
 ) where
     Prop: Component + Default,
 {
+    info!("inserting property on absorber");
     let Ok(absorber_material) = absorbers_without_prop.get(trigger.target()) else {
         return;
     };
@@ -64,35 +65,34 @@ fn absorb_property<Prop>(
 
     absorber_material.base_color.mix_assign(collider_color, 0.3);
 
-    info!("inserting bouncy on absorber");
     commands.entity(trigger.target()).insert(Prop::default());
 }
 
-fn on_multiply(
-    trigger: Trigger<ShouldMultiply>,
-    mut commands: Commands,
-    bouncy_balls: Query<(&Transform, &LinearVelocity), With<Absorber>>,
-) {
-    info!("in bouncy on multiply");
-    let event = trigger.event();
-    let Ok((arrow_trn, lvel)) = bouncy_balls.get(trigger.target()) else {
-        warn!("Bouncy ball was commanded to multiply, but its required components were not found!");
-        return;
-    };
+// fn on_multiply(
+//     trigger: Trigger<ShouldMultiply>,
+//     mut commands: Commands,
+//     bouncy_balls: Query<(&Transform, &LinearVelocity), With<Absorber>>,
+// ) {
+//     info!("in absorber on multiply");
+//     let event = trigger.event();
+//     let Ok((arrow_trn, lvel)) = bouncy_balls.get(trigger.target()) else {
+//         warn!("Bouncy ball was commanded to multiply, but its required components were not found!");
+//         return;
+//     };
 
-    let multiply_origin = event.local_point.with_z(GAME_PLANE);
+//     let multiply_origin = event.local_point.with_z(GAME_PLANE);
 
-    for rotation_offset in &event.rot_offset {
-        let quatrot = Quat::from_rotation_z(*rotation_offset);
-        let rotation = arrow_trn.rotation * Quat::from_rotation_z(*rotation_offset);
+//     for rotation_offset in &event.rot_offset {
+//         let quatrot = Quat::from_rotation_z(*rotation_offset);
+//         let rotation = arrow_trn.rotation * Quat::from_rotation_z(*rotation_offset);
 
-        let velocity = quatrot * lvel.0;
-        let offset = velocity.normalize() * 2.2;
+//         let velocity = quatrot * lvel.0;
+//         let offset = velocity.normalize() * 2.2;
 
-        let transform = Transform::from_translation(multiply_origin + offset)
-            .with_rotation(rotation)
-            .with_scale(arrow_trn.scale);
+//         let transform = Transform::from_translation(multiply_origin + offset)
+//             .with_rotation(rotation)
+//             .with_scale(arrow_trn.scale);
 
-        commands.spawn((SphereType::Bouncy, transform, LinearVelocity(velocity)));
-    }
-}
+//         commands.spawn((SphereType::Bouncy, transform, LinearVelocity(velocity)));
+//     }
+// }
