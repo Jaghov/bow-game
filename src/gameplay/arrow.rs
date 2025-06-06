@@ -72,7 +72,7 @@ pub struct NockedOn(Entity);
 #[reflect(Component)]
 #[require(RigidBody = RigidBody::Dynamic)]
 #[require(GravityScale = GravityScale(0.))]
-#[require(LockedAxes = LockedAxes::new().lock_translation_z())]
+#[require(LockedAxes = LockedAxes::ROTATION_LOCKED.lock_translation_z().unlock_rotation_z())]
 #[require(MaxFlightTime)]
 pub struct Arrow {
     pub bounces: u8,

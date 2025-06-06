@@ -4,7 +4,6 @@ use bevy::prelude::*;
 use crate::{
     gameplay::sphere::{Bouncy, Exploder, Multiplier, Sphere},
     third_party::avian3d::GameLayer,
-    world::GAME_PLANE,
 };
 
 /// WIP, need to fix a few systems
