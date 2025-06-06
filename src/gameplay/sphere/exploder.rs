@@ -71,13 +71,12 @@ fn insert_exploder(trigger: Trigger<OnAdd, Exploder>, mut commands: Commands) {
             CollisionEventsEnabled,
         ))
         .observe(super::debug_collision)
-        .observe(light_fuse_on_collision);
-
-    commands.entity(trigger.target()).observe(light_fuse);
-}
-
-fn on_hit_by_explosion(trigger: Trigger<HitByExplosion>, mut commands: Commands) {
-    commands.trigger_targets(LightFuse(1), trigger.target());
+        .observe(light_fuse_on_collision)
+        .observe(light_fuse)
+        .observe(|trigger: Trigger<HitByExplosion>, mut commands: Commands| {
+            //light a much smaller fuse if hit by an explosion
+            commands.trigger_targets(LightFuse(1), trigger.target());
+        });
 }
 
 #[derive(Component, Debug)]
@@ -96,7 +95,7 @@ impl Fuse {
 }
 
 #[derive(Event)]
-struct LightFuse(usize);
+pub struct LightFuse(pub usize);
 
 #[derive(Component)]
 struct Indicator(Entity);
@@ -168,14 +167,21 @@ fn animate_indicator(
 }
 
 #[derive(Event)]
-pub struct HitByExplosion;
+pub struct HitByExplosion {
+    explosion_location: Vec2,
+}
+impl HitByExplosion {
+    fn new(explosion_location: Vec2) -> Self {
+        Self { explosion_location }
+    }
+    pub fn location(&self) -> Vec2 {
+        self.explosion_location
+    }
+}
 
 fn explode(
     mut commands: Commands,
     fuses: Query<(Entity, &Transform, &Fuse)>,
-
-    spheres: Query<Has<Exploder>, With<Sphere>>,
-
     mut shake: Single<&mut Shake>,
     colliders: Query<&ColliderOf>,
     spatial_query: SpatialQuery,
@@ -202,16 +208,7 @@ fn explode(
                 commands.entity(entity).trigger(DestroySphere);
                 continue;
             }
-            let Ok(is_exploder) = spheres.get(body) else {
-                continue;
-            };
-
-            // if it's an exploder, it'll explode in 1 second. otherwise, lfg
-            if is_exploder {
-                commands.trigger_targets(LightFuse(1), body);
-            } else {
-                commands.entity(body).trigger(DestroySphere);
-            }
+            commands.trigger_targets(HitByExplosion::new(transform.translation.xy()), body);
         }
         should_shake = true;
     }

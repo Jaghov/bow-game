@@ -37,7 +37,7 @@ fn on_multiply(
 ) {
     info!("in bouncy on multiply");
     let event = trigger.event();
-    let Ok((arrow_trn, lvel)) = bouncy_balls.get(trigger.target()) else {
+    let Ok((transform, lvel)) = bouncy_balls.get(trigger.target()) else {
         warn!("Bouncy ball was commanded to multiply, but its required components were not found!");
         return;
     };
@@ -46,14 +46,14 @@ fn on_multiply(
 
     for rotation_offset in &event.rot_offset {
         let quatrot = Quat::from_rotation_z(*rotation_offset);
-        let rotation = arrow_trn.rotation * Quat::from_rotation_z(*rotation_offset);
+        let rotation = transform.rotation * Quat::from_rotation_z(*rotation_offset);
 
         let velocity = quatrot * lvel.0;
         let offset = velocity.normalize() * 2.2;
 
         let transform = Transform::from_translation(multiply_origin + offset)
             .with_rotation(rotation)
-            .with_scale(arrow_trn.scale);
+            .with_scale(transform.scale);
 
         commands.spawn((SphereType::Bouncy, transform, LinearVelocity(velocity)));
     }

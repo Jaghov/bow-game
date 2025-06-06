@@ -2,7 +2,10 @@ use avian3d::prelude::*;
 use bevy::prelude::*;
 
 use super::Sphere;
-use crate::third_party::avian3d::GameLayer;
+use crate::{
+    gameplay::sphere::{DestroySphere, HitByExplosion, LightFuse, SphereType},
+    third_party::avian3d::GameLayer,
+};
 
 pub(super) fn plugin(app: &mut App) {
     app.add_observer(insert_multiplier);
@@ -29,7 +32,39 @@ fn insert_multiplier(trigger: Trigger<OnAdd, Multiplier>, mut commands: Commands
         .observe(super::debug_collision)
         .observe(super::despawn_on_arrow_collision)
         .observe(super::despawn_on_bouncyball_collision)
-        .observe(multiply_collider_on_hit);
+        .observe(multiply_collider_on_hit)
+        .observe(multiply_explosion);
+}
+
+fn multiply_explosion(
+    trigger: Trigger<HitByExplosion>,
+    mut commands: Commands,
+    transforms: Query<&Transform>,
+) {
+    let Ok(location) = transforms.get(trigger.target()) else {
+        return;
+    };
+    let explosion_location = trigger.event().location();
+
+    let diff = (location.translation.xy() - explosion_location).normalize();
+
+    let z_rot = -diff.x.atan2(diff.y);
+
+    let rotation = Quat::from_rotation_z(z_rot);
+
+    for rotation_offset in [70.0_f32.to_radians(), 0., -70.0_f32.to_radians()] {
+        let rotation = rotation * Quat::from_rotation_z(rotation_offset);
+
+        let offset = rotation * Vec3::new(0., 6., 0.);
+
+        let translation = location.translation + offset;
+
+        let transform = Transform::from_translation(translation).with_rotation(rotation);
+        commands
+            .spawn((SphereType::Exploder, transform))
+            .trigger(LightFuse(3));
+    }
+    commands.trigger_targets(DestroySphere, trigger.target());
 }
 
 /// An event that tells an observer to multiply with an array

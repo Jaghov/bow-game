@@ -27,6 +27,13 @@ fn create_level(mut levels: ResMut<Levels>) {
                 sphere!(Multiplier, -40., -5.),
                 //others
                 sphere!(Absorber, -30., 0.),
+                //exploder testing column
+                sphere!(Exploder, -20., 0.),
+                sphere!(Multiplier, -23., 5.),
+                sphere!(Multiplier, -23., -5.),
+                sphere!(Multiplier, -17., 5.),
+                sphere!(Multiplier, -17., -5.),
+                //others
                 sphere!(TimeFreeze, -10., 0.),
                 sphere!(Normal, 0., 0.),
                 // exploder column
