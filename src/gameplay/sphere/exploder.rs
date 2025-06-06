@@ -61,13 +61,12 @@ fn insert_exploder(trigger: Trigger<OnAdd, Exploder>, mut commands: Commands) {
 
     commands
         .entity(trigger.target())
-        .insert((
+        .insert_if_new((
             CollisionLayers::new(
                 GameLayer::Sphere,
                 [GameLayer::ArrowSensor, GameLayer::Sphere],
             ),
             Collider::sphere(1.),
-            Sensor,
             CollisionEventsEnabled,
         ))
         .observe(super::debug_collision)
@@ -111,9 +110,14 @@ fn indicator(assets: &ExploderAssets, materials: &mut Assets<StandardMaterial>) 
 fn light_fuse_on_collision(
     trigger: Trigger<OnCollisionStart>,
     ignore: Query<(), With<NockedOn>>,
+    colliders: Query<&ColliderOf>,
     mut commands: Commands,
 ) {
-    if ignore.get(trigger.event().collider).is_ok() {
+    let Ok(collider) = colliders.get(trigger.event().collider) else {
+        return;
+    };
+
+    if ignore.get(collider.body).is_ok() {
         return;
     }
     commands.trigger_targets(LightFuse(3), trigger.target());
@@ -122,22 +126,28 @@ fn light_fuse_on_collision(
 fn light_fuse(
     trigger: Trigger<LightFuse>,
     mut commands: Commands,
-    mut exploders: Query<(Entity, Has<Fuse>), With<Exploder>>,
+    mut exploders: Query<(Entity, Has<Fuse>, Has<Indicator>), With<Exploder>>,
     assets: Res<ExploderAssets>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    let (exploder, current_fuse) = exploders.get_mut(trigger.target()).unwrap();
+    let (exploder, current_fuse, has_indicator) = exploders.get_mut(trigger.target()).unwrap();
 
     if current_fuse {
         return;
     }
 
-    let indicator = commands.spawn(indicator(&assets, &mut materials)).id();
+    if !has_indicator {
+        let indicator = commands.spawn(indicator(&assets, &mut materials)).id();
+
+        commands
+            .entity(exploder)
+            .insert(Indicator(indicator))
+            .add_child(indicator);
+    }
 
     commands
         .entity(exploder)
-        .insert((Fuse::new(trigger.event().0), Indicator(indicator)))
-        .add_child(indicator);
+        .insert((Fuse::new(trigger.event().0)));
 }
 
 fn tick_explosion(mut fuses: Query<&mut Fuse>, time: Res<Time>) {
@@ -150,19 +160,25 @@ fn tick_explosion(mut fuses: Query<&mut Fuse>, time: Res<Time>) {
 }
 
 fn animate_indicator(
-    ignited_exploders: Query<(&Fuse, &Indicator)>,
+    ignited_exploders: Query<(Option<&Fuse>, &Indicator)>,
     indicators: Query<&MeshMaterial3d<StandardMaterial>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     for (fuse, indicator) in ignited_exploders {
         let indicator = indicators.get(indicator.0).unwrap();
         let material = materials.get_mut(indicator).unwrap();
-        let color: Color = match fuse.countdown {
-            3 => YELLOW.into(),
-            2 => ORANGE.into(),
-            _ => RED.into(),
+        let color: Color = match fuse {
+            Some(fuse) => match fuse.countdown {
+                3 => YELLOW.into(),
+                2 => ORANGE.into(),
+                _ => RED.into(),
+            },
+            None => Srgba::new(1., 1., 1., 0.2).into(),
         };
         material.base_color = color;
+        if fuse.is_none() {
+            material.alpha_mode = AlphaMode::Blend;
+        }
     }
 }
 
@@ -221,6 +237,7 @@ fn explode(
             );
         }
         should_shake = true;
+        commands.entity(entity).try_remove::<Fuse>();
     }
     if should_shake {
         shake.add_trauma(0.3);

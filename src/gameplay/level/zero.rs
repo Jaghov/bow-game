@@ -28,8 +28,8 @@ fn create_level(mut levels: ResMut<Levels>) {
                 //absorber column
                 sphere!(Absorber, -30., 0.),
                 sphere!(Multiplier, -30., 5.),
-                sphere!(Bouncy, -30., 10.),
-                sphere!(Exploder, -30., 15.),
+                sphere!(Exploder, -30., 10.),
+                sphere!(Bouncy, -30., 15.),
                 //exploder testing column
                 // sphere!(Exploder, -20., 0.),
                 // sphere!(Multiplier, -23., 5.),

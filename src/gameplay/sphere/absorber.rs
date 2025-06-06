@@ -2,7 +2,7 @@ use avian3d::prelude::*;
 use bevy::prelude::*;
 
 use crate::{
-    gameplay::sphere::{Bouncy, Multiplier, ShouldMultiply, Sphere, SphereType},
+    gameplay::sphere::{Bouncy, Exploder, Multiplier, Sphere},
     third_party::avian3d::GameLayer,
     world::GAME_PLANE,
 };
@@ -29,7 +29,8 @@ fn insert_absorber(trigger: Trigger<OnAdd, Absorber>, mut commands: Commands) {
         ))
         .observe(super::debug_collision)
         .observe(absorb_property::<Bouncy>)
-        .observe(absorb_property::<Multiplier>);
+        .observe(absorb_property::<Multiplier>)
+        .observe(absorb_property::<Exploder>);
 }
 
 fn absorb_property<Prop>(

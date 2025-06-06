@@ -162,7 +162,7 @@ pub enum SphereType {
 }
 #[derive(Component, Default)]
 #[require(RigidBody = RigidBody::Dynamic)]
-#[require(LockedAxes = LockedAxes::new().lock_translation_z())]
+#[require(LockedAxes = LockedAxes::ROTATION_LOCKED.lock_translation_z())]
 pub struct Sphere;
 
 fn spawn_sphere(
@@ -222,6 +222,7 @@ fn spawn_sphere(
             ec.insert((
                 Name::new("Exploder Sphere"),
                 Exploder,
+                Sensor,
                 MeshMaterial3d(assets.exploder.clone()),
             ));
         }
