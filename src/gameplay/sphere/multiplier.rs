@@ -163,7 +163,9 @@ fn multiply_collider_on_hit(
         warn!("multiplier was hit, but couldn't find deepest contact point!");
         return;
     };
-    let hit_trns = transforms.get(trigger.target()).unwrap();
+    let Ok(hit_trns) = transforms.get(trigger.target()) else {
+        return;
+    };
 
     let local_point = if contact_pair.collider2 == trigger.collider {
         deepest_contact.local_point1

@@ -66,3 +66,6 @@ macro_rules! horz {
         )
     };
 }
+
+#[derive(Component)]
+pub struct Walls;

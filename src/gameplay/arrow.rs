@@ -8,6 +8,7 @@ use crate::{
     gameplay::{
         GameSet,
         bow::BowArrow,
+        level::Walls,
         sphere::{FromMultiply, HitByExplosion, ShouldMultiply},
     },
     third_party::avian3d::GameLayer,
@@ -73,6 +74,7 @@ pub struct NockedOn(Entity);
 #[require(RigidBody = RigidBody::Dynamic)]
 #[require(GravityScale = GravityScale(0.))]
 #[require(LockedAxes = LockedAxes::ROTATION_LOCKED.lock_translation_z())]
+#[require(Transform = Transform::default().with_scale(Vec3::splat(2.)))]
 #[require(MaxFlightTime)]
 pub struct Arrow {
     pub bounces: u8,
@@ -94,32 +96,76 @@ fn spawn_arrow(trigger: Trigger<ReadyArrow>, mut commands: Commands, assets: Res
 // we will always overwrite children of arrow with 2 colliders
 fn add_arrow_colliders(trigger: Trigger<OnAdd, Arrow>, mut commands: Commands) {
     let collider = Collider::capsule(ARROW_RADIUS, ARROW_LEN);
+
+    let sensor = commands
+        .spawn((
+            collider.clone(),
+            Sensor,
+            CollisionLayers::new(
+                GameLayer::ArrowSensor,
+                [GameLayer::ArrowSensor, GameLayer::Sphere, GameLayer::Walls],
+            ),
+            CollisionEventsEnabled,
+        ))
+        .observe(wall_collision_flip)
+        .id();
+
+    let arrow_collider = commands
+        .spawn((
+            collider,
+            ColliderDensity(10.),
+            CollisionLayers::new(
+                GameLayer::Arrow,
+                [GameLayer::Arrow, GameLayer::Sphere, GameLayer::Backdrop],
+            ),
+        ))
+        .id();
+
     commands
         .entity(trigger.target())
-        .insert((children![
-            (
-                collider.clone(),
-                Sensor,
-                CollisionLayers::new(
-                    GameLayer::ArrowSensor,
-                    [GameLayer::ArrowSensor, GameLayer::Sphere]
-                )
-            ),
-            (
-                collider,
-                ColliderDensity(10.),
-                CollisionLayers::new(
-                    GameLayer::Arrow,
-                    [
-                        GameLayer::Arrow,
-                        GameLayer::Sphere,
-                        GameLayer::Walls,
-                        GameLayer::Backdrop
-                    ]
-                )
-            )
-        ],))
+        .add_children(&[sensor, arrow_collider])
         .observe(despawn_on_explosion);
+}
+
+fn wall_collision_flip(
+    trigger: Trigger<OnCollisionStart>,
+    mut arrows: Query<(&mut Position, &mut Rotation), With<Arrow>>,
+    everyone_else: Query<(&Position, &Rotation), Without<Arrow>>,
+    walls: Query<(), With<Walls>>,
+    colliders: Query<&ColliderOf>,
+    positions: Query<&GlobalTransform>,
+    collisions: Collisions,
+) {
+    let Ok((mut position, mut rotation)) = arrows.get(trigger.target()) else {
+        return;
+    };
+    let Ok(collider) = colliders.get(trigger.collider) else {
+        return;
+    };
+
+    if walls.get(collider.body).is_err() {
+        return;
+    };
+
+    let Some(contact_pair) = collisions.get(trigger.target(), trigger.collider) else {
+        info!("no contact pair!");
+        return;
+    };
+
+    let Some(deepest_contact) = contact_pair.find_deepest_contact() else {
+        warn!("multiplier was hit, but couldn't find deepest contact point!");
+        return;
+    };
+
+    let local_point = if contact_pair.collider2 == trigger.collider {
+        deepest_contact.local_point1
+    } else {
+        deepest_contact.local_point2
+    };
+
+    info!("Collided, local_point = {:?}", local_point);
+
+    //todo
 }
 
 fn update_unfired_arrow_transform(
@@ -131,9 +177,9 @@ fn update_unfired_arrow_transform(
             continue;
         };
         // since the strength is from 0, 1, that scales from 0 to this number
-        const BOW_RIGIDITY: f32 = 3.;
+        const BOW_RIGIDITY: f32 = 5.;
         /// this is how far to translate the arrow to sit on the bow string
-        const STRING_OFFSET: f32 = -1.5;
+        const STRING_OFFSET: f32 = -3.;
         let sv = pull_strength.strength() * BOW_RIGIDITY;
         let strength_vec = bow.rotation * Vec3::new(sv + STRING_OFFSET, 0., 0.);
         arrow.translation = bow.translation + strength_vec;
@@ -156,9 +202,10 @@ fn fire_arrow(
     mut pull_strength: Query<&BowArrow, Without<NockedOn>>,
 ) {
     info!("fire arrow event");
-    let (rotation, mut lvel, arrow_of) = arrows
-        .get_mut(trigger.target())
-        .expect("target to be an arrow");
+    let Ok((rotation, mut lvel, arrow_of)) = arrows.get_mut(trigger.target()) else {
+        //clickr giht click too quickly;
+        return;
+    };
 
     let Ok(pull_strength) = pull_strength.get_mut(arrow_of.0) else {
         return;
@@ -198,7 +245,7 @@ fn on_multiply(
         let rotation = arrow_trn.rotation * Quat::from_rotation_z(*rotation_offset);
 
         let velocity = quatrot * lvel.0;
-        let offset = velocity.normalize_or_zero() * 2.2;
+        let offset = velocity.normalize_or_zero() * 4.;
 
         let transform = Transform::from_translation(multiply_origin + offset)
             .with_rotation(rotation)

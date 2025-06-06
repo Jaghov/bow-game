@@ -106,7 +106,10 @@ fn load_level(
     let root = commands
         .spawn((
             Walls,
-            CollisionLayers::new(GameLayer::Default, GameLayer::Default),
+            CollisionLayers::new(
+                GameLayer::Walls,
+                [GameLayer::Default, GameLayer::ArrowSensor],
+            ),
             Transform::from_xyz(0., 0., WALL_START_PLANE),
             Animator::new(tween),
             InheritedVisibility::VISIBLE,
