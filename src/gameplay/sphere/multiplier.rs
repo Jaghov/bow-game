@@ -131,10 +131,6 @@ fn multiply_collider_on_hit(
     colliders: Query<&ColliderOf>,
     collisions: Collisions,
 ) {
-    info!("In multiplier on hit");
-
-    // if point to use is true, use local point 2.
-    // else, use 1.
     let Some(contact_pair) = collisions.get(trigger.target(), trigger.collider) else {
         info!("no contact pair!");
         return;
@@ -160,7 +156,6 @@ fn multiply_collider_on_hit(
         deepest_contact.local_point2
     };
 
-    info!("\n\ntriggering should_multiply!");
     commands.trigger_targets(
         ShouldMultiply {
             local_point: hit_trns.translation() + local_point,
