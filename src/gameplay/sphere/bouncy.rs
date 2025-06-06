@@ -6,7 +6,7 @@ use crate::{
     third_party::avian3d::GameLayer,
     world::GAME_PLANE,
 };
-/// WIP: need to fix a few systems
+
 #[derive(Component, Default)]
 #[require(Sphere)]
 pub struct Bouncy;

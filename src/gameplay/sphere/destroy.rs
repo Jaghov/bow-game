@@ -13,17 +13,6 @@ use super::Sphere;
 use avian3d::prelude::*;
 use bevy::{prelude::*, scene::SceneInstanceReady};
 
-/*
-
-New plan:
-- Once the resource has been loaded, we're going to spawn a scene instance
-of the gibs. When it's ready, we take all of the mesh handles and transforms, and store
-them in a resource.
-When a sphere is destroyed, we clone these meshes, transforms, etc. and apply it to
-the position of the despawned sphere. ez.
-
-*/
-
 pub(super) fn plugin(app: &mut App) {
     app.add_observer(add_destroyable_sphere)
         .init_resource::<GibMeshes>()
