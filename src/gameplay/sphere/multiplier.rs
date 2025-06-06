@@ -7,7 +7,7 @@ use super::Sphere;
 use crate::{
     gameplay::{
         GameSet,
-        sphere::{Absorber, DestroySphere, HitByExplosion, LightFuse, SphereType},
+        sphere::{Absorber, DestroySphere, Exploder, HitByExplosion, LightFuse, SphereAssets},
     },
     third_party::avian3d::GameLayer,
 };
@@ -39,20 +39,29 @@ pub(super) fn plugin(app: &mut App) {
 #[require(Sphere)]
 pub struct Multiplier;
 
-fn insert_multiplier(trigger: Trigger<OnAdd, Multiplier>, mut commands: Commands) {
+fn insert_multiplier(
+    trigger: Trigger<OnAdd, Multiplier>,
+    absorbers: Query<(), With<Absorber>>,
+    mut commands: Commands,
+    assets: Res<SphereAssets>,
+) {
     info!("observed new multiplier insert");
 
+    let mut commands = commands.entity(trigger.target());
+
+    if absorbers.get(trigger.target()).is_err() {
+        commands
+            .insert((
+                MeshMaterial3d(assets.multiplier.clone()),
+                CollisionLayers::new(
+                    GameLayer::Sphere,
+                    [GameLayer::ArrowSensor, GameLayer::Sphere],
+                ),
+            ))
+            .observe(super::debug_collision);
+    }
+
     commands
-        .entity(trigger.target())
-        .insert_if_new((
-            CollisionLayers::new(
-                GameLayer::Sphere,
-                [GameLayer::ArrowSensor, GameLayer::Sphere],
-            ),
-            Collider::sphere(1.),
-            CollisionEventsEnabled,
-        ))
-        .observe(super::debug_collision)
         .observe(super::despawn_on_arrow_collision)
         .observe(super::despawn_on_bouncyball_collision)
         .observe(multiply_collider_on_hit)
@@ -106,7 +115,13 @@ fn multiply_explosion(
 
         let transform = Transform::from_translation(translation).with_rotation(rotation);
         commands
-            .spawn((SphereType::Exploder, FromMultiply::forever(), transform))
+            .spawn((
+                Name::new("Exploder Replica"),
+                Exploder,
+                Sensor,
+                FromMultiply::forever(),
+                transform,
+            ))
             .trigger(LightFuse(3));
     }
     commands.trigger_targets(DestroySphere, trigger.target());
@@ -148,7 +163,9 @@ fn multiply_collider_on_hit(
         warn!("multiplier was hit, but couldn't find deepest contact point!");
         return;
     };
-    let hit_trns = transforms.get(trigger.target()).unwrap();
+    let Ok(hit_trns) = transforms.get(trigger.target()) else {
+        return;
+    };
 
     let local_point = if contact_pair.collider2 == trigger.collider {
         deepest_contact.local_point1

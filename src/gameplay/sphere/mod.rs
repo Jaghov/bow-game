@@ -49,9 +49,8 @@ pub(super) fn plugin(app: &mut App) {
     ));
 
     app.register_type::<SphereAssets>()
-        .load_resource::<SphereAssets>();
-
-    app.add_observer(spawn_sphere);
+        .load_resource::<SphereAssets>()
+        .add_observer(add_sphere_mesh);
 }
 
 #[derive(Resource, Asset, Reflect, Clone)]
@@ -106,6 +105,12 @@ impl FromWorld for SphereAssets {
 
         let absorber = materials.add(StandardMaterial {
             base_color: GREEN.into(),
+            reflectance: 1.,
+            specular_transmission: 0.90,
+            diffuse_transmission: 0.5,
+            thickness: 0.6,
+            ior: 1.5,
+            perceptual_roughness: 0.4,
             ..default()
         });
 
@@ -139,9 +144,9 @@ impl FromWorld for SphereAssets {
             mesh,
             gibs,
             normal,
+            absorber,
             multiplier,
             time_freeze,
-            absorber,
             bouncy,
             gravity,
             exploder,
@@ -149,84 +154,21 @@ impl FromWorld for SphereAssets {
     }
 }
 
-#[derive(Component, Clone, Copy)]
-#[allow(dead_code)]
-pub enum SphereType {
-    Normal,
-    Multiplier,
-    TimeFreeze,
-    Exploder,
-    Bouncy,
-    Gravity,
-    Absorber,
-}
 #[derive(Component, Default)]
 #[require(RigidBody = RigidBody::Dynamic)]
 #[require(LockedAxes = LockedAxes::ROTATION_LOCKED.lock_translation_z())]
+#[require(Collider = Collider::sphere(1.))]
+#[require(CollisionEventsEnabled)]
 pub struct Sphere;
 
-fn spawn_sphere(
-    trigger: Trigger<OnAdd, SphereType>,
+fn add_sphere_mesh(
+    trigger: Trigger<OnAdd, Sphere>,
     mut commands: Commands,
-    spheres: Query<&SphereType>,
     assets: Res<SphereAssets>,
 ) {
-    let sphere_type = spheres.get(trigger.target()).unwrap();
-    let mut ec = commands.entity(trigger.target());
-    ec.insert(Mesh3d(assets.mesh.clone()));
-    match sphere_type {
-        SphereType::Normal => {
-            ec.insert((
-                Name::new("Normal Sphere"),
-                Normal,
-                MeshMaterial3d(assets.normal.clone()),
-            ));
-        }
-        SphereType::Multiplier => {
-            ec.insert((
-                Name::new("Multiplier Sphere"),
-                Multiplier,
-                Sensor,
-                MeshMaterial3d(assets.multiplier.clone()),
-            ));
-        }
-        SphereType::TimeFreeze => {
-            ec.insert((
-                Name::new("TimeFreeze Sphere"),
-                TimeFreeze,
-                MeshMaterial3d(assets.time_freeze.clone()),
-            ));
-        }
-        SphereType::Bouncy => {
-            ec.insert((
-                Name::new("Bouncy Sphere"),
-                Bouncy,
-                MeshMaterial3d(assets.bouncy.clone()),
-            ));
-        }
-        SphereType::Gravity => {
-            ec.insert((
-                Name::new("Gravity Sphere"),
-                GravitySphere,
-                MeshMaterial3d(assets.gravity.clone()),
-            ));
-        }
-        SphereType::Absorber => {
-            ec.insert((
-                Name::new("Absorber Sphere"),
-                Absorber,
-                MeshMaterial3d(assets.absorber.clone()),
-            ));
-        }
-        SphereType::Exploder => {
-            ec.insert((
-                Name::new("Exploder Sphere"),
-                Exploder,
-                Sensor,
-                MeshMaterial3d(assets.exploder.clone()),
-            ));
-        }
-    }
+    commands
+        .entity(trigger.target())
+        .try_insert(Mesh3d(assets.mesh.clone()));
 }
 
 fn debug_collision(

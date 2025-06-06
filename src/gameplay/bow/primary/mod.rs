@@ -59,6 +59,7 @@ fn spawn_primary_bow(mut commands: Commands, assets: Res<BowAssets>) {
             StateScoped(Screen::Gameplay),
             Bow,
             PrimaryBow,
+            Transform::default().with_scale(Vec3::splat(2.)),
             SceneRoot(assets.scene.clone()),
         ))
         .observe(animation::setup_animations);

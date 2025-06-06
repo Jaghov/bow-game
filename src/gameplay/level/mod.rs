@@ -11,6 +11,7 @@ use crate::{
 
 #[macro_use]
 mod wall;
+pub use wall::*;
 #[macro_use]
 mod sphere;
 mod new_level;
@@ -33,11 +34,9 @@ pub(super) fn plugin(app: &mut App) {
     app.add_sub_state::<LevelState>()
         .init_resource::<Level>()
         .init_resource::<Levels>();
-    app.add_systems(Startup, setup_wall_material);
+    app.add_systems(Startup, setup_wall_material)
+        .add_observer(sphere::spawn_sphere);
 }
-
-#[derive(Component)]
-struct Walls;
 
 #[derive(Resource)]
 struct WallMaterial(Handle<StandardMaterial>);

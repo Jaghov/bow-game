@@ -11,7 +11,7 @@ use crate::{
     gameplay::{
         GameSet, GameState,
         arrow::NockedOn,
-        sphere::{DestroySphere, FromMultiply, Sphere},
+        sphere::{Absorber, DestroySphere, FromMultiply, Sphere, SphereAssets},
     },
     third_party::avian3d::GameLayer,
 };
@@ -56,19 +56,26 @@ impl FromWorld for ExploderAssets {
 #[require(Sphere)]
 pub struct Exploder;
 
-fn insert_exploder(trigger: Trigger<OnAdd, Exploder>, mut commands: Commands) {
+fn insert_exploder(
+    trigger: Trigger<OnAdd, Exploder>,
+    absorbers: Query<(), With<Absorber>>,
+    mut commands: Commands,
+    assets: Res<SphereAssets>,
+) {
     info!("observed new normal insert");
 
-    commands
-        .entity(trigger.target())
-        .insert_if_new((
+    let mut commands = commands.entity(trigger.target());
+    if absorbers.get(trigger.target()).is_err() {
+        commands.insert((
             CollisionLayers::new(
                 GameLayer::Sphere,
                 [GameLayer::ArrowSensor, GameLayer::Sphere],
             ),
-            Collider::sphere(1.),
-            CollisionEventsEnabled,
-        ))
+            MeshMaterial3d(assets.exploder.clone()),
+        ));
+    }
+
+    commands
         .observe(super::debug_collision)
         .observe(light_fuse_on_collision)
         .observe(light_fuse)
@@ -218,7 +225,7 @@ fn explode(
         let shape = Collider::sphere(EXPLOSION_RADIUS);
         let origin = transform.translation;
         let rotation = Quat::default();
-        let filter = SpatialQueryFilter::from_mask(GameLayer::Sphere);
+        let filter = SpatialQueryFilter::from_mask([GameLayer::Sphere, GameLayer::Arrow]);
         let hits = spatial_query.shape_intersections(&shape, origin, rotation, &filter);
 
         for hit in hits {

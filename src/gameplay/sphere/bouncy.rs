@@ -2,7 +2,7 @@ use avian3d::prelude::*;
 use bevy::prelude::*;
 
 use crate::{
-    gameplay::sphere::{FromMultiply, ShouldMultiply, Sphere, SphereType},
+    gameplay::sphere::{Absorber, FromMultiply, ShouldMultiply, Sphere, SphereAssets},
     third_party::avian3d::GameLayer,
     world::GAME_PLANE,
 };
@@ -14,22 +14,34 @@ pub struct Bouncy;
 pub(super) fn plugin(app: &mut App) {
     app.add_observer(insert_bouncy);
 }
-fn insert_bouncy(trigger: Trigger<OnAdd, Bouncy>, mut commands: Commands) {
+fn insert_bouncy(
+    trigger: Trigger<OnAdd, Bouncy>,
+    absorbers: Query<(), With<Absorber>>,
+    mut commands: Commands,
+    assets: Res<SphereAssets>,
+) {
+    let mut commands = commands.entity(trigger.target());
+
+    if absorbers.get(trigger.target()).is_err() {
+        commands
+            .insert((
+                CollisionLayers::new(
+                    GameLayer::Sphere,
+                    [GameLayer::Arrow, GameLayer::Sphere, GameLayer::Walls],
+                ),
+                MeshMaterial3d(assets.bouncy.clone()),
+            ))
+            .observe(super::debug_collision);
+    }
+
     commands
-        .entity(trigger.target())
         .insert((
-            CollisionLayers::new(
-                GameLayer::Sphere,
-                [GameLayer::Arrow, GameLayer::Sphere, GameLayer::Walls],
-            ),
-            Collider::sphere(1.),
             Dominance(-1),
             Restitution::PERFECTLY_ELASTIC,
             Friction::ZERO,
-            CollisionEventsEnabled,
         ))
-        .observe(super::debug_collision);
-    commands.entity(trigger.target()).observe(on_multiply);
+        .observe(on_multiply)
+        .observe(super::despawn_on_hit_by_explosion);
 }
 
 fn on_multiply(
@@ -58,7 +70,8 @@ fn on_multiply(
             .with_scale(transform.scale);
 
         commands.spawn((
-            SphereType::Bouncy,
+            Name::new("Bouncy Replica"),
+            Bouncy,
             FromMultiply::default(),
             transform,
             LinearVelocity(velocity),

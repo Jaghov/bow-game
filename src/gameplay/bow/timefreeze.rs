@@ -29,7 +29,8 @@ pub fn spawn_bow(mut commands: Commands, bow_assets: Res<BowAssets>, freeze: Res
             Bow,
             StateScoped(GameState::TimeFreeze),
             SceneRoot(bow_assets.scene.clone()),
-            Transform::from_xyz(freeze.location.x, freeze.location.y, GAME_PLANE),
+            Transform::from_xyz(freeze.location.x, freeze.location.y, GAME_PLANE)
+                .with_scale(Vec3::splat(2.)),
         ))
         .observe(animation::setup_animations)
         .id();

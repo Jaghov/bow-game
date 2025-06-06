@@ -2,7 +2,7 @@ use avian3d::prelude::*;
 use bevy::prelude::*;
 
 use crate::{
-    gameplay::sphere::{Bouncy, Exploder, Multiplier, Sphere},
+    gameplay::sphere::{Bouncy, Exploder, Multiplier, Sphere, SphereAssets},
     third_party::avian3d::GameLayer,
 };
 
@@ -14,7 +14,11 @@ pub struct Absorber;
 pub(super) fn plugin(app: &mut App) {
     app.add_observer(insert_absorber);
 }
-fn insert_absorber(trigger: Trigger<OnAdd, Absorber>, mut commands: Commands) {
+fn insert_absorber(
+    trigger: Trigger<OnAdd, Absorber>,
+    mut commands: Commands,
+    assets: Res<SphereAssets>,
+) {
     commands
         .entity(trigger.target())
         .insert((
@@ -22,9 +26,8 @@ fn insert_absorber(trigger: Trigger<OnAdd, Absorber>, mut commands: Commands) {
                 GameLayer::Sphere,
                 [GameLayer::Arrow, GameLayer::Sphere, GameLayer::Walls],
             ),
-            Collider::sphere(1.),
+            MeshMaterial3d(assets.absorber.clone()),
             Restitution::PERFECTLY_ELASTIC,
-            CollisionEventsEnabled,
         ))
         .observe(super::debug_collision)
         .observe(absorb_property::<Bouncy>)

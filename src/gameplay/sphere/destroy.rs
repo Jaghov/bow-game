@@ -61,7 +61,9 @@ fn destroy_sphere(
         return;
     }
 
-    let (sphere_transform, sphere_material) = transforms.get(trigger.target()).unwrap();
+    let Ok((sphere_transform, sphere_material)) = transforms.get(trigger.target()) else {
+        return;
+    };
 
     let mut meshes_to_spawn = Vec::with_capacity(meshes.meshes.len());
 
@@ -79,7 +81,7 @@ fn destroy_sphere(
             collider.clone(),
             RigidBody::Dynamic,
             Visibility::Visible,
-            CollisionLayers::new(GameLayer::Gibs, GameLayer::Default),
+            CollisionLayers::new(GameLayer::Gibs, [GameLayer::Gibs, GameLayer::Backdrop]),
             BeingDestroyed(Timer::new(Duration::from_secs(3), TimerMode::Once)),
         ))
     }
