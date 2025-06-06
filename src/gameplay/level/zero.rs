@@ -24,6 +24,7 @@ fn create_level(mut levels: ResMut<Levels>) {
                 //gravity column
                 sphere!(Gravity, -40., 0.),
                 sphere!(Normal, -40., 5.),
+                sphere!(Multiplier, -40., -5.),
                 //others
                 sphere!(Absorber, -30., 0.),
                 sphere!(TimeFreeze, -10., 0.),

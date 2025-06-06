@@ -46,7 +46,7 @@ fn apply_gravity_forces_to_spheres(
         let shape = Collider::sphere(ATTRACTION_RADIUS);
         let origin = position.0;
         let rotation = Quat::default();
-        let filter = SpatialQueryFilter::from_mask(GameLayer::Sphere);
+        let filter = SpatialQueryFilter::from_mask([GameLayer::Sphere, GameLayer::Arrow]);
         let hits = spatial_query.shape_intersections(&shape, origin, rotation, &filter);
 
         for hit in hits {
