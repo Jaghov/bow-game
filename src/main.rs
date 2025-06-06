@@ -38,7 +38,7 @@ fn main() -> AppExit {
                 primary_window: Window {
                     title: "RENAME ME".to_string(),
                     fit_canvas_to_parent: true,
-                    position: WindowPosition::Centered(MonitorSelection::Index(1)),
+                    //position: WindowPosition::Centered(MonitorSelection::Index(1)),
                     resolution: WindowResolution::new(1920., 1080.),
                     // might need to adjust this for WASM
                     mode: WindowMode::Windowed,

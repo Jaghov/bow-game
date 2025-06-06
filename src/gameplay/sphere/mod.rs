@@ -22,6 +22,9 @@ pub use timefreeze::*;
 mod bouncy;
 pub use bouncy::*;
 
+mod destroy;
+pub use destroy::*;
+
 use crate::{
     asset_tracking::LoadResource,
     gameplay::arrow::{Arrow, NockedOn},
@@ -34,13 +37,13 @@ pub(super) fn plugin(app: &mut App) {
         timefreeze::plugin,
         exploder::plugin,
         bouncy::plugin,
+        destroy::plugin,
     ));
 
     app.register_type::<SphereAssets>()
         .load_resource::<SphereAssets>();
 
-    app.add_observer(spawn_sphere)
-        .add_observer(add_destroyable_sphere);
+    app.add_observer(spawn_sphere);
 }
 
 #[derive(Resource, Asset, Reflect, Clone)]
@@ -49,6 +52,8 @@ pub struct SphereAssets {
     pub model: Handle<Scene>,
     #[dependency]
     pub mesh: Handle<Mesh>,
+    #[dependency]
+    pub gibs: Handle<Scene>,
     pub normal: Handle<StandardMaterial>,
     pub multiplier: Handle<StandardMaterial>,
     pub time_freeze: Handle<StandardMaterial>,
@@ -63,6 +68,7 @@ impl FromWorld for SphereAssets {
         let assets = world.resource::<AssetServer>();
         let model = assets.load("models/sph.glb#Scene0");
         let mesh = assets.load("models/sph.glb#Mesh0/Primitive0");
+        let gibs = assets.load("models/glass_fractured.glb#Scene0");
         let mut materials = world.resource_mut::<Assets<StandardMaterial>>();
 
         let base = StandardMaterial {
@@ -123,6 +129,7 @@ impl FromWorld for SphereAssets {
         Self {
             model,
             mesh,
+            gibs,
             normal,
             multiplier,
             time_freeze,
@@ -135,7 +142,6 @@ impl FromWorld for SphereAssets {
 }
 
 #[derive(Component, Clone, Copy)]
-#[require(Sphere)]
 #[allow(dead_code)]
 pub enum SphereType {
     Normal,
@@ -152,9 +158,11 @@ pub enum SphereType {
 pub struct Sphere;
 
 #[derive(Component)]
+#[require(Sphere)]
 pub struct Absorber;
 
 #[derive(Component)]
+#[require(Sphere)]
 pub struct GravitySphere;
 
 fn spawn_sphere(
@@ -263,17 +271,4 @@ fn despawn_on_arrow(
     let parent = colliders.get(trigger.target()).unwrap().body;
 
     commands.entity(parent).trigger(DestroySphere);
-}
-
-fn add_destroyable_sphere(trigger: Trigger<OnAdd, Sphere>, mut commands: Commands) {
-    commands.entity(trigger.target()).observe(destroy_sphere);
-}
-
-#[derive(Event)]
-pub struct DestroySphere;
-// listener should ONLY be on the Sphere component.
-fn destroy_sphere(trigger: Trigger<DestroySphere>, mut commands: Commands) {
-    // this will make the thing break into a million pieces.
-    // TODO
-    commands.entity(trigger.target()).try_despawn();
 }

@@ -1,9 +1,11 @@
 use avian3d::prelude::*;
 use bevy::prelude::*;
 
+use super::Sphere;
 use crate::third_party::avian3d::GameLayer;
 
 #[derive(Component)]
+#[require(Sphere)]
 pub struct Normal;
 
 pub(super) fn plugin(app: &mut App) {

@@ -78,6 +78,7 @@ fn spawn_items(
     bow_assets: Res<BowAssets>,
     arrow_assets: Res<ArrowAssets>,
     sphere: Res<SphereAssets>,
+    gltfs: Res<Assets<Gltf>>,
 ) {
     commands.spawn((Bow, Prop, SceneRoot(bow_assets.scene.clone())));
     for i in (0..5) {
@@ -87,6 +88,7 @@ fn spawn_items(
     let mesh = Mesh3d(sphere.mesh.clone());
     // need to add initial transforms because these things will collide.
     commands.spawn((
+        Name::new("Title Screen Normal Sphere"),
         SphereCount(0),
         Transform::from_xyz(0., 0., -100.),
         Sphere,
@@ -96,6 +98,7 @@ fn spawn_items(
         MeshMaterial3d(sphere.normal.clone()),
     ));
     commands.spawn((
+        Name::new("Title Screen Multiplier Sphere"),
         SphereCount(1),
         Sphere,
         Transform::from_xyz(0., 0., -200.),
@@ -105,6 +108,7 @@ fn spawn_items(
         MeshMaterial3d(sphere.multiplier.clone()),
     ));
     commands.spawn((
+        Name::new("Title Screen TimeFreeze Sphere"),
         SphereCount(2),
         Transform::from_xyz(0., 0., -300.),
         Sphere,
@@ -114,6 +118,7 @@ fn spawn_items(
         MeshMaterial3d(sphere.time_freeze.clone()),
     ));
     commands.spawn((
+        Name::new("Title Screen Absorber Sphere"),
         SphereCount(3),
         Transform::from_xyz(0., 0., -400.),
         Sphere,
@@ -123,6 +128,7 @@ fn spawn_items(
         MeshMaterial3d(sphere.absorber.clone()),
     ));
     commands.spawn((
+        Name::new("Title Screen Gravity Sphere"),
         SphereCount(4),
         Transform::from_xyz(0., 0., -500.),
         Sphere,
@@ -137,6 +143,7 @@ fn spawn_items(
         },
     ));
     commands.spawn((
+        Name::new("Title Screen Bouncy Sphere"),
         SphereCount(5),
         Transform::from_xyz(0., 0., -600.),
         Sphere,
@@ -146,6 +153,7 @@ fn spawn_items(
         MeshMaterial3d(sphere.bouncy.clone()),
     ));
     commands.spawn((
+        Name::new("Title Screen Exploder Sphere"),
         SphereCount(6),
         Sphere,
         Transform::from_xyz(0., 0., -700.),

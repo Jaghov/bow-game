@@ -7,6 +7,7 @@ use crate::{
 };
 
 #[derive(Component)]
+#[require(Sphere)]
 pub struct Bouncy;
 
 pub(super) fn plugin(app: &mut App) {
