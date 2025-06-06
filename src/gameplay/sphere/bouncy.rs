@@ -2,7 +2,7 @@ use avian3d::prelude::*;
 use bevy::prelude::*;
 
 use crate::{
-    gameplay::sphere::{FromMultiply, ShouldMultiply, Sphere, SphereAssets},
+    gameplay::sphere::{Absorber, FromMultiply, ShouldMultiply, Sphere, SphereAssets},
     third_party::avian3d::GameLayer,
     world::GAME_PLANE,
 };
@@ -16,23 +16,31 @@ pub(super) fn plugin(app: &mut App) {
 }
 fn insert_bouncy(
     trigger: Trigger<OnAdd, Bouncy>,
+    absorbers: Query<(), With<Absorber>>,
     mut commands: Commands,
     assets: Res<SphereAssets>,
 ) {
+    let mut commands = commands.entity(trigger.target());
+
+    if absorbers.get(trigger.target()).is_err() {
+        commands
+            .insert((
+                CollisionLayers::new(
+                    GameLayer::Sphere,
+                    [GameLayer::Arrow, GameLayer::Sphere, GameLayer::Walls],
+                ),
+                MeshMaterial3d(assets.bouncy.clone()),
+            ))
+            .observe(super::debug_collision);
+    }
+
     commands
-        .entity(trigger.target())
         .insert((
-            CollisionLayers::new(
-                GameLayer::Sphere,
-                [GameLayer::Arrow, GameLayer::Sphere, GameLayer::Walls],
-            ),
-            MeshMaterial3d(assets.bouncy.clone()),
             Dominance(-1),
             Restitution::PERFECTLY_ELASTIC,
             Friction::ZERO,
         ))
-        .observe(super::debug_collision);
-    commands.entity(trigger.target()).observe(on_multiply);
+        .observe(on_multiply);
 }
 
 fn on_multiply(

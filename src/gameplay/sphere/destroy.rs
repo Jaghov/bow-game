@@ -79,7 +79,7 @@ fn destroy_sphere(
             collider.clone(),
             RigidBody::Dynamic,
             Visibility::Visible,
-            CollisionLayers::new(GameLayer::Gibs, GameLayer::Default),
+            CollisionLayers::new(GameLayer::Gibs, [GameLayer::Gibs, GameLayer::Backdrop]),
             BeingDestroyed(Timer::new(Duration::from_secs(3), TimerMode::Once)),
         ))
     }

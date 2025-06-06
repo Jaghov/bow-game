@@ -1,11 +1,12 @@
 use std::time::Duration;
 
-use avian3d::prelude::{Collider, RigidBody};
+use avian3d::prelude::{Collider, CollisionLayers, RigidBody};
 use bevy::{color::palettes::tailwind::GREEN_400, ecs::system::SystemId, prelude::*};
 use bevy_tweening::{Animator, Delay, Sequence, Tween, lens::TransformPositionLens};
 
 use crate::{
     rand,
+    third_party::avian3d::GameLayer,
     world::{BACKDROP_OFFSET, BLOCK_LEN, GAME_PLANE},
 };
 
@@ -59,6 +60,10 @@ fn spawn_backdrop(
                 ZState {
                     time_offset: rand::random_range((-HALF_PERIOD..=HALF_PERIOD)),
                 },
+                CollisionLayers::new(
+                    GameLayer::Backdrop,
+                    [GameLayer::Backdrop, GameLayer::Arrow, GameLayer::Gibs],
+                ),
                 Mesh3d(mesh.clone()),
                 RigidBody::Kinematic,
                 Collider::cuboid(BLOCK_LEN, BLOCK_LEN, BLOCK_LEN),

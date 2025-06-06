@@ -105,9 +105,15 @@ fn add_arrow_colliders(trigger: Trigger<OnAdd, Arrow>, mut commands: Commands) {
         ),
         (
             collider,
+            ColliderDensity(10.),
             CollisionLayers::new(
                 GameLayer::Arrow,
-                [GameLayer::Arrow, GameLayer::Sphere, GameLayer::Walls]
+                [
+                    GameLayer::Arrow,
+                    GameLayer::Sphere,
+                    GameLayer::Walls,
+                    GameLayer::Backdrop
+                ]
             )
         )
     ],));

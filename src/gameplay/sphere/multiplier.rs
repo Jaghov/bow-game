@@ -41,23 +41,27 @@ pub struct Multiplier;
 
 fn insert_multiplier(
     trigger: Trigger<OnAdd, Multiplier>,
+    absorbers: Query<(), With<Absorber>>,
     mut commands: Commands,
     assets: Res<SphereAssets>,
 ) {
     info!("observed new multiplier insert");
 
+    let mut commands = commands.entity(trigger.target());
+
+    if absorbers.get(trigger.target()).is_err() {
+        commands
+            .insert((
+                MeshMaterial3d(assets.multiplier.clone()),
+                CollisionLayers::new(
+                    GameLayer::Sphere,
+                    [GameLayer::ArrowSensor, GameLayer::Sphere],
+                ),
+            ))
+            .observe(super::debug_collision);
+    }
+
     commands
-        .entity(trigger.target())
-        .insert_if_new((
-            MeshMaterial3d(assets.multiplier.clone()),
-            CollisionLayers::new(
-                GameLayer::Sphere,
-                [GameLayer::ArrowSensor, GameLayer::Sphere],
-            ),
-            Collider::sphere(1.),
-            CollisionEventsEnabled,
-        ))
-        .observe(super::debug_collision)
         .observe(super::despawn_on_arrow_collision)
         .observe(super::despawn_on_bouncyball_collision)
         .observe(multiply_collider_on_hit)

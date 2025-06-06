@@ -11,7 +11,7 @@ use crate::{
     gameplay::{
         GameSet, GameState,
         arrow::NockedOn,
-        sphere::{DestroySphere, FromMultiply, Sphere, SphereAssets},
+        sphere::{Absorber, DestroySphere, FromMultiply, Sphere, SphereAssets},
     },
     third_party::avian3d::GameLayer,
 };
@@ -58,20 +58,24 @@ pub struct Exploder;
 
 fn insert_exploder(
     trigger: Trigger<OnAdd, Exploder>,
+    absorbers: Query<(), With<Absorber>>,
     mut commands: Commands,
     assets: Res<SphereAssets>,
 ) {
     info!("observed new normal insert");
 
-    commands
-        .entity(trigger.target())
-        .insert_if_new((
+    let mut commands = commands.entity(trigger.target());
+    if absorbers.get(trigger.target()).is_err() {
+        commands.insert((
             CollisionLayers::new(
                 GameLayer::Sphere,
                 [GameLayer::ArrowSensor, GameLayer::Sphere],
             ),
             MeshMaterial3d(assets.exploder.clone()),
-        ))
+        ));
+    }
+
+    commands
         .observe(super::debug_collision)
         .observe(light_fuse_on_collision)
         .observe(light_fuse)
