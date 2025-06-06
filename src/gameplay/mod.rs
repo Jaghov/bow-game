@@ -77,10 +77,13 @@ pub fn plugin(app: &mut App) {
         timefreeze::plugin,
         ui::plugin,
     ))
-    .add_systems(OnEnter(Screen::Gameplay), (move_camera, hide_cursor))
-    .add_systems(OnExit(Screen::Gameplay), show_cursor)
+    .add_systems(OnEnter(Screen::Gameplay), move_camera)
     .add_systems(OnEnter(GameState::Paused), pause_physics_time)
     .add_systems(OnExit(GameState::Paused), resume_physics_time);
+
+    #[cfg(not(feature = "dev"))]
+    app.add_systems(OnExit(Screen::Gameplay), show_cursor)
+        .add_systems(OnEnter(Screen::Gameplay), hide_cursor);
 }
 
 // this is a hack until I implement smooth nudge

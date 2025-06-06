@@ -5,7 +5,11 @@ use bevy::prelude::*;
 
 use crate::{
     asset_tracking::LoadResource,
-    gameplay::{GameSet, bow::BowArrow, sphere::ShouldMultiply},
+    gameplay::{
+        GameSet,
+        bow::BowArrow,
+        sphere::{FromMultiply, ShouldMultiply},
+    },
     third_party::avian3d::GameLayer,
     world::GAME_PLANE,
 };
@@ -26,7 +30,8 @@ pub(super) fn plugin(app: &mut App) {
     )
     .add_systems(Update, tick_flight_time.in_set(GameSet::TickTimers))
     .add_systems(PostUpdate, (reset_flight_time, despawn_arrows).chain())
-    .add_observer(spawn_arrow);
+    .add_observer(spawn_arrow)
+    .add_observer(add_arrow_colliders);
 }
 
 #[derive(Resource, Asset, Reflect, Clone)]
@@ -55,6 +60,9 @@ impl ReadyArrow {
     }
 }
 
+const ARROW_RADIUS: f32 = 0.1;
+const ARROW_LEN: f32 = 3.5;
+
 #[derive(Component, Reflect)]
 #[reflect(Component)]
 #[relationship(relationship_target = BowArrow)]
@@ -63,12 +71,9 @@ pub struct NockedOn(Entity);
 #[derive(Component, Default, Reflect)]
 #[reflect(Component)]
 #[require(RigidBody = RigidBody::Dynamic)]
-#[require(Collider = Collider::capsule(0.1, 3.5))]
 #[require(GravityScale = GravityScale(0.))]
-#[require(LockedAxes = LockedAxes::new().lock_translation_z())]
+#[require(LockedAxes = LockedAxes::ROTATION_LOCKED.lock_translation_z().unlock_rotation_z())]
 #[require(MaxFlightTime)]
-#[require(CollisionLayers =
-    CollisionLayers::new(GameLayer::ArrowSensors, [GameLayer::Default, GameLayer::ArrowSensors]))]
 pub struct Arrow {
     pub bounces: u8,
 }
@@ -84,6 +89,28 @@ fn spawn_arrow(trigger: Trigger<ReadyArrow>, mut commands: Commands, assets: Res
         ))
         .observe(fire_arrow)
         .observe(cancel_arrow);
+}
+
+// we will always overwrite children of arrow with 2 colliders
+fn add_arrow_colliders(trigger: Trigger<OnAdd, Arrow>, mut commands: Commands) {
+    let collider = Collider::capsule(ARROW_RADIUS, ARROW_LEN);
+    commands.entity(trigger.target()).insert((children![
+        (
+            collider.clone(),
+            Sensor,
+            CollisionLayers::new(
+                GameLayer::ArrowSensor,
+                [GameLayer::ArrowSensor, GameLayer::Sphere]
+            )
+        ),
+        (
+            collider,
+            CollisionLayers::new(
+                GameLayer::Arrow,
+                [GameLayer::Arrow, GameLayer::Sphere, GameLayer::Walls]
+            )
+        )
+    ],));
 }
 
 fn update_unfired_arrow_transform(
@@ -151,10 +178,10 @@ fn fire_arrow(
 fn on_multiply(
     trigger: Trigger<ShouldMultiply>,
     mut commands: Commands,
-    arrows: Query<(&Transform, &Collider, &LinearVelocity, &SceneRoot), With<Arrow>>,
+    arrows: Query<(&Transform, &LinearVelocity, &SceneRoot), With<Arrow>>,
 ) {
     let event = trigger.event();
-    let Ok((arrow_trn, collider, lvel, scene_root)) = arrows.get(trigger.target()) else {
+    let Ok((arrow_trn, lvel, scene_root)) = arrows.get(trigger.target()) else {
         warn!("Arrow was commanded to multiply, but its required components were not found!");
         return;
     };
@@ -166,7 +193,7 @@ fn on_multiply(
         let rotation = arrow_trn.rotation * Quat::from_rotation_z(*rotation_offset);
 
         let velocity = quatrot * lvel.0;
-        let offset = velocity.normalize() * 2.2;
+        let offset = velocity.normalize_or_zero() * 2.2;
 
         let transform = Transform::from_translation(multiply_origin + offset)
             .with_rotation(rotation)
@@ -174,10 +201,11 @@ fn on_multiply(
 
         commands
             .spawn((
+                Name::new("Cloned arrow"),
                 Arrow::default(),
                 transform,
                 LinearVelocity(velocity),
-                collider.clone(),
+                FromMultiply::default(),
                 scene_root.clone(),
             ))
             .observe(on_multiply);

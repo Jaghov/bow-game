@@ -25,6 +25,12 @@ pub use bouncy::*;
 mod destroy;
 pub use destroy::*;
 
+mod gravity;
+pub use gravity::*;
+
+mod absorber;
+pub use absorber::*;
+
 use crate::{
     asset_tracking::LoadResource,
     gameplay::arrow::{Arrow, NockedOn},
@@ -35,9 +41,11 @@ pub(super) fn plugin(app: &mut App) {
         normal::plugin,
         multiplier::plugin,
         timefreeze::plugin,
+        absorber::plugin,
         exploder::plugin,
         bouncy::plugin,
         destroy::plugin,
+        gravity::plugin,
     ));
 
     app.register_type::<SphereAssets>()
@@ -154,16 +162,8 @@ pub enum SphereType {
 }
 #[derive(Component, Default)]
 #[require(RigidBody = RigidBody::Dynamic)]
-#[require(LockedAxes = LockedAxes::new().lock_translation_z())]
+#[require(LockedAxes = LockedAxes::ROTATION_LOCKED.lock_translation_z())]
 pub struct Sphere;
-
-#[derive(Component)]
-#[require(Sphere)]
-pub struct Absorber;
-
-#[derive(Component)]
-#[require(Sphere)]
-pub struct GravitySphere;
 
 fn spawn_sphere(
     trigger: Trigger<OnAdd, SphereType>,
@@ -176,25 +176,55 @@ fn spawn_sphere(
     ec.insert(Mesh3d(assets.mesh.clone()));
     match sphere_type {
         SphereType::Normal => {
-            ec.insert((Normal, MeshMaterial3d(assets.normal.clone())));
+            ec.insert((
+                Name::new("Normal Sphere"),
+                Normal,
+                MeshMaterial3d(assets.normal.clone()),
+            ));
         }
         SphereType::Multiplier => {
-            ec.insert((Multiplier, MeshMaterial3d(assets.multiplier.clone())));
+            ec.insert((
+                Name::new("Multiplier Sphere"),
+                Multiplier,
+                Sensor,
+                MeshMaterial3d(assets.multiplier.clone()),
+            ));
         }
         SphereType::TimeFreeze => {
-            ec.insert((TimeFreeze, MeshMaterial3d(assets.time_freeze.clone())));
+            ec.insert((
+                Name::new("TimeFreeze Sphere"),
+                TimeFreeze,
+                MeshMaterial3d(assets.time_freeze.clone()),
+            ));
         }
         SphereType::Bouncy => {
-            ec.insert((Bouncy, MeshMaterial3d(assets.bouncy.clone())));
+            ec.insert((
+                Name::new("Bouncy Sphere"),
+                Bouncy,
+                MeshMaterial3d(assets.bouncy.clone()),
+            ));
         }
         SphereType::Gravity => {
-            ec.insert((GravitySphere, MeshMaterial3d(assets.gravity.clone())));
+            ec.insert((
+                Name::new("Gravity Sphere"),
+                GravitySphere,
+                MeshMaterial3d(assets.gravity.clone()),
+            ));
         }
         SphereType::Absorber => {
-            ec.insert((Absorber, MeshMaterial3d(assets.absorber.clone())));
+            ec.insert((
+                Name::new("Absorber Sphere"),
+                Absorber,
+                MeshMaterial3d(assets.absorber.clone()),
+            ));
         }
         SphereType::Exploder => {
-            ec.insert((Exploder, MeshMaterial3d(assets.exploder.clone())));
+            ec.insert((
+                Name::new("Exploder Sphere"),
+                Exploder,
+                Sensor,
+                MeshMaterial3d(assets.exploder.clone()),
+            ));
         }
     }
 }
@@ -258,17 +288,63 @@ fn debug_collision(
     info!("{}", message);
 }
 
-fn despawn_on_arrow(
+fn despawn_on_arrow_collision(
     trigger: Trigger<OnCollisionStart>,
     mut commands: Commands,
-    arrows: Query<&Arrow, Without<NockedOn>>,
+    absorbers: Query<(), With<Absorber>>,
+    arrows: Query<(), (With<Arrow>, Without<NockedOn>)>,
     colliders: Query<&ColliderOf>,
 ) {
+    if absorbers.get(trigger.target()).is_ok() {
+        return;
+    };
+
     let event = trigger.event();
-    if arrows.get(event.collider).is_err() {
+    let Ok(collider) = colliders.get(event.collider) else {
+        return;
+    };
+    if arrows.get(collider.body).is_err() {
+        warn!("collided, not with arrow");
         return;
     }
     let parent = colliders.get(trigger.target()).unwrap().body;
 
     commands.entity(parent).trigger(DestroySphere);
+}
+
+fn despawn_on_bouncyball_collision(
+    trigger: Trigger<OnCollisionStart>,
+    absorbers: Query<(), With<Absorber>>,
+    mut commands: Commands,
+    spheres: Query<(), (With<Sphere>, With<Bouncy>)>,
+    colliders: Query<&ColliderOf>,
+) {
+    if absorbers.get(trigger.target()).is_ok() {
+        return;
+    };
+    let event = trigger.event();
+    let Ok(collider) = colliders.get(event.collider) else {
+        return;
+    };
+    if spheres.get(collider.body).is_err() {
+        warn!("collided, not with sphere");
+        return;
+    }
+    let parent = colliders.get(trigger.target()).unwrap().body;
+
+    commands.entity(parent).trigger(DestroySphere);
+}
+
+// simple observer that will just handle the hit by explosion
+// event by starting despawn
+fn despawn_on_hit_by_explosion(
+    trigger: Trigger<HitByExplosion>,
+    absorbers: Query<(), With<Absorber>>,
+    mut commands: Commands,
+) {
+    if absorbers.get(trigger.target()).is_ok() {
+        return;
+    };
+
+    commands.entity(trigger.target()).trigger(DestroySphere);
 }

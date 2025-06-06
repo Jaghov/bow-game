@@ -1,7 +1,10 @@
 use std::time::Duration;
 
 use crate::{
-    gameplay::{GameSet, sphere::SphereAssets},
+    gameplay::{
+        GameSet,
+        sphere::{Absorber, SphereAssets},
+    },
     loading::LoadingState,
     third_party::avian3d::GameLayer,
 };
@@ -9,17 +12,6 @@ use crate::{
 use super::Sphere;
 use avian3d::prelude::*;
 use bevy::{prelude::*, scene::SceneInstanceReady};
-
-/*
-
-New plan:
-- Once the resource has been loaded, we're going to spawn a scene instance
-of the gibs. When it's ready, we take all of the mesh handles and transforms, and store
-them in a resource.
-When a sphere is destroyed, we clone these meshes, transforms, etc. and apply it to
-the position of the despawned sphere. ez.
-
-*/
 
 pub(super) fn plugin(app: &mut App) {
     app.add_observer(add_destroyable_sphere)
@@ -58,10 +50,17 @@ struct Gib;
 // listener should ONLY be on the Sphere component.
 fn destroy_sphere(
     trigger: Trigger<DestroySphere>,
+    absorber: Query<(), With<Absorber>>,
     mut commands: Commands,
     meshes: Res<GibMeshes>,
     transforms: Query<(&Transform, &MeshMaterial3d<StandardMaterial>)>,
 ) {
+    // absorbers are the exception and will be custom despawned.
+    // you would ideally attach this listener to all balls but ehh why
+    if absorber.get(trigger.target()).is_ok() {
+        return;
+    }
+
     let (sphere_transform, sphere_material) = transforms.get(trigger.target()).unwrap();
 
     let mut meshes_to_spawn = Vec::with_capacity(meshes.meshes.len());

@@ -40,11 +40,6 @@ impl LevelSetupTimer {
         Duration::from_millis((self.0.duration().as_millis() as f64 * 0.7).round() as u64)
     }
 
-    pub fn wall_progress(&self) -> f32 {
-        //wall will be ready at 0.7
-        let wall_done_at = 0.7;
-        (self.fraction() / wall_done_at).clamp(0.0, 1.0)
-    }
     pub fn sphere_progress(&self) -> f32 {
         //light will start moving at 0.7
         let light_start = 0.7;

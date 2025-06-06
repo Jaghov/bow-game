@@ -11,7 +11,7 @@ use crate::{
     gameplay::{
         GameSet, GameState,
         arrow::NockedOn,
-        sphere::{DestroySphere, Sphere},
+        sphere::{DestroySphere, FromMultiply, Sphere},
     },
     third_party::avian3d::GameLayer,
 };
@@ -52,7 +52,7 @@ impl FromWorld for ExploderAssets {
     }
 }
 
-#[derive(Component)]
+#[derive(Component, Default)]
 #[require(Sphere)]
 pub struct Exploder;
 
@@ -60,27 +60,22 @@ fn insert_exploder(trigger: Trigger<OnAdd, Exploder>, mut commands: Commands) {
     info!("observed new normal insert");
 
     commands
-        .spawn((
-            CollisionLayers::new(GameLayer::ArrowSensors, GameLayer::ArrowSensors),
-            Collider::sphere(1.),
-            Sensor,
-            CollisionEventsEnabled,
-            ChildOf(trigger.target()),
-        ))
-        .observe(super::debug_collision)
-        .observe(light_fuse_on_collision);
-
-    commands
-        .spawn((
-            CollisionLayers::new(GameLayer::Sphere, GameLayer::Sphere),
+        .entity(trigger.target())
+        .insert_if_new((
+            CollisionLayers::new(
+                GameLayer::Sphere,
+                [GameLayer::ArrowSensor, GameLayer::Sphere],
+            ),
             Collider::sphere(1.),
             CollisionEventsEnabled,
-            ChildOf(trigger.target()),
         ))
         .observe(super::debug_collision)
-        .observe(light_fuse_on_collision);
-
-    commands.entity(trigger.target()).observe(light_fuse);
+        .observe(light_fuse_on_collision)
+        .observe(light_fuse)
+        .observe(|trigger: Trigger<HitByExplosion>, mut commands: Commands| {
+            //light a much smaller fuse if hit by an explosion
+            commands.trigger_targets(LightFuse(1), trigger.target());
+        });
 }
 
 #[derive(Component, Debug)]
@@ -99,7 +94,7 @@ impl Fuse {
 }
 
 #[derive(Event)]
-struct LightFuse(usize);
+pub struct LightFuse(pub usize);
 
 #[derive(Component)]
 struct Indicator(Entity);
@@ -115,37 +110,44 @@ fn indicator(assets: &ExploderAssets, materials: &mut Assets<StandardMaterial>) 
 fn light_fuse_on_collision(
     trigger: Trigger<OnCollisionStart>,
     ignore: Query<(), With<NockedOn>>,
+    colliders: Query<&ColliderOf>,
     mut commands: Commands,
-    children: Query<&ChildOf>,
 ) {
-    if ignore.get(trigger.event().collider).is_ok() {
+    let Ok(collider) = colliders.get(trigger.event().collider) else {
+        return;
+    };
+
+    if ignore.get(collider.body).is_ok() {
         return;
     }
-    commands.trigger_targets(
-        LightFuse(3),
-        children.get(trigger.target()).unwrap().parent(),
-    );
+    commands.trigger_targets(LightFuse(3), trigger.target());
 }
 
 fn light_fuse(
     trigger: Trigger<LightFuse>,
     mut commands: Commands,
-    mut exploders: Query<(Entity, Has<Fuse>), With<Exploder>>,
+    mut exploders: Query<(Entity, Has<Fuse>, Has<Indicator>), With<Exploder>>,
     assets: Res<ExploderAssets>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    let (exploder, current_fuse) = exploders.get_mut(trigger.target()).unwrap();
+    let (exploder, current_fuse, has_indicator) = exploders.get_mut(trigger.target()).unwrap();
 
     if current_fuse {
         return;
     }
 
-    let indicator = commands.spawn(indicator(&assets, &mut materials)).id();
+    if !has_indicator {
+        let indicator = commands.spawn(indicator(&assets, &mut materials)).id();
+
+        commands
+            .entity(exploder)
+            .insert(Indicator(indicator))
+            .add_child(indicator);
+    }
 
     commands
         .entity(exploder)
-        .insert((Fuse::new(trigger.event().0), Indicator(indicator)))
-        .add_child(indicator);
+        .insert((Fuse::new(trigger.event().0)));
 }
 
 fn tick_explosion(mut fuses: Query<&mut Fuse>, time: Res<Time>) {
@@ -158,34 +160,57 @@ fn tick_explosion(mut fuses: Query<&mut Fuse>, time: Res<Time>) {
 }
 
 fn animate_indicator(
-    ignited_exploders: Query<(&Fuse, &Indicator)>,
+    ignited_exploders: Query<(Option<&Fuse>, &Indicator)>,
     indicators: Query<&MeshMaterial3d<StandardMaterial>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     for (fuse, indicator) in ignited_exploders {
         let indicator = indicators.get(indicator.0).unwrap();
         let material = materials.get_mut(indicator).unwrap();
-        let color: Color = match fuse.countdown {
-            3 => YELLOW.into(),
-            2 => ORANGE.into(),
-            _ => RED.into(),
+        let color: Color = match fuse {
+            Some(fuse) => match fuse.countdown {
+                3 => YELLOW.into(),
+                2 => ORANGE.into(),
+                _ => RED.into(),
+            },
+            None => Srgba::new(1., 1., 1., 0.2).into(),
         };
         material.base_color = color;
+        if fuse.is_none() {
+            material.alpha_mode = AlphaMode::Blend;
+        }
+    }
+}
+
+#[derive(Event)]
+pub struct HitByExplosion {
+    explosion_location: Vec2,
+    exploder_was_from_multiply: bool,
+}
+impl HitByExplosion {
+    fn new(explosion_location: Vec2, was_from_multiple: bool) -> Self {
+        Self {
+            explosion_location,
+            exploder_was_from_multiply: was_from_multiple,
+        }
+    }
+    pub fn location(&self) -> Vec2 {
+        self.explosion_location
+    }
+    pub fn was_from_multiple(&self) -> bool {
+        self.exploder_was_from_multiply
     }
 }
 
 fn explode(
     mut commands: Commands,
-    fuses: Query<(Entity, &Transform, &Fuse)>,
-
-    spheres: Query<Has<Exploder>, With<Sphere>>,
-
+    fuses: Query<(Entity, &Transform, Has<FromMultiply>, &Fuse)>,
     mut shake: Single<&mut Shake>,
     colliders: Query<&ColliderOf>,
     spatial_query: SpatialQuery,
 ) {
     let mut should_shake = false;
-    for (entity, transform, fuse) in fuses {
+    for (entity, transform, from_multiply, fuse) in fuses {
         if fuse.countdown != 0 {
             continue;
         }
@@ -206,18 +231,13 @@ fn explode(
                 commands.entity(entity).trigger(DestroySphere);
                 continue;
             }
-            let Ok(is_exploder) = spheres.get(body) else {
-                continue;
-            };
-
-            // if it's an exploder, it'll explode in 1 second. otherwise, lfg
-            if is_exploder {
-                commands.trigger_targets(LightFuse(1), body);
-            } else {
-                commands.entity(body).trigger(DestroySphere);
-            }
+            commands.trigger_targets(
+                HitByExplosion::new(transform.translation.xy(), from_multiply),
+                body,
+            );
         }
         should_shake = true;
+        commands.entity(entity).try_remove::<Fuse>();
     }
     if should_shake {
         shake.add_trauma(0.3);

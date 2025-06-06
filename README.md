@@ -4,7 +4,6 @@
 #[cfg_attr(feature = "hot", bevy_simple_subsecond_system::prelude::hot)]
 ```
 
-
 ## Ball types
 
 - Multiplier

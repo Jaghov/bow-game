@@ -14,7 +14,9 @@ pub fn plugin(app: &mut App) {
 pub enum GameLayer {
     #[default]
     Default,
-    ArrowSensors, // colliders that interact with the arrow
-    Sphere,       // colliders that interacts with all spheres
+    ArrowSensor, // colliders that interact with the arrow sensor.
+    Arrow,       // colliders that interact with the arrow physically
+    Sphere,      // colliders that interacts with all spheres
+    Walls,       // colliders that interact with walls
     Gibs,
 }
