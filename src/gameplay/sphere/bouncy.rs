@@ -23,7 +23,9 @@ fn insert_bouncy(trigger: Trigger<OnAdd, Bouncy>, mut commands: Commands) {
                 [GameLayer::Arrow, GameLayer::Sphere, GameLayer::Walls],
             ),
             Collider::sphere(1.),
+            Dominance(-1),
             Restitution::PERFECTLY_ELASTIC,
+            Friction::ZERO,
             CollisionEventsEnabled,
         ))
         .observe(super::debug_collision);

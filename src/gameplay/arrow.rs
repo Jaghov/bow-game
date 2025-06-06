@@ -30,7 +30,8 @@ pub(super) fn plugin(app: &mut App) {
     )
     .add_systems(Update, tick_flight_time.in_set(GameSet::TickTimers))
     .add_systems(PostUpdate, (reset_flight_time, despawn_arrows).chain())
-    .add_observer(spawn_arrow);
+    .add_observer(spawn_arrow)
+    .add_observer(add_arrow_colliders);
 }
 
 #[derive(Resource, Asset, Reflect, Clone)]
@@ -79,34 +80,38 @@ pub struct Arrow {
 
 fn spawn_arrow(trigger: Trigger<ReadyArrow>, mut commands: Commands, assets: Res<ArrowAssets>) {
     info!("spawning arrow");
-    let collider = Collider::capsule(ARROW_RADIUS, ARROW_LEN);
     commands
         .spawn((
             Name::new("Arrow"),
             Arrow::default(),
             SceneRoot(assets.glowing.clone()),
             NockedOn(trigger.event().0),
-            children![
-                (
-                    collider.clone(),
-                    Sensor,
-                    CollisionLayers::new(
-                        GameLayer::ArrowSensor,
-                        [GameLayer::ArrowSensor, GameLayer::Sphere]
-                    )
-                ),
-                (
-                    collider,
-                    ColliderDensity(10.),
-                    CollisionLayers::new(
-                        GameLayer::Arrow,
-                        [GameLayer::Arrow, GameLayer::Sphere, GameLayer::Walls]
-                    )
-                )
-            ],
         ))
         .observe(fire_arrow)
         .observe(cancel_arrow);
+}
+
+// we will always overwrite children of arrow with 2 colliders
+fn add_arrow_colliders(trigger: Trigger<OnAdd, Arrow>, mut commands: Commands) {
+    let collider = Collider::capsule(ARROW_RADIUS, ARROW_LEN);
+    commands.entity(trigger.target()).insert((children![
+        (
+            collider.clone(),
+            Sensor,
+            CollisionLayers::new(
+                GameLayer::ArrowSensor,
+                [GameLayer::ArrowSensor, GameLayer::Sphere]
+            )
+        ),
+        (
+            collider,
+            ColliderDensity(10.),
+            CollisionLayers::new(
+                GameLayer::Arrow,
+                [GameLayer::Arrow, GameLayer::Sphere, GameLayer::Walls]
+            )
+        )
+    ],));
 }
 
 fn update_unfired_arrow_transform(
@@ -184,8 +189,6 @@ fn on_multiply(
 
     let multiply_origin = event.local_point.with_z(GAME_PLANE);
 
-    let collider = Collider::capsule(ARROW_RADIUS, ARROW_LEN);
-
     for rotation_offset in &event.rot_offset {
         let quatrot = Quat::from_rotation_z(*rotation_offset);
         let rotation = arrow_trn.rotation * Quat::from_rotation_z(*rotation_offset);
@@ -199,29 +202,12 @@ fn on_multiply(
 
         commands
             .spawn((
+                Name::new("Cloned arrow"),
                 Arrow::default(),
                 transform,
                 LinearVelocity(velocity),
                 FromMultiply::default(),
                 scene_root.clone(),
-                children![
-                    (
-                        collider.clone(),
-                        Sensor,
-                        CollisionLayers::new(
-                            GameLayer::ArrowSensor,
-                            [GameLayer::ArrowSensor, GameLayer::Sphere]
-                        )
-                    ),
-                    (
-                        collider.clone(),
-                        ColliderDensity(10.),
-                        CollisionLayers::new(
-                            GameLayer::Arrow,
-                            [GameLayer::Arrow, GameLayer::Sphere, GameLayer::Walls]
-                        )
-                    )
-                ],
             ))
             .observe(on_multiply);
     }
