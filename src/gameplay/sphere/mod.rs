@@ -28,6 +28,9 @@ pub use destroy::*;
 mod gravity;
 pub use gravity::*;
 
+mod absorber;
+pub use absorber::*;
+
 use crate::{
     asset_tracking::LoadResource,
     gameplay::arrow::{Arrow, NockedOn},
@@ -38,6 +41,7 @@ pub(super) fn plugin(app: &mut App) {
         normal::plugin,
         multiplier::plugin,
         timefreeze::plugin,
+        absorber::plugin,
         exploder::plugin,
         bouncy::plugin,
         destroy::plugin,
@@ -160,10 +164,6 @@ pub enum SphereType {
 #[require(RigidBody = RigidBody::Dynamic)]
 #[require(LockedAxes = LockedAxes::new().lock_translation_z())]
 pub struct Sphere;
-
-#[derive(Component)]
-#[require(Sphere)]
-pub struct Absorber;
 
 fn spawn_sphere(
     trigger: Trigger<OnAdd, SphereType>,
