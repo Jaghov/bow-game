@@ -129,21 +129,30 @@ fn add_arrow_colliders(trigger: Trigger<OnAdd, Arrow>, mut commands: Commands) {
 
 fn wall_collision_flip(
     trigger: Trigger<OnCollisionStart>,
-    mut arrows: Query<(&mut Position, &mut Rotation), With<Arrow>>,
-    everyone_else: Query<(&Position, &Rotation), Without<Arrow>>,
+    mut arrows: Query<(
+        &mut Arrow,
+        &mut Position,
+        &mut Rotation,
+        &mut LinearVelocity,
+    )>,
     walls: Query<(), With<Walls>>,
     colliders: Query<&ColliderOf>,
-    positions: Query<&GlobalTransform>,
     collisions: Collisions,
 ) {
-    let Ok((mut position, mut rotation)) = arrows.get(trigger.target()) else {
-        return;
-    };
-    let Ok(collider) = colliders.get(trigger.collider) else {
+    let Ok(wall) = colliders.get(trigger.collider) else {
         return;
     };
 
-    if walls.get(collider.body).is_err() {
+    if walls.get(wall.body).is_err() {
+        return;
+    };
+    let Ok(arrow) = colliders.get(trigger.target()) else {
+        return;
+    };
+
+    let Ok((mut arrow, mut arrow_position, mut arrow_rotation, mut arrow_velocity)) =
+        arrows.get_mut(arrow.body)
+    else {
         return;
     };
 
@@ -152,20 +161,57 @@ fn wall_collision_flip(
         return;
     };
 
-    let Some(deepest_contact) = contact_pair.find_deepest_contact() else {
-        warn!("multiplier was hit, but couldn't find deepest contact point!");
+    // Get the contact manifold for the collision
+    let Some(manifold) = contact_pair.manifolds.first() else {
+        warn!("No contact manifold found for collision");
         return;
     };
 
-    let local_point = if contact_pair.collider2 == trigger.collider {
-        deepest_contact.local_point1
-    } else {
-        deepest_contact.local_point2
-    };
+    // The normal from the manifold points from collider1 to collider2
+    // We need to determine which direction to use based on which collider is the wall
+    let mut wall_normal = manifold.normal;
 
-    info!("Collided, local_point = {:?}", local_point);
+    // If the wall is collider2, we want the normal pointing from wall to arrow
+    if contact_pair.collider2 == trigger.collider {
+        // Wall is collider2, normal points from collider1 (arrow) to collider2 (wall)
+        // We want normal pointing from wall to arrow, so flip it
+        wall_normal = -wall_normal;
+    }
+    // If wall is collider1, the normal already points from wall to arrow
 
-    //todo
+    // Check if arrow has bounced too many times
+    const MAX_BOUNCES: u8 = 2;
+    if arrow.bounces >= MAX_BOUNCES {
+        // Stop the arrow instead of bouncing
+        arrow_velocity.0 = Vec3::ZERO;
+        return;
+    }
+
+    // Reflect the arrow's velocity around the wall normal using the formula:
+    // reflected_velocity = velocity - 2 * (velocity · normal) * normal
+    let current_velocity = arrow_velocity.0;
+    let dot_product = current_velocity.dot(wall_normal);
+    let reflected_velocity = current_velocity - 2.0 * dot_product * wall_normal;
+
+    // Apply energy damping to make bounces more realistic
+    const ENERGY_RETENTION: f32 = 0.8; // Arrow loses 20% of energy per bounce
+    let damped_velocity = reflected_velocity * ENERGY_RETENTION;
+
+    // Update arrow velocity and bounce count
+    arrow_velocity.0 = damped_velocity;
+    arrow.bounces += 1;
+
+    // Update arrow rotation to match new direction
+    if damped_velocity.length() > 0.001 {
+        let new_direction = damped_velocity.normalize();
+        // Arrow points along +Y axis in its local space
+        let target_rotation = Quat::from_rotation_arc(Vec3::Y, new_direction);
+        arrow_rotation.0 = target_rotation;
+    }
+
+    // Move arrow slightly away from wall to prevent overlap
+    let separation_distance = 0.1;
+    arrow_position.0 += wall_normal * separation_distance;
 }
 
 fn update_unfired_arrow_transform(

@@ -105,6 +105,7 @@ fn load_level(
 
     let root = commands
         .spawn((
+            Name::new("Walls"),
             Walls,
             CollisionLayers::new(
                 GameLayer::Walls,
