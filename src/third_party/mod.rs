@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use bevy_gltf_animation::GltfAnimationPlugin;
+#[cfg(feature = "particles")]
 use bevy_hanabi::HanabiPlugin;
 use bevy_mod_outline::OutlinePlugin;
 use bevy_trauma_shake::TraumaPlugin;
@@ -13,10 +14,12 @@ pub fn plugin(app: &mut App) {
         avian3d::plugin,
         TraumaPlugin,
         GltfAnimationPlugin,
-        HanabiPlugin,
         OutlinePlugin,
         TweeningPlugin,
     ));
+
+    #[cfg(feature = "particles")]
+    app.add_plugins(HanabiPlugin);
     #[cfg(feature = "hot")]
     app.add_plugins(bevy_simple_subsecond_system::prelude::SimpleSubsecondPlugin::default());
 }
