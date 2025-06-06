@@ -93,7 +93,11 @@ fn spawn_arrow(trigger: Trigger<ReadyArrow>, mut commands: Commands, assets: Res
                 ),
                 (
                     collider,
-                    CollisionLayers::new(GameLayer::Arrow, [GameLayer::Arrow, GameLayer::Sphere])
+                    ColliderDensity(10.),
+                    CollisionLayers::new(
+                        GameLayer::Arrow,
+                        [GameLayer::Arrow, GameLayer::Sphere, GameLayer::Walls]
+                    )
                 )
             ],
         ))

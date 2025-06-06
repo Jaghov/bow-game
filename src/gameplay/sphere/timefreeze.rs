@@ -22,7 +22,10 @@ fn insert_timefreeze(trigger: Trigger<OnAdd, TimeFreeze>, mut commands: Commands
     info!("observed new timefreeze insert");
     commands
         .spawn((
-            CollisionLayers::new(GameLayer::ArrowSensor, GameLayer::ArrowSensor),
+            CollisionLayers::new(
+                GameLayer::Sphere,
+                [GameLayer::ArrowSensor, GameLayer::Sphere],
+            ),
             Collider::sphere(1.),
             Sensor,
             CollisionEventsEnabled,
@@ -39,7 +42,11 @@ fn freeze_on_arrow_collision(
     arrows: Query<Entity, (With<Arrow>, Without<Canceled>, Without<NockedOn>)>,
 ) {
     let event = trigger.event();
-    let Ok(arrow) = arrows.get(event.collider) else {
+
+    let Ok(collider) = colliders.get(event.collider) else {
+        return;
+    };
+    let Ok(arrow) = arrows.get(collider.body) else {
         return;
     };
     info!("timefreeze collision: freezing time");

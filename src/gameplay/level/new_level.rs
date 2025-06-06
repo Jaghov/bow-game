@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use avian3d::prelude::{CollisionLayers, RigidBody};
+use avian3d::prelude::{CollisionLayers, PhysicsLayer, RigidBody};
 use bevy::prelude::*;
 use bevy_tweening::{Animator, Tween, lens::TransformPositionLens};
 
@@ -124,6 +124,7 @@ fn load_level(
             Mesh3d(mesh),
             collider,
             MeshMaterial3d(material),
+            CollisionLayers::new(GameLayer::Walls, GameLayer::all_bits()),
             wall.transform,
             ChildOf(root),
         ));
