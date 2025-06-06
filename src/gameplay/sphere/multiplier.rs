@@ -26,15 +26,6 @@ fn insert_multiplier(trigger: Trigger<OnAdd, Multiplier>, mut commands: Commands
         .observe(super::debug_collision)
         .observe(super::despawn_on_arrow)
         .observe(multiply_collider_on_hit);
-
-    commands
-        .spawn((
-            CollisionLayers::new(GameLayer::Sphere, GameLayer::Sphere),
-            Collider::sphere(1.),
-            CollisionEventsEnabled,
-            ChildOf(trigger.target()),
-        ))
-        .observe(super::debug_collision);
 }
 
 /// An event that tells an observer to multiply with an array

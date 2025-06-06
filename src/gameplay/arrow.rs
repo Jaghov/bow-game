@@ -55,6 +55,9 @@ impl ReadyArrow {
     }
 }
 
+const ARROW_RADIUS: f32 = 0.1;
+const ARROW_LEN: f32 = 3.5;
+
 #[derive(Component, Reflect)]
 #[reflect(Component)]
 #[relationship(relationship_target = BowArrow)]
@@ -72,7 +75,7 @@ pub struct Arrow {
 
 fn spawn_arrow(trigger: Trigger<ReadyArrow>, mut commands: Commands, assets: Res<ArrowAssets>) {
     info!("spawning arrow");
-    let collider = Collider::capsule(0.1, 3.5);
+    let collider = Collider::capsule(ARROW_RADIUS, ARROW_LEN);
     commands
         .spawn((
             Name::new("Arrow"),
@@ -160,15 +163,17 @@ fn fire_arrow(
 fn on_multiply(
     trigger: Trigger<ShouldMultiply>,
     mut commands: Commands,
-    arrows: Query<(&Transform, &Collider, &LinearVelocity, &SceneRoot), With<Arrow>>,
+    arrows: Query<(&Transform, &LinearVelocity, &SceneRoot), With<Arrow>>,
 ) {
     let event = trigger.event();
-    let Ok((arrow_trn, collider, lvel, scene_root)) = arrows.get(trigger.target()) else {
+    let Ok((arrow_trn, lvel, scene_root)) = arrows.get(trigger.target()) else {
         warn!("Arrow was commanded to multiply, but its required components were not found!");
         return;
     };
 
     let multiply_origin = event.local_point.with_z(GAME_PLANE);
+
+    let collider = Collider::capsule(ARROW_RADIUS, ARROW_LEN);
 
     for rotation_offset in &event.rot_offset {
         let quatrot = Quat::from_rotation_z(*rotation_offset);
@@ -186,8 +191,18 @@ fn on_multiply(
                 Arrow::default(),
                 transform,
                 LinearVelocity(velocity),
-                collider.clone(),
                 scene_root.clone(),
+                children![
+                    (
+                        collider.clone(),
+                        Sensor,
+                        CollisionLayers::new(GameLayer::ArrowSensor, GameLayer::ArrowSensor)
+                    ),
+                    (
+                        collider.clone(),
+                        CollisionLayers::new(GameLayer::Arrow, GameLayer::Arrow)
+                    )
+                ],
             ))
             .observe(on_multiply);
     }

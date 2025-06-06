@@ -70,16 +70,6 @@ fn insert_exploder(trigger: Trigger<OnAdd, Exploder>, mut commands: Commands) {
         .observe(super::debug_collision)
         .observe(light_fuse_on_collision);
 
-    commands
-        .spawn((
-            CollisionLayers::new(GameLayer::Sphere, GameLayer::Sphere),
-            Collider::sphere(1.),
-            CollisionEventsEnabled,
-            ChildOf(trigger.target()),
-        ))
-        .observe(super::debug_collision)
-        .observe(light_fuse_on_collision);
-
     commands.entity(trigger.target()).observe(light_fuse);
 }
 

@@ -30,15 +30,6 @@ fn insert_timefreeze(trigger: Trigger<OnAdd, TimeFreeze>, mut commands: Commands
         ))
         .observe(super::debug_collision)
         .observe(freeze_on_arrow_collision);
-
-    commands
-        .spawn((
-            CollisionLayers::new(GameLayer::Sphere, GameLayer::Sphere),
-            Collider::sphere(1.),
-            CollisionEventsEnabled,
-            ChildOf(trigger.target()),
-        ))
-        .observe(super::debug_collision);
 }
 
 fn freeze_on_arrow_collision(
