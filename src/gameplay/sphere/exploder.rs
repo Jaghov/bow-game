@@ -11,7 +11,7 @@ use crate::{
     gameplay::{
         GameSet, GameState,
         arrow::NockedOn,
-        sphere::{DestroySphere, Sphere},
+        sphere::{DestroySphere, FromMultiply, Sphere},
     },
     third_party::avian3d::GameLayer,
 };
@@ -169,25 +169,32 @@ fn animate_indicator(
 #[derive(Event)]
 pub struct HitByExplosion {
     explosion_location: Vec2,
+    exploder_was_from_multiply: bool,
 }
 impl HitByExplosion {
-    fn new(explosion_location: Vec2) -> Self {
-        Self { explosion_location }
+    fn new(explosion_location: Vec2, was_from_multiple: bool) -> Self {
+        Self {
+            explosion_location,
+            exploder_was_from_multiply: was_from_multiple,
+        }
     }
     pub fn location(&self) -> Vec2 {
         self.explosion_location
+    }
+    pub fn was_from_multiple(&self) -> bool {
+        self.exploder_was_from_multiply
     }
 }
 
 fn explode(
     mut commands: Commands,
-    fuses: Query<(Entity, &Transform, &Fuse)>,
+    fuses: Query<(Entity, &Transform, Has<FromMultiply>, &Fuse)>,
     mut shake: Single<&mut Shake>,
     colliders: Query<&ColliderOf>,
     spatial_query: SpatialQuery,
 ) {
     let mut should_shake = false;
-    for (entity, transform, fuse) in fuses {
+    for (entity, transform, from_multiply, fuse) in fuses {
         if fuse.countdown != 0 {
             continue;
         }
@@ -208,7 +215,10 @@ fn explode(
                 commands.entity(entity).trigger(DestroySphere);
                 continue;
             }
-            commands.trigger_targets(HitByExplosion::new(transform.translation.xy()), body);
+            commands.trigger_targets(
+                HitByExplosion::new(transform.translation.xy(), from_multiply),
+                body,
+            );
         }
         should_shake = true;
     }

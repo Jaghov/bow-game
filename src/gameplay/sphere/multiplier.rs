@@ -3,7 +3,7 @@ use bevy::prelude::*;
 
 use super::Sphere;
 use crate::{
-    gameplay::sphere::{DestroySphere, HitByExplosion, LightFuse, SphereType},
+    gameplay::sphere::{Absorber, DestroySphere, HitByExplosion, LightFuse, SphereType},
     third_party::avian3d::GameLayer,
 };
 
@@ -35,8 +35,12 @@ fn insert_multiplier(trigger: Trigger<OnAdd, Multiplier>, mut commands: Commands
         .observe(multiply_explosion);
 }
 
+#[derive(Component)]
+pub struct FromMultiply;
+
 fn multiply_explosion(
     trigger: Trigger<HitByExplosion>,
+    absorbers: Query<(), With<Absorber>>,
     mut commands: Commands,
     transforms: Query<&Transform>,
 ) {
@@ -51,6 +55,13 @@ fn multiply_explosion(
 
     let rotation = Quat::from_rotation_z(z_rot);
 
+    if absorbers.get(trigger.target()).is_ok() {
+        // this will stop infinite explosions
+        if trigger.event().was_from_multiple() {
+            return;
+        }
+    }
+
     for rotation_offset in [70.0_f32.to_radians(), 0., -70.0_f32.to_radians()] {
         let rotation = rotation * Quat::from_rotation_z(rotation_offset);
 
@@ -60,7 +71,7 @@ fn multiply_explosion(
 
         let transform = Transform::from_translation(translation).with_rotation(rotation);
         commands
-            .spawn((SphereType::Exploder, transform))
+            .spawn((SphereType::Exploder, FromMultiply, transform))
             .trigger(LightFuse(3));
     }
     commands.trigger_targets(DestroySphere, trigger.target());

@@ -1,7 +1,10 @@
 use std::time::Duration;
 
 use crate::{
-    gameplay::{GameSet, sphere::SphereAssets},
+    gameplay::{
+        GameSet,
+        sphere::{Absorber, SphereAssets},
+    },
     loading::LoadingState,
     third_party::avian3d::GameLayer,
 };
@@ -58,10 +61,17 @@ struct Gib;
 // listener should ONLY be on the Sphere component.
 fn destroy_sphere(
     trigger: Trigger<DestroySphere>,
+    absorber: Query<(), With<Absorber>>,
     mut commands: Commands,
     meshes: Res<GibMeshes>,
     transforms: Query<(&Transform, &MeshMaterial3d<StandardMaterial>)>,
 ) {
+    // absorbers are the exception and will be custom despawned.
+    // you would ideally attach this listener to all balls but ehh why
+    if absorber.get(trigger.target()).is_ok() {
+        return;
+    }
+
     let (sphere_transform, sphere_material) = transforms.get(trigger.target()).unwrap();
 
     let mut meshes_to_spawn = Vec::with_capacity(meshes.meshes.len());

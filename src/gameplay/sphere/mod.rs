@@ -336,6 +336,14 @@ fn despawn_on_bouncyball_collision(
 
 // simple observer that will just handle the hit by explosion
 // event by starting despawn
-fn despawn_on_hit_by_explosion(trigger: Trigger<HitByExplosion>, mut commands: Commands) {
+fn despawn_on_hit_by_explosion(
+    trigger: Trigger<HitByExplosion>,
+    absorbers: Query<(), With<Absorber>>,
+    mut commands: Commands,
+) {
+    if absorbers.get(trigger.target()).is_ok() {
+        return;
+    };
+
     commands.entity(trigger.target()).trigger(DestroySphere);
 }
