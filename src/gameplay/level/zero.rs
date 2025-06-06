@@ -25,12 +25,19 @@ fn create_level(mut levels: ResMut<Levels>) {
                 sphere!(Absorber, -30., 0.),
                 sphere!(TimeFreeze, -10., 0.),
                 sphere!(Normal, 0., 0.),
+                // exploder column
                 sphere!(Exploder, 10., 0.),
                 sphere!(Exploder, 10., 5.),
                 sphere!(Exploder, 10., 10.),
                 sphere!(Normal, 8., 8.),
+                // bouncy column
                 sphere!(Bouncy, 20., 0.),
+                sphere!(Normal, 20., 5.),
+                // multiplier column
                 sphere!(Multiplier, 40., 0.),
+                sphere!(Multiplier, 40., 5.),
+                sphere!(Multiplier, 40., 10.),
+                sphere!(Normal, 40., 15.),
             ],
         ),
     );

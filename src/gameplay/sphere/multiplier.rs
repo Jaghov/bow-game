@@ -24,7 +24,7 @@ fn insert_multiplier(trigger: Trigger<OnAdd, Multiplier>, mut commands: Commands
             ChildOf(trigger.target()),
         ))
         .observe(super::debug_collision)
-        .observe(super::despawn_on_arrow)
+        .observe(super::despawn_on_arrow_collision)
         .observe(multiply_collider_on_hit);
 }
 

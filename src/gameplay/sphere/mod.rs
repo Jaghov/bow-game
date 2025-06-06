@@ -258,10 +258,10 @@ fn debug_collision(
     info!("{}", message);
 }
 
-fn despawn_on_arrow(
+fn despawn_on_arrow_collision(
     trigger: Trigger<OnCollisionStart>,
     mut commands: Commands,
-    arrows: Query<&Arrow, Without<NockedOn>>,
+    arrows: Query<(), (With<Arrow>, Without<NockedOn>)>,
     colliders: Query<&ColliderOf>,
 ) {
     let event = trigger.event();
@@ -270,6 +270,25 @@ fn despawn_on_arrow(
     };
     if arrows.get(collider.body).is_err() {
         warn!("collided, not with arrow");
+        return;
+    }
+    let parent = colliders.get(trigger.target()).unwrap().body;
+
+    commands.entity(parent).trigger(DestroySphere);
+}
+
+fn despawn_on_bouncyball_collision(
+    trigger: Trigger<OnCollisionStart>,
+    mut commands: Commands,
+    spheres: Query<(), (With<Sphere>, With<Bouncy>)>,
+    colliders: Query<&ColliderOf>,
+) {
+    let event = trigger.event();
+    let Ok(collider) = colliders.get(event.collider) else {
+        return;
+    };
+    if spheres.get(collider.body).is_err() {
+        warn!("collided, not with sphere");
         return;
     }
     let parent = colliders.get(trigger.target()).unwrap().body;

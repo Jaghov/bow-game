@@ -16,13 +16,17 @@ fn insert_normal(trigger: Trigger<OnAdd, Normal>, mut commands: Commands) {
 
     commands
         .spawn((
-            CollisionLayers::new(GameLayer::ArrowSensor, GameLayer::ArrowSensor),
+            CollisionLayers::new(
+                GameLayer::Sphere,
+                [GameLayer::ArrowSensor, GameLayer::Sphere, GameLayer::Walls],
+            ),
             Collider::sphere(1.),
             CollisionEventsEnabled,
             ChildOf(trigger.target()),
         ))
         .observe(super::debug_collision)
-        .observe(super::despawn_on_arrow);
+        .observe(super::despawn_on_arrow_collision)
+        .observe(super::despawn_on_bouncyball_collision);
 
     // commands
     //     .spawn((
