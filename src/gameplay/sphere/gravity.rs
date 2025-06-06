@@ -32,9 +32,7 @@ fn insert_gravity_sphere(
                 [GameLayer::Arrow, GameLayer::Sphere, GameLayer::Walls],
             ),
             MeshMaterial3d(assets.gravity.clone()),
-            Collider::sphere(1.),
             Restitution::PERFECTLY_ELASTIC,
-            CollisionEventsEnabled,
             Dominance(1),
         ))
         .observe(super::debug_collision);

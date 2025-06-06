@@ -25,16 +25,13 @@ fn insert_timefreeze(
 ) {
     info!("observed new timefreeze insert");
     commands
-        .spawn((
+        .entity(trigger.target())
+        .insert((
             CollisionLayers::new(
                 GameLayer::Sphere,
                 [GameLayer::ArrowSensor, GameLayer::Sphere],
             ),
             MeshMaterial3d(assets.time_freeze.clone()),
-            Collider::sphere(1.),
-            Sensor,
-            CollisionEventsEnabled,
-            ChildOf(trigger.target()),
         ))
         .observe(super::debug_collision)
         .observe(freeze_on_arrow_collision);

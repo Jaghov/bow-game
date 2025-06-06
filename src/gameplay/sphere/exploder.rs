@@ -70,8 +70,6 @@ fn insert_exploder(
                 GameLayer::Sphere,
                 [GameLayer::ArrowSensor, GameLayer::Sphere],
             ),
-            Collider::sphere(1.),
-            CollisionEventsEnabled,
             MeshMaterial3d(assets.exploder.clone()),
         ))
         .observe(super::debug_collision)

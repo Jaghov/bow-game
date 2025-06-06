@@ -26,8 +26,6 @@ fn insert_normal(
                 GameLayer::Sphere,
                 [GameLayer::ArrowSensor, GameLayer::Sphere, GameLayer::Walls],
             ),
-            Collider::sphere(1.),
-            CollisionEventsEnabled,
         ))
         .observe(super::debug_collision)
         .observe(super::despawn_on_arrow_collision)

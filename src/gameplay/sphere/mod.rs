@@ -50,8 +50,6 @@ pub(super) fn plugin(app: &mut App) {
 
     app.register_type::<SphereAssets>()
         .load_resource::<SphereAssets>();
-
-    app.add_observer(spawn_sphere);
 }
 
 #[derive(Resource, Asset, Reflect, Clone)]
@@ -155,55 +153,12 @@ impl FromWorld for SphereAssets {
     }
 }
 
-#[derive(Component, Clone, Copy)]
-#[allow(dead_code)]
-pub enum SphereType {
-    Normal,
-    Multiplier,
-    TimeFreeze,
-    Exploder,
-    Bouncy,
-    Gravity,
-    Absorber,
-}
 #[derive(Component, Default)]
 #[require(RigidBody = RigidBody::Dynamic)]
 #[require(LockedAxes = LockedAxes::ROTATION_LOCKED.lock_translation_z())]
+#[require(Collider = Collider::sphere(1.))]
+#[require(CollisionEventsEnabled)]
 pub struct Sphere;
-
-fn spawn_sphere(
-    trigger: Trigger<OnAdd, SphereType>,
-    mut commands: Commands,
-    spheres: Query<&SphereType>,
-    assets: Res<SphereAssets>,
-) {
-    let sphere_type = spheres.get(trigger.target()).unwrap();
-    let mut ec = commands.entity(trigger.target());
-    ec.insert(Mesh3d(assets.mesh.clone()));
-    match sphere_type {
-        SphereType::Normal => {
-            ec.insert((Name::new("Normal Sphere"), Normal));
-        }
-        SphereType::Multiplier => {
-            ec.insert((Name::new("Multiplier Sphere"), Multiplier, Sensor));
-        }
-        SphereType::TimeFreeze => {
-            ec.insert((Name::new("TimeFreeze Sphere"), TimeFreeze));
-        }
-        SphereType::Bouncy => {
-            ec.insert((Name::new("Bouncy Sphere"), Bouncy));
-        }
-        SphereType::Gravity => {
-            ec.insert((Name::new("Gravity Sphere"), GravitySphere));
-        }
-        SphereType::Absorber => {
-            ec.insert((Name::new("Absorber Sphere"), Absorber));
-        }
-        SphereType::Exploder => {
-            ec.insert((Name::new("Exploder Sphere"), Exploder, Sensor));
-        }
-    }
-}
 
 fn debug_collision(
     trigger: Trigger<OnCollisionStart>,

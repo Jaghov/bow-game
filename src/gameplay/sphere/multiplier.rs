@@ -7,7 +7,7 @@ use super::Sphere;
 use crate::{
     gameplay::{
         GameSet,
-        sphere::{Absorber, DestroySphere, HitByExplosion, LightFuse, SphereAssets, SphereType},
+        sphere::{Absorber, DestroySphere, Exploder, HitByExplosion, LightFuse, SphereAssets},
     },
     third_party::avian3d::GameLayer,
 };
@@ -111,7 +111,13 @@ fn multiply_explosion(
 
         let transform = Transform::from_translation(translation).with_rotation(rotation);
         commands
-            .spawn((SphereType::Exploder, FromMultiply::forever(), transform))
+            .spawn((
+                Name::new("Exploder Replica"),
+                Exploder,
+                Sensor,
+                FromMultiply::forever(),
+                transform,
+            ))
             .trigger(LightFuse(3));
     }
     commands.trigger_targets(DestroySphere, trigger.target());

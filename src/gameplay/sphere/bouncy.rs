@@ -2,7 +2,7 @@ use avian3d::prelude::*;
 use bevy::prelude::*;
 
 use crate::{
-    gameplay::sphere::{FromMultiply, ShouldMultiply, Sphere, SphereAssets, SphereType},
+    gameplay::sphere::{FromMultiply, ShouldMultiply, Sphere, SphereAssets},
     third_party::avian3d::GameLayer,
     world::GAME_PLANE,
 };
@@ -27,11 +27,9 @@ fn insert_bouncy(
                 [GameLayer::Arrow, GameLayer::Sphere, GameLayer::Walls],
             ),
             MeshMaterial3d(assets.bouncy.clone()),
-            Collider::sphere(1.),
             Dominance(-1),
             Restitution::PERFECTLY_ELASTIC,
             Friction::ZERO,
-            CollisionEventsEnabled,
         ))
         .observe(super::debug_collision);
     commands.entity(trigger.target()).observe(on_multiply);
@@ -63,7 +61,8 @@ fn on_multiply(
             .with_scale(transform.scale);
 
         commands.spawn((
-            SphereType::Bouncy,
+            Name::new("Bouncy Replica"),
+            Bouncy,
             FromMultiply::default(),
             transform,
             LinearVelocity(velocity),

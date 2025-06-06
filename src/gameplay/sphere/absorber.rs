@@ -26,10 +26,8 @@ fn insert_absorber(
                 GameLayer::Sphere,
                 [GameLayer::Arrow, GameLayer::Sphere, GameLayer::Walls],
             ),
-            Collider::sphere(1.),
             MeshMaterial3d(assets.absorber.clone()),
             Restitution::PERFECTLY_ELASTIC,
-            CollisionEventsEnabled,
         ))
         .observe(super::debug_collision)
         .observe(absorb_property::<Bouncy>)
