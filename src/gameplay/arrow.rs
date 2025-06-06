@@ -249,7 +249,7 @@ fn fire_arrow(
 ) {
     info!("fire arrow event");
     let Ok((rotation, mut lvel, arrow_of)) = arrows.get_mut(trigger.target()) else {
-        //clickr giht click too quickly;
+        //right click and left click were clicked together
         return;
     };
 
