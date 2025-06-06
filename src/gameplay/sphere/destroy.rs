@@ -1,4 +1,4 @@
-use std::{collections::VecDeque, time::Duration};
+use std::time::Duration;
 
 use crate::{
     gameplay::{GameSet, sphere::SphereAssets},
@@ -24,13 +24,12 @@ the position of the despawned sphere. ez.
 pub(super) fn plugin(app: &mut App) {
     app.add_observer(add_destroyable_sphere)
         .init_resource::<GibMeshes>()
-        .init_resource::<GibTracker>()
         .add_systems(OnEnter(LoadingState::Dependencies), spawn_gib_scene)
         .add_systems(
             Update,
             (
                 tick_being_destroyed.in_set(GameSet::TickTimers),
-                (despawn_destroyed, track_despawn).in_set(GameSet::Update),
+                (despawn_destroyed, limit_gib_population).in_set(GameSet::Update),
             ),
         )
         .add_systems(Last, yoink_gib_meshes);
@@ -72,8 +71,6 @@ fn destroy_sphere(
             Transform::from_translation(sphere_transform.translation + transform.translation)
                 .with_rotation(transform.rotation);
 
-        info!("Spawning gib piece at {:?}", new_transform.translation);
-
         meshes_to_spawn.push((
             Name::new("Gib Piece"),
             Gib,
@@ -88,7 +85,6 @@ fn destroy_sphere(
         ))
     }
 
-    info!("spawning gibs!");
     commands.entity(trigger.target()).try_despawn();
     commands.spawn_batch(meshes_to_spawn);
 }
@@ -101,21 +97,6 @@ fn despawn_destroyed(mut commands: Commands, destroyed: Query<(Entity, &BeingDes
     for (entity, timer) in &destroyed {
         if timer.0.finished() {
             commands.entity(entity).despawn();
-        }
-    }
-}
-
-#[derive(Resource)]
-struct GibTracker {
-    gibs: VecDeque<Entity>,
-    max: usize,
-}
-impl Default for GibTracker {
-    fn default() -> Self {
-        let max = 500;
-        Self {
-            gibs: VecDeque::with_capacity(max),
-            max,
         }
     }
 }
@@ -149,8 +130,12 @@ impl GibMeshes {
         self.is_ready
     }
 }
-
-fn track_despawn(new_gibs: Query<Entity, Added<Gib>>, tracker: ResMut<GibTracker>) {}
+// this function makes sure an extreme number of gibs don't exist in the world, causing lag
+fn limit_gib_population(new_gibs: Query<Entity, With<Gib>>, mut commands: Commands) {
+    for gib in new_gibs.iter().skip(600) {
+        commands.entity(gib).try_despawn();
+    }
+}
 
 // need to run this here and not when scene instance is ready. The global transform will be applied in post update, so it's here where we despawn the scene..
 fn yoink_gib_meshes(
