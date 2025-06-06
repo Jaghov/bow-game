@@ -11,7 +11,7 @@ use crate::{
     gameplay::{
         GameSet, GameState,
         arrow::NockedOn,
-        sphere::{DestroySphere, FromMultiply, Sphere},
+        sphere::{DestroySphere, FromMultiply, Sphere, SphereAssets},
     },
     third_party::avian3d::GameLayer,
 };
@@ -56,7 +56,11 @@ impl FromWorld for ExploderAssets {
 #[require(Sphere)]
 pub struct Exploder;
 
-fn insert_exploder(trigger: Trigger<OnAdd, Exploder>, mut commands: Commands) {
+fn insert_exploder(
+    trigger: Trigger<OnAdd, Exploder>,
+    mut commands: Commands,
+    assets: Res<SphereAssets>,
+) {
     info!("observed new normal insert");
 
     commands
@@ -68,6 +72,7 @@ fn insert_exploder(trigger: Trigger<OnAdd, Exploder>, mut commands: Commands) {
             ),
             Collider::sphere(1.),
             CollisionEventsEnabled,
+            MeshMaterial3d(assets.exploder.clone()),
         ))
         .observe(super::debug_collision)
         .observe(light_fuse_on_collision)

@@ -7,7 +7,7 @@ use super::Sphere;
 use crate::{
     gameplay::{
         GameSet,
-        sphere::{Absorber, DestroySphere, HitByExplosion, LightFuse, SphereType},
+        sphere::{Absorber, DestroySphere, HitByExplosion, LightFuse, SphereAssets, SphereType},
     },
     third_party::avian3d::GameLayer,
 };
@@ -39,12 +39,17 @@ pub(super) fn plugin(app: &mut App) {
 #[require(Sphere)]
 pub struct Multiplier;
 
-fn insert_multiplier(trigger: Trigger<OnAdd, Multiplier>, mut commands: Commands) {
+fn insert_multiplier(
+    trigger: Trigger<OnAdd, Multiplier>,
+    mut commands: Commands,
+    assets: Res<SphereAssets>,
+) {
     info!("observed new multiplier insert");
 
     commands
         .entity(trigger.target())
         .insert_if_new((
+            MeshMaterial3d(assets.multiplier.clone()),
             CollisionLayers::new(
                 GameLayer::Sphere,
                 [GameLayer::ArrowSensor, GameLayer::Sphere],

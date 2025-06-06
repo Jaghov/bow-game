@@ -106,6 +106,12 @@ impl FromWorld for SphereAssets {
 
         let absorber = materials.add(StandardMaterial {
             base_color: GREEN.into(),
+            reflectance: 1.,
+            specular_transmission: 0.90,
+            diffuse_transmission: 0.5,
+            thickness: 0.6,
+            ior: 1.5,
+            perceptual_roughness: 0.4,
             ..default()
         });
 
@@ -139,9 +145,9 @@ impl FromWorld for SphereAssets {
             mesh,
             gibs,
             normal,
+            absorber,
             multiplier,
             time_freeze,
-            absorber,
             bouncy,
             gravity,
             exploder,
@@ -176,55 +182,25 @@ fn spawn_sphere(
     ec.insert(Mesh3d(assets.mesh.clone()));
     match sphere_type {
         SphereType::Normal => {
-            ec.insert((
-                Name::new("Normal Sphere"),
-                Normal,
-                MeshMaterial3d(assets.normal.clone()),
-            ));
+            ec.insert((Name::new("Normal Sphere"), Normal));
         }
         SphereType::Multiplier => {
-            ec.insert((
-                Name::new("Multiplier Sphere"),
-                Multiplier,
-                Sensor,
-                MeshMaterial3d(assets.multiplier.clone()),
-            ));
+            ec.insert((Name::new("Multiplier Sphere"), Multiplier, Sensor));
         }
         SphereType::TimeFreeze => {
-            ec.insert((
-                Name::new("TimeFreeze Sphere"),
-                TimeFreeze,
-                MeshMaterial3d(assets.time_freeze.clone()),
-            ));
+            ec.insert((Name::new("TimeFreeze Sphere"), TimeFreeze));
         }
         SphereType::Bouncy => {
-            ec.insert((
-                Name::new("Bouncy Sphere"),
-                Bouncy,
-                MeshMaterial3d(assets.bouncy.clone()),
-            ));
+            ec.insert((Name::new("Bouncy Sphere"), Bouncy));
         }
         SphereType::Gravity => {
-            ec.insert((
-                Name::new("Gravity Sphere"),
-                GravitySphere,
-                MeshMaterial3d(assets.gravity.clone()),
-            ));
+            ec.insert((Name::new("Gravity Sphere"), GravitySphere));
         }
         SphereType::Absorber => {
-            ec.insert((
-                Name::new("Absorber Sphere"),
-                Absorber,
-                MeshMaterial3d(assets.absorber.clone()),
-            ));
+            ec.insert((Name::new("Absorber Sphere"), Absorber));
         }
         SphereType::Exploder => {
-            ec.insert((
-                Name::new("Exploder Sphere"),
-                Exploder,
-                Sensor,
-                MeshMaterial3d(assets.exploder.clone()),
-            ));
+            ec.insert((Name::new("Exploder Sphere"), Exploder, Sensor));
         }
     }
 }

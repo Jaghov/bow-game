@@ -4,7 +4,7 @@ use bevy::prelude::*;
 use crate::{
     gameplay::{
         arrow::{Arrow, Canceled, NockedOn},
-        sphere::Sphere,
+        sphere::{Sphere, SphereAssets},
         timefreeze::FreezeTime,
     },
     third_party::avian3d::GameLayer,
@@ -18,7 +18,11 @@ pub struct TimeFreeze;
 pub(super) fn plugin(app: &mut App) {
     app.add_observer(insert_timefreeze);
 }
-fn insert_timefreeze(trigger: Trigger<OnAdd, TimeFreeze>, mut commands: Commands) {
+fn insert_timefreeze(
+    trigger: Trigger<OnAdd, TimeFreeze>,
+    mut commands: Commands,
+    assets: Res<SphereAssets>,
+) {
     info!("observed new timefreeze insert");
     commands
         .spawn((
@@ -26,6 +30,7 @@ fn insert_timefreeze(trigger: Trigger<OnAdd, TimeFreeze>, mut commands: Commands
                 GameLayer::Sphere,
                 [GameLayer::ArrowSensor, GameLayer::Sphere],
             ),
+            MeshMaterial3d(assets.time_freeze.clone()),
             Collider::sphere(1.),
             Sensor,
             CollisionEventsEnabled,

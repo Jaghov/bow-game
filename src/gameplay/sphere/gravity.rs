@@ -2,7 +2,10 @@ use avian3d::prelude::*;
 use bevy::prelude::*;
 
 use crate::{
-    gameplay::{level::LevelState, sphere::Sphere},
+    gameplay::{
+        level::LevelState,
+        sphere::{Sphere, SphereAssets},
+    },
     third_party::avian3d::GameLayer,
 };
 
@@ -16,7 +19,11 @@ pub(super) fn plugin(app: &mut App) {
         apply_gravity_forces_to_spheres.run_if(in_state(LevelState::Playing)),
     );
 }
-fn insert_gravity_sphere(trigger: Trigger<OnAdd, GravitySphere>, mut commands: Commands) {
+fn insert_gravity_sphere(
+    trigger: Trigger<OnAdd, GravitySphere>,
+    mut commands: Commands,
+    assets: Res<SphereAssets>,
+) {
     commands
         .entity(trigger.target())
         .insert((
@@ -24,6 +31,7 @@ fn insert_gravity_sphere(trigger: Trigger<OnAdd, GravitySphere>, mut commands: C
                 GameLayer::Sphere,
                 [GameLayer::Arrow, GameLayer::Sphere, GameLayer::Walls],
             ),
+            MeshMaterial3d(assets.gravity.clone()),
             Collider::sphere(1.),
             Restitution::PERFECTLY_ELASTIC,
             CollisionEventsEnabled,
