@@ -265,7 +265,11 @@ fn despawn_on_arrow(
     colliders: Query<&ColliderOf>,
 ) {
     let event = trigger.event();
-    if arrows.get(event.collider).is_err() {
+    let Ok(collider) = colliders.get(event.collider) else {
+        return;
+    };
+    if arrows.get(collider.body).is_err() {
+        warn!("collided, not with arrow");
         return;
     }
     let parent = colliders.get(trigger.target()).unwrap().body;

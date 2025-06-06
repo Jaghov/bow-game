@@ -22,7 +22,7 @@ fn insert_timefreeze(trigger: Trigger<OnAdd, TimeFreeze>, mut commands: Commands
     info!("observed new timefreeze insert");
     commands
         .spawn((
-            CollisionLayers::new(GameLayer::ArrowSensors, GameLayer::ArrowSensors),
+            CollisionLayers::new(GameLayer::ArrowSensor, GameLayer::ArrowSensor),
             Collider::sphere(1.),
             Sensor,
             CollisionEventsEnabled,

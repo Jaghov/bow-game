@@ -63,24 +63,33 @@ pub struct NockedOn(Entity);
 #[derive(Component, Default, Reflect)]
 #[reflect(Component)]
 #[require(RigidBody = RigidBody::Dynamic)]
-#[require(Collider = Collider::capsule(0.1, 3.5))]
 #[require(GravityScale = GravityScale(0.))]
 #[require(LockedAxes = LockedAxes::new().lock_translation_z())]
 #[require(MaxFlightTime)]
-#[require(CollisionLayers =
-    CollisionLayers::new(GameLayer::ArrowSensors, [GameLayer::Default, GameLayer::ArrowSensors]))]
 pub struct Arrow {
     pub bounces: u8,
 }
 
 fn spawn_arrow(trigger: Trigger<ReadyArrow>, mut commands: Commands, assets: Res<ArrowAssets>) {
     info!("spawning arrow");
+    let collider = Collider::capsule(0.1, 3.5);
     commands
         .spawn((
             Name::new("Arrow"),
             Arrow::default(),
             SceneRoot(assets.glowing.clone()),
             NockedOn(trigger.event().0),
+            children![
+                (
+                    collider.clone(),
+                    Sensor,
+                    CollisionLayers::new(GameLayer::ArrowSensor, GameLayer::ArrowSensor)
+                ),
+                (
+                    collider,
+                    CollisionLayers::new(GameLayer::Arrow, GameLayer::Arrow)
+                )
+            ],
         ))
         .observe(fire_arrow)
         .observe(cancel_arrow);

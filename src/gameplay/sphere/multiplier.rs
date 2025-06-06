@@ -17,7 +17,7 @@ fn insert_multiplier(trigger: Trigger<OnAdd, Multiplier>, mut commands: Commands
 
     commands
         .spawn((
-            CollisionLayers::new(GameLayer::ArrowSensors, GameLayer::ArrowSensors),
+            CollisionLayers::new(GameLayer::ArrowSensor, GameLayer::ArrowSensor),
             Collider::sphere(1.),
             Sensor,
             CollisionEventsEnabled,

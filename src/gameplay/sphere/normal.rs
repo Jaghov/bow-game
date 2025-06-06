@@ -16,21 +16,20 @@ fn insert_normal(trigger: Trigger<OnAdd, Normal>, mut commands: Commands) {
 
     commands
         .spawn((
-            CollisionLayers::new(GameLayer::ArrowSensors, GameLayer::ArrowSensors),
+            CollisionLayers::new(GameLayer::ArrowSensor, GameLayer::ArrowSensor),
             Collider::sphere(1.),
-            Sensor,
             CollisionEventsEnabled,
             ChildOf(trigger.target()),
         ))
         .observe(super::debug_collision)
         .observe(super::despawn_on_arrow);
 
-    commands
-        .spawn((
-            CollisionLayers::new(GameLayer::Sphere, GameLayer::Sphere),
-            Collider::sphere(1.),
-            CollisionEventsEnabled,
-            ChildOf(trigger.target()),
-        ))
-        .observe(super::debug_collision);
+    // commands
+    //     .spawn((
+    //         CollisionLayers::new(GameLayer::Sphere, GameLayer::Sphere),
+    //         Collider::sphere(1.),
+    //         CollisionEventsEnabled,
+    //         ChildOf(trigger.target()),
+    //     ))
+    //     .observe(super::debug_collision);
 }
