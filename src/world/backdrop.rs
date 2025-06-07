@@ -119,7 +119,9 @@ fn pulse_out_backdrop_on_win(
                     },
                 },
             )
+            // Pause to add suspense :)
             .then(Delay::new(delay))
+            // Pulse out from center
             .then(Tween::new(
                 EaseMethod::CustomFunction(sin_lerp),
                 Duration::from_millis(300),
