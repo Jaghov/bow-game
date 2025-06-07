@@ -64,9 +64,10 @@ impl FromWorld for UiAssets {
 }
 
 fn play_click_sound_on_button_click(
-    _: Trigger<OnPress>,
+    mut trigger: Trigger<OnPress>,
     mut commands: Commands,
     click: Res<UiAssets>,
 ) {
     commands.spawn(AudioPlayer(click.click_sfx.clone()));
+    trigger.propagate(false);
 }
