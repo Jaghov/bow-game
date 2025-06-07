@@ -132,9 +132,9 @@ fn create_level(mut levels: ResMut<Levels>) {
                 horz!(0., -10., 10.),
             ],
             vec![
-                sphere!(Absorber, 0., 0.),     // Central absorber
-                sphere!(Bouncy, -5., 2.),      // Bouncy to be absorbed
-                sphere!(Normal, 5., 2.),       // Target to destroy
+                sphere!(Absorber, 0., 2.), // Central absorber
+                sphere!(Bouncy, -5., 2.),  // Bouncy to be absorbed
+                sphere!(Normal, 5., 2.),   // Target to destroy
             ],
         ),
     );
@@ -144,10 +144,7 @@ fn create_level(mut levels: ResMut<Levels>) {
         5,
         LevelProps::new(
             Some(1),
-            vec![
-                horz!(3., -8., 8.),
-                horz!(-3., -8., 8.),
-            ],
+            vec![horz!(3., -8., 8.), horz!(-3., -8., 8.)],
             vec![
                 sphere!(Multiplier, -6., 0.),
                 sphere!(Multiplier, -2., 0.),
@@ -157,21 +154,18 @@ fn create_level(mut levels: ResMut<Levels>) {
         ),
     );
 
-    // Level 6: TimeFreeze Precision Challenge
+    // Level 6: TimeFreeze Chain Reaction
     levels.insert(
         6,
         LevelProps::new(
-            Some(2),
+            Some(1),
+            vec![horz!(4., -8., 8.), horz!(-4., -8., 8.)],
             vec![
-                vert!(4., -6., -2.),
-                vert!(4., 2., 6.),
-                vert!(-4., -6., -2.),
-                vert!(-4., 2., 6.),
-            ],
-            vec![
-                sphere!(TimeFreeze, 0., 0.),   // Must freeze time to thread needle
-                sphere!(Normal, 6., 4.),       // Behind wall gap
-                sphere!(Normal, -6., -4.),     // Behind wall gap
+                sphere!(TimeFreeze, 16., 0.), // Freeze time for repositioning
+                sphere!(Exploder, 4., 2.),    // Will explode after time resumes
+                sphere!(Normal, 8., 2.),      // Target 1
+                sphere!(Normal, 8., -2.),     // Target 2
+                sphere!(Normal, 4., -2.),     // Target 3
             ],
         ),
     );
@@ -188,10 +182,10 @@ fn create_level(mut levels: ResMut<Levels>) {
                 horz!(-8., -8., 8.),
             ],
             vec![
-                sphere!(Gravity, 0., 0.),      // Central gravity well
-                sphere!(Normal, 6., 6.),       // Will be pulled toward center
-                sphere!(Normal, -6., -6.),     // Will be pulled toward center
-                sphere!(Multiplier, 0., 4.),   // Multiplier near gravity
+                sphere!(Gravity, 0., 0.),    // Central gravity well
+                sphere!(Normal, 6., 6.),     // Will be pulled toward center
+                sphere!(Normal, -6., -6.),   // Will be pulled toward center
+                sphere!(Multiplier, 0., 4.), // Multiplier near gravity
             ],
         ),
     );
@@ -211,32 +205,9 @@ fn create_level(mut levels: ResMut<Levels>) {
                 horz!(-1., 2., 6.),
             ],
             vec![
-                sphere!(Exploder, 0., 0.),     // Central exploder
-                sphere!(Normal, 4., 3.),       // Protected by maze
-                sphere!(Normal, -4., -3.),     // Protected by maze
-            ],
-        ),
-    );
-
-    // Level 9: Bouncy Ball Bowling
-    levels.insert(
-        9,
-        LevelProps::new(
-            Some(1),
-            vec![
-                horz!(5., -10., 10.),
-                vert!(8., -10., 5.),
-                vert!(-8., -10., 5.),
-            ],
-            vec![
-                sphere!(Bouncy, 0., 0.),       // Bowling ball
-                // Pins formation
-                sphere!(Normal, 0., 8.),
-                sphere!(Normal, -2., 10.),
-                sphere!(Normal, 2., 10.),
-                sphere!(Normal, -4., 12.),
-                sphere!(Normal, 0., 12.),
-                sphere!(Normal, 4., 12.),
+                sphere!(Exploder, 0., 0.), // Central exploder
+                sphere!(Normal, 4., 3.),   // Protected by maze
+                sphere!(Normal, -4., -3.), // Protected by maze
             ],
         ),
     );
@@ -247,19 +218,19 @@ fn create_level(mut levels: ResMut<Levels>) {
         LevelProps::new(
             Some(2),
             vec![
-                // L-shaped walls
-                vert!(6., -6., 0.),
-                horz!(0., 0., 6.),
-                vert!(-6., -6., 0.),
-                horz!(0., -6., 0.),
+                // L-shaped walls with gaps
+                vert!(6., -6., -2.),
+                horz!(-2., 0., 6.),
+                vert!(-6., -6., -2.),
+                horz!(-2., -6., -2.),
             ],
             vec![
-                sphere!(Absorber, 0., 0.),     // Will evolve
-                sphere!(Exploder, 3., 3.),     // Give exploder properties
-                sphere!(Normal, 8., -4.),      // Target 1
-                sphere!(Normal, -8., -4.),     // Target 2
-                sphere!(Normal, 4., -8.),      // Target 3
-                sphere!(Normal, -4., -8.),     // Target 4
+                sphere!(Absorber, 0., 0.), // Will evolve
+                sphere!(Exploder, 3., 1.), // Give exploder properties
+                sphere!(Normal, 8., -4.),  // Target 1
+                sphere!(Normal, -8., -4.), // Target 2
+                sphere!(Normal, 2., -5.),  // Target 3
+                sphere!(Normal, -2., -5.), // Target 4
             ],
         ),
     );
@@ -277,7 +248,7 @@ fn create_level(mut levels: ResMut<Levels>) {
                 vert!(-12., -4., 4.),
             ],
             vec![
-                sphere!(TimeFreeze, -8., 0.),  // Start with time control
+                sphere!(TimeFreeze, -8., 0.), // Start with time control
                 sphere!(Multiplier, -4., 2.),
                 sphere!(Bouncy, 0., 0.),
                 sphere!(Absorber, 4., -2.),
@@ -304,8 +275,8 @@ fn create_level(mut levels: ResMut<Levels>) {
                 horz!(-2., -6., -2.),
             ],
             vec![
-                sphere!(Gravity, 0., 0.),      // Center of spiral
-                sphere!(Normal, 2., 4.),       // Outer ring
+                sphere!(Gravity, 0., 0.), // Center of spiral
+                sphere!(Normal, 2., 4.),  // Outer ring
                 sphere!(Normal, 4., 2.),
                 sphere!(Normal, 2., -4.),
                 sphere!(Normal, -4., -2.),
@@ -328,14 +299,14 @@ fn create_level(mut levels: ResMut<Levels>) {
                 vert!(8., -6., 6.),
                 vert!(-8., -6., 6.),
                 // Net
-                vert!(0., -2., 2.),
+                //vert!(8., -2., 2.),
             ],
             vec![
-                sphere!(Bouncy, -4., 0.),      // Left paddle area
-                sphere!(Bouncy, 4., 0.),       // Right paddle area
-                sphere!(Normal, 0., 4.),       // Above net
-                sphere!(Normal, 0., -4.),      // Below net
-                sphere!(Multiplier, 0., 0.),   // At net
+                sphere!(Bouncy, -4., 0.),    // Left paddle area
+                sphere!(Bouncy, 4., 0.),     // Right paddle area
+                sphere!(Normal, 0., 4.),     // Above net
+                sphere!(Normal, 0., -4.),    // Below net
+                sphere!(Multiplier, 2., 0.), // Near net
             ],
         ),
     );
@@ -360,12 +331,12 @@ fn create_level(mut levels: ResMut<Levels>) {
                 horz!(-4., -1., 1.),
             ],
             vec![
-                sphere!(Absorber, 0., 0.),     // King in castle
-                sphere!(Exploder, 0., 6.),     // Explosive guard
-                sphere!(Gravity, 6., 0.),      // Gravity trap
-                sphere!(TimeFreeze, -6., 0.),  // Time magic
-                sphere!(Normal, 8., 8.),       // Corner guard
-                sphere!(Normal, -8., -8.),     // Corner guard
+                sphere!(Absorber, 0., 2.),    // King in castle
+                sphere!(Exploder, 0., 6.),    // Explosive guard
+                sphere!(Gravity, 6., 0.),     // Gravity trap
+                sphere!(TimeFreeze, -6., 0.), // Time magic
+                sphere!(Normal, 8., 8.),      // Corner guard
+                sphere!(Normal, -8., -8.),    // Corner guard
             ],
         ),
     );
@@ -393,7 +364,7 @@ fn create_level(mut levels: ResMut<Levels>) {
                 sphere!(Multiplier, -3., -8.),
                 sphere!(Multiplier, 3., -8.),
                 // Middle section
-                sphere!(Absorber, 0., 0.),
+                sphere!(Absorber, 0., 2.),
                 sphere!(Bouncy, -4., 0.),
                 sphere!(Exploder, 4., 0.),
                 sphere!(Gravity, 0., 4.),
