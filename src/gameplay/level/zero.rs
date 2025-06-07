@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::gameplay::level::Levels;
+use crate::gameplay::level::{LevelProps, Levels};
 
 pub(super) fn plugin(app: &mut App) {
     app.add_systems(Startup, create_level);
@@ -98,4 +98,29 @@ fn create_level(mut levels: ResMut<Levels>) {
             sphere!(Normal, 10., -5.),
         ],
     );
+
+    levels.insert(
+        4,
+        LevelProps::new(
+            Some(1),
+            vec![
+                vert!(6., -4., 4.),
+                horz!(5., -6., 6.),
+                vert!(-6., -4., 4.),
+                horz!(-5., -6., 6.),
+                vert!(0., 1., 4.),
+                vert!(0., -4., -1.),
+            ],
+            vec![
+                sphere!(Normal, -17., -6.),
+                sphere!(Multiplier, -7., 0.),
+                sphere!(Multiplier, 7., 0.),
+                sphere!(Normal, 18., 8.),
+                sphere!(Normal, 18., 0.),
+                sphere!(Normal, 18., -8.),
+                // sphere!(Normal, 10., 5.),
+                // sphere!(Normal, 10., -5.),
+            ],
+        ),
+    )
 }

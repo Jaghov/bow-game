@@ -11,24 +11,24 @@ use crate::world::GAME_PLANE;
 // this will hot reload level 0 forever
 pub(super) fn plugin(app: &mut App) {
     app.add_systems(Update, change_level.run_if(in_state(LevelState::Playing)))
-        .add_systems(OnEnter(LevelState::Playing), set_dev_level);
+        .add_systems(OnEnter(LevelState::Playing), set_dev_level)
+        .add_systems(
+            Update,
+            set_dev_level_update.run_if(in_state(LevelState::Playing)),
+        );
 }
 
-#[cfg_attr(feature = "hot", bevy_simple_subsecond_system::prelude::hot)]
-fn set_dev_level(
+fn inner(
     mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    material: Res<WallMaterial>,
-    mut quiver: ResMut<Quiver>,
-    walls: Single<Entity, With<Walls>>,
+    meshes: &mut Assets<Mesh>,
+    walls: Entity,
+    material: &WallMaterial,
+    quiver: &mut Quiver,
     spheres: Query<Entity, With<SphereType>>,
 ) {
-    if !should_be_reloading() {
-        return;
-    }
     let props = edit_level();
 
-    commands.entity(*walls).despawn_related::<Children>();
+    commands.entity(walls).despawn_related::<Children>();
 
     for wall in props.walls.iter() {
         let collider = wall.collider.clone();
@@ -40,7 +40,7 @@ fn set_dev_level(
             MeshMaterial3d(material),
             CollisionLayers::new(GameLayer::Walls, GameLayer::all_bits()),
             wall.transform,
-            ChildOf(*walls),
+            ChildOf(walls),
         ));
     }
 
@@ -57,6 +57,46 @@ fn set_dev_level(
     }
 }
 
+#[cfg_attr(feature = "hot", bevy_simple_subsecond_system::prelude::hot)]
+fn set_dev_level(
+    commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    material: Res<WallMaterial>,
+    mut quiver: ResMut<Quiver>,
+    walls: Single<Entity, With<Walls>>,
+    spheres: Query<Entity, With<SphereType>>,
+) {
+    inner(
+        commands,
+        &mut meshes,
+        *walls,
+        &material,
+        &mut quiver,
+        spheres,
+    );
+}
+
+#[cfg_attr(feature = "hot", bevy_simple_subsecond_system::prelude::hot)]
+fn set_dev_level_update(
+    commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    material: Res<WallMaterial>,
+    mut quiver: ResMut<Quiver>,
+    walls: Single<Entity, With<Walls>>,
+    spheres: Query<Entity, With<SphereType>>,
+) {
+    if !should_be_update_reloading() {
+        return;
+    }
+    inner(
+        commands,
+        &mut meshes,
+        *walls,
+        &material,
+        &mut quiver,
+        spheres,
+    );
+}
 #[cfg(feature = "dev")]
 fn change_level(
     keys: Res<ButtonInput<KeyCode>>,
@@ -76,7 +116,8 @@ fn change_level(
         state.set(LevelState::NewLevel);
     }
 }
-fn should_be_reloading() -> bool {
+
+fn should_be_update_reloading() -> bool {
     true
 }
 
@@ -84,21 +125,27 @@ fn edit_level() -> LevelProps {
     LevelProps::new(
         None,
         vec![
-            vert!(6., -4., 4.),
-            horz!(5., -6., 6.),
-            vert!(-6., -4., 4.),
-            horz!(-5., -6., 6.),
-            vert!(0., 1., 4.),
-            vert!(0., -4., -1.),
+            //right
+            vert!(7., -4., 4.),
+            //top-left
+            horz!(5., -7., 2.),
+            //left
+            vert!(-7., -4., 4.),
+            //bottom
+            horz!(-5., -7., 7.),
+            //div top
+            vert!(2., 4., 5.),
+            //div bot
+            vert!(2., -4., 2.),
         ],
         vec![
-            sphere!(Normal, -17., 13.),
-            sphere!(Multiplier, -7., 21.),
-            sphere!(Multiplier, 7., 21.),
-            sphere!(Normal, 15., 21.),
-            sphere!(Normal, 15., 13.),
-            // sphere!(Normal, 10., 5.),
-            // sphere!(Normal, 10., -5.),
+            //left side
+            sphere!(Normal, -18., 4.),
+            //right side
+            sphere!(Exploder, 21., 20.),
+            sphere!(Normal, 17., 14.),
+            sphere!(Normal, 17., 24.),
+            sphere!(TimeFreeze, 26., 22.),
         ],
     )
 }

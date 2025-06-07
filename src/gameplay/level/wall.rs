@@ -48,6 +48,7 @@ impl WallBuilder {
 #[macro_export]
 macro_rules! vert {
     ($x:literal, $start_y:literal, $end_y:literal) => {
+        #[allow(clippy::neg_multiply)]
         $crate::gameplay::level::wall::WallBuilder::vertical(
             $crate::world::BLOCK_LEN * $x,
             $crate::world::BLOCK_LEN * $start_y - $crate::world::BLOCK_LEN * 0.5,
@@ -59,6 +60,7 @@ macro_rules! vert {
 #[macro_export]
 macro_rules! horz {
     ($x:literal, $start_y:literal, $end_y:literal) => {
+        #[allow(clippy::neg_multiply)]
         $crate::gameplay::level::wall::WallBuilder::horizontal(
             $crate::world::BLOCK_LEN * $x,
             $crate::world::BLOCK_LEN * $start_y - $crate::world::BLOCK_LEN * 0.5,

@@ -303,7 +303,6 @@ fn on_multiply(
                 Arrow::default(),
                 transform,
                 LinearVelocity(velocity),
-                FromMultiply::default(),
                 scene_root.clone(),
             ))
             .observe(on_multiply)
