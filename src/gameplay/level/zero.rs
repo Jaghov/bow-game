@@ -56,4 +56,46 @@ fn create_level(mut levels: ResMut<Levels>) {
             sphere!(Normal, 40., 15.),
         ],
     );
+
+    levels.add(
+        Some(1),
+        vec![
+            vert!(6., -5., 5.),
+            horz!(6., -6., 6.),
+            vert!(-6., -5., 5.),
+            horz!(-6., -6., 6.),
+        ],
+        vec![sphere!(Normal, 5., 0.)],
+    );
+    levels.add(
+        Some(1),
+        vec![
+            vert!(8., -5., 5.),
+            horz!(6., -8., 8.),
+            vert!(-8., -5., 5.),
+            horz!(-6., -8., 8.),
+        ],
+        vec![
+            sphere!(Multiplier, 5., 0.),
+            sphere!(Normal, 10., 0.),
+            sphere!(Normal, 10., 5.),
+            sphere!(Normal, 10., -5.),
+        ],
+    );
+
+    levels.add(
+        Some(1),
+        vec![
+            vert!(8., -5., 5.),
+            horz!(6., -8., 8.),
+            vert!(-8., -5., 5.),
+            horz!(-6., -8., 8.),
+        ],
+        vec![
+            sphere!(Multiplier, 5., 0.),
+            sphere!(Normal, 10., 0.),
+            sphere!(Normal, 10., 5.),
+            sphere!(Normal, 10., -5.),
+        ],
+    );
 }

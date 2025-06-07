@@ -3,7 +3,7 @@ use std::time::Duration;
 use bevy::color::palettes::tailwind::GRAY_700;
 
 use crate::{
-    gameplay::{bow::Quiver, sphere::Sphere},
+    gameplay::{bow::Quiver, level::Level, sphere::Sphere},
     keybinds::Keybinds,
 };
 
@@ -13,6 +13,7 @@ pub(super) fn plugin(app: &mut App) {
     app.init_resource::<BallCountState>().add_systems(
         Update,
         (
+            update_level_info,
             update_restart_text.run_if(resource_changed::<Quiver>),
             (tick_bctimer, update_ball_count).chain(),
         ),
@@ -95,11 +96,14 @@ pub fn header() -> impl Bundle {
             ..default()
         },
         children![
-            Node {
-                display: Display::Flex,
-                flex_grow: 1.,
-                ..default()
-            },
+            (
+                Node {
+                    display: Display::Flex,
+                    flex_grow: 1.,
+                    ..default()
+                },
+                children![level_info()]
+            ),
             (
                 Node {
                     display: Display::Flex,
@@ -119,6 +123,55 @@ pub fn header() -> impl Bundle {
                 children![restart_text()]
             )
         ],
+    )
+}
+
+#[derive(Component)]
+pub struct LevelInfo;
+
+fn update_level_info(level: Res<Level>, mut level_info: Single<&mut Text, With<LevelInfo>>) {
+    level_info.0 = level.0.to_string();
+}
+
+fn level_info() -> impl Bundle {
+    let level_info_text = (
+        Node {
+            flex_direction: FlexDirection::Column,
+            justify_content: JustifyContent::SpaceBetween,
+            align_items: AlignItems::Center,
+            ..default()
+        },
+        children![
+            (Text::new("Level"), TextColor(GRAY_700.into())),
+            (
+                LevelInfo,
+                Text::new("N/A"),
+                TextColor(Color::BLACK),
+                TextFont::from_font_size(30.),
+            )
+        ],
+    );
+    (
+        Node {
+            padding: UiRect::axes(Px(8.), Px(6.)),
+            border: UiRect::all(Px(3.)),
+            flex_direction: FlexDirection::Row,
+            align_items: AlignItems::Center,
+            justify_content: JustifyContent::SpaceBetween,
+            position_type: PositionType::Absolute,
+            column_gap: Px(15.),
+            ..default()
+        },
+        BackgroundColor(LinearRgba::new(0.253, 0.619, 0.253, 0.7).into()),
+        BoxShadow::new(
+            Color::srgba(0., 0., 0., 0.08),
+            Px(0.),
+            Px(2.),
+            Px(4.),
+            Px(4.),
+        ),
+        BorderRadius::all(Px(6.)),
+        children![level_info_text],
     )
 }
 

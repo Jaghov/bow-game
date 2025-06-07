@@ -66,7 +66,7 @@ pub struct Level(pub usize);
 #[allow(clippy::derivable_impls)]
 impl Default for Level {
     fn default() -> Self {
-        Self(0)
+        Self(1)
     }
 }
 
