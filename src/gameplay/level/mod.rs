@@ -66,7 +66,7 @@ pub struct Level(pub usize);
 #[allow(clippy::derivable_impls)]
 impl Default for Level {
     fn default() -> Self {
-        Self(4)
+        Self(0)
     }
 }
 
@@ -93,11 +93,24 @@ impl LevelProps {
 #[derive(Resource, Default)]
 pub struct Levels {
     levels: HashMap<usize, LevelProps>,
+    counter: usize,
 }
 
 impl Levels {
+    #[allow(dead_code)]
     pub fn insert(&mut self, level: usize, props: LevelProps) {
-        self.levels.insert(level, props);
+        self.levels.insert(self.counter, props);
+        self.counter += 1;
+    }
+    pub fn add(
+        &mut self,
+        arrow_count: Option<u32>,
+        walls: Vec<WallBuilder>,
+        spheres: Vec<SpawnSphere>,
+    ) {
+        self.levels
+            .insert(self.counter, LevelProps::new(arrow_count, walls, spheres));
+        self.counter += 1;
     }
     /// will get or insert a new random level based on the value
     pub fn get(&mut self, level: usize) -> &LevelProps {
