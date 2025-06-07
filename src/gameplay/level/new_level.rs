@@ -145,7 +145,8 @@ fn load_level(
         ))
         .id();
 
-    quiver.set_arrow_count(props.arrow_count);
+    //todo: fix
+    quiver.set_arrow_count(Some(props.course_par as u32));
 
     for wall in props.walls.iter() {
         let collider = wall.collider.clone();

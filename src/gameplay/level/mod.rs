@@ -20,14 +20,12 @@ mod new_level;
 mod next_level;
 mod restart;
 mod timer;
-mod zero;
 
 const WALL_START_PLANE: f32 = GAMEPLAY_CAMERA_OFFSET + 20.;
 const SPHERE_START_PLANE: f32 = GAME_PLANE - 20.;
 
 pub(super) fn plugin(app: &mut App) {
     app.add_plugins((
-        zero::plugin,
         new_level::plugin,
         next_level::plugin,
         restart::plugin,
@@ -71,24 +69,20 @@ pub struct Level(pub usize);
 #[allow(clippy::derivable_impls)]
 impl Default for Level {
     fn default() -> Self {
-        Self(1)
+        Self(0)
     }
 }
 
 pub struct LevelProps {
-    arrow_count: Option<u32>,
+    course_par: i32,
     walls: Vec<WallBuilder>,
     spheres: Vec<SpawnSphere>,
 }
 
 impl LevelProps {
-    pub fn new(
-        arrow_count: Option<u32>,
-        walls: Vec<WallBuilder>,
-        spheres: Vec<SpawnSphere>,
-    ) -> Self {
+    pub fn new(course_par: i32, walls: Vec<WallBuilder>, spheres: Vec<SpawnSphere>) -> Self {
         Self {
-            arrow_count,
+            course_par,
             walls,
             spheres,
         }
@@ -107,7 +101,7 @@ impl Levels {
         //this is the debug level
         #[cfg(feature = "dev")]
         levels.insert(LevelProps::new(
-            None,
+            9999,
             vec![
                 vert!(8., -5., 5.),
                 horz!(6., -8., 8.),
@@ -155,7 +149,7 @@ impl Levels {
         ));
 
         levels.insert(LevelProps::new(
-            Some(1),
+            1,
             vec![
                 vert!(6., -5., 5.),
                 horz!(6., -6., 6.),
@@ -165,7 +159,7 @@ impl Levels {
             vec![sphere!(Normal, 5., 0.)],
         ));
         levels.insert(LevelProps::new(
-            Some(1),
+            1,
             vec![
                 vert!(8., -5., 5.),
                 horz!(6., -8., 8.),
@@ -181,23 +175,7 @@ impl Levels {
         ));
 
         levels.insert(LevelProps::new(
-            Some(1),
-            vec![
-                vert!(8., -5., 5.),
-                horz!(6., -8., 8.),
-                vert!(-8., -5., 5.),
-                horz!(-6., -8., 8.),
-            ],
-            vec![
-                sphere!(Multiplier, 5., 0.),
-                sphere!(Normal, 10., 0.),
-                sphere!(Normal, 10., 5.),
-                sphere!(Normal, 10., -5.),
-            ],
-        ));
-
-        levels.insert(LevelProps::new(
-            Some(1),
+            1,
             vec![
                 vert!(6., -4., 4.),
                 horz!(5., -6., 6.),
@@ -219,7 +197,7 @@ impl Levels {
         ));
 
         levels.insert(LevelProps::new(
-            None,
+            3,
             vec![
                 //right
                 vert!(7., -4., 6.),

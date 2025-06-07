@@ -15,6 +15,7 @@ static RNG: LazyLock<Mutex<ChaCha8Rng>> = LazyLock::new(|| {
 });
 
 // Function to access RNG
+#[allow(dead_code)]
 pub fn random<T>() -> T
 where
     StandardUniform: Distribution<T>,

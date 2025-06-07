@@ -50,7 +50,8 @@ fn inner(
         ));
     }
 
-    quiver.set_arrow_count(props.arrow_count);
+    //todo: fix
+    quiver.set_arrow_count(Some(props.course_par as u32));
     for sphere in spheres {
         commands.entity(sphere).despawn();
     }
@@ -130,7 +131,7 @@ fn should_be_update_reloading() -> bool {
 
 fn edit_level() -> LevelProps {
     LevelProps::new(
-        None,
+        3,
         vec![
             //right
             vert!(7., -4., 6.),
