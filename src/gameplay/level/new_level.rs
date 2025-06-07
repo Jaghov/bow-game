@@ -9,8 +9,8 @@ use crate::{
         GameSet,
         bow::Quiver,
         level::{
-            Level, LevelState, Levels, SPHERE_START_PLANE, WALL_START_PLANE, WallMaterial, Walls,
-            sphere::SphereType, timer::LevelSetupTimer,
+            Level, LevelState, Levels, SPHERE_START_PLANE, WALL_START_PLANE, WallMaterial,
+            WallMesh, Walls, sphere::SphereType, timer::LevelSetupTimer,
         },
         sphere::Sphere,
     },
@@ -149,7 +149,10 @@ fn load_level(
 
     for wall in props.walls.iter() {
         let collider = wall.collider.clone();
-        let mesh = meshes.add(wall.mesh);
+        let mesh = match wall.mesh {
+            WallMesh::Cuboid(cuboid) => meshes.add(cuboid),
+            WallMesh::Cylinder(cylinder) => meshes.add(cylinder),
+        };
         let material = material.0.clone();
         commands.spawn((
             Mesh3d(mesh),

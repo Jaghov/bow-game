@@ -2,6 +2,8 @@ use avian3d::prelude::*;
 use bevy::prelude::*;
 
 use crate::gameplay::bow::Quiver;
+use crate::gameplay::level::WallMesh;
+use crate::gameplay::level::wall::WallBuilder;
 use crate::gameplay::level::{
     Level, LevelProps, LevelState, WallMaterial, Walls, sphere::SphereType,
 };
@@ -32,7 +34,10 @@ fn inner(
 
     for wall in props.walls.iter() {
         let collider = wall.collider.clone();
-        let mesh = meshes.add(wall.mesh);
+        let mesh = match wall.mesh {
+            WallMesh::Cuboid(cuboid) => meshes.add(cuboid),
+            WallMesh::Cylinder(cylinder) => meshes.add(cylinder),
+        };
         let material = material.0.clone();
         commands.spawn((
             Mesh3d(mesh),
@@ -126,26 +131,31 @@ fn edit_level() -> LevelProps {
         None,
         vec![
             //right
-            vert!(7., -4., 4.),
-            //top-left
-            horz!(5., -7., 2.),
+            vert!(7., -4., 6.),
+            //horz left
+            horz!(5., -7., 1.),
             //left
             vert!(-7., -4., 4.),
             //bottom
             horz!(-5., -7., 7.),
-            //div top
-            vert!(2., 4., 5.),
+            //divider top
+            vert!(2., 4., 6.),
+            //horz top right
+            horz!(6., 3., 6.),
             //div bot
             vert!(2., -4., 2.),
+            WallBuilder::pole(0.5, 26., -10.),
         ],
         vec![
             //left side
-            sphere!(Normal, -18., 4.),
+            sphere!(Normal, -18., -2.),
             //right side
             sphere!(Exploder, 21., 20.),
             sphere!(Normal, 17., 14.),
             sphere!(Normal, 17., 24.),
-            sphere!(TimeFreeze, 26., 22.),
+            sphere!(TimeFreeze, 26., 21.),
+            //bowling
+            sphere!(Multiplier, 26., -12.),
         ],
     )
 }

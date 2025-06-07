@@ -2,9 +2,15 @@ use avian3d::prelude::Collider;
 use bevy::prelude::*;
 
 use crate::world::BLOCK_LEN;
+
+pub enum WallMesh {
+    Cuboid(Cuboid),
+    Cylinder(Extrusion<Circle>),
+}
+
 // this is a builder.
 pub struct WallBuilder {
-    pub mesh: Cuboid,
+    pub mesh: WallMesh,
     pub collider: Collider,
     pub transform: Transform, //start:
 }
@@ -21,7 +27,7 @@ impl WallBuilder {
 
         let transform = Transform::from_xyz(middle_x, y, 0.);
         Self {
-            mesh,
+            mesh: WallMesh::Cuboid(mesh),
             collider,
             transform,
         }
@@ -37,7 +43,19 @@ impl WallBuilder {
 
         let transform = Transform::from_xyz(x, middle_y, 0.);
         Self {
-            mesh,
+            mesh: WallMesh::Cuboid(mesh),
+            collider,
+            transform,
+        }
+    }
+    pub fn pole(radius: f32, x: f32, y: f32) -> Self {
+        let mesh = Extrusion::new(Circle::new(radius), 1.);
+
+        let collider = Collider::cylinder(radius, 1.);
+
+        let transform = Transform::from_xyz(x, y, 0.);
+        Self {
+            mesh: WallMesh::Cylinder(mesh),
             collider,
             transform,
         }
