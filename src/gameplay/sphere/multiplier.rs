@@ -45,20 +45,16 @@ fn insert_multiplier(
     mut commands: Commands,
     assets: Res<SphereAssets>,
 ) {
-    info!("observed new multiplier insert");
-
     let mut commands = commands.entity(trigger.target());
 
     if absorbers.get(trigger.target()).is_err() {
-        commands
-            .insert((
-                MeshMaterial3d(assets.multiplier.clone()),
-                CollisionLayers::new(
-                    GameLayer::Sphere,
-                    [GameLayer::ArrowSensor, GameLayer::Sphere],
-                ),
-            ))
-            .observe(super::debug_collision);
+        commands.insert((
+            MeshMaterial3d(assets.multiplier.clone()),
+            CollisionLayers::new(
+                GameLayer::Sphere,
+                [GameLayer::ArrowSensor, GameLayer::Sphere],
+            ),
+        ));
     }
 
     commands

@@ -62,8 +62,6 @@ fn insert_exploder(
     mut commands: Commands,
     assets: Res<SphereAssets>,
 ) {
-    info!("observed new normal insert");
-
     let mut commands = commands.entity(trigger.target());
     if absorbers.get(trigger.target()).is_err() {
         commands.insert((
@@ -76,7 +74,6 @@ fn insert_exploder(
     }
 
     commands
-        .observe(super::debug_collision)
         .observe(light_fuse_on_collision)
         .observe(light_fuse)
         .observe(|trigger: Trigger<HitByExplosion>, mut commands: Commands| {

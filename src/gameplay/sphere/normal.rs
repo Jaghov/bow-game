@@ -16,8 +16,6 @@ fn insert_normal(
     mut commands: Commands,
     assets: Res<SphereAssets>,
 ) {
-    info!("observed new normal insert");
-
     commands
         .entity(trigger.target())
         .insert((
@@ -27,7 +25,6 @@ fn insert_normal(
                 [GameLayer::ArrowSensor, GameLayer::Sphere, GameLayer::Walls],
             ),
         ))
-        .observe(super::debug_collision)
         .observe(super::despawn_on_arrow_collision)
         .observe(super::despawn_on_bouncyball_collision)
         .observe(super::despawn_on_hit_by_explosion);

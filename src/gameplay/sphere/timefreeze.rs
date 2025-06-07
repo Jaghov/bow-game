@@ -23,7 +23,6 @@ fn insert_timefreeze(
     mut commands: Commands,
     assets: Res<SphereAssets>,
 ) {
-    info!("observed new timefreeze insert");
     commands
         .entity(trigger.target())
         .insert((
@@ -33,7 +32,6 @@ fn insert_timefreeze(
             ),
             MeshMaterial3d(assets.time_freeze.clone()),
         ))
-        .observe(super::debug_collision)
         .observe(freeze_on_arrow_collision);
 }
 

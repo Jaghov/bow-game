@@ -9,8 +9,8 @@ use crate::{
         GameSet,
         bow::Quiver,
         level::{
-            Level, LevelState, Levels, SPHERE_START_PLANE, WALL_START_PLANE, WallMaterial, Walls,
-            timer::LevelSetupTimer,
+            Level, LevelState, Levels, SPHERE_START_PLANE, WALL_START_PLANE, WallMaterial,
+            WallMesh, Walls, sphere::SphereType, timer::LevelSetupTimer,
         },
         sphere::Sphere,
     },
@@ -39,6 +39,10 @@ pub(super) fn plugin(app: &mut App) {
     .add_systems(
         Update,
         observe_level_completion.run_if(in_state(LevelState::Playing)),
+    )
+    .add_systems(
+        Update,
+        hot_reloading_walls.run_if(in_state(LevelState::Playing)),
     );
 }
 fn init_timer(mut commands: Commands) {
@@ -50,7 +54,7 @@ struct LevelCompletion {
 }
 fn observe_level_completion(
     mut commands: Commands,
-    balls: Query<(), With<Sphere>>,
+    balls: Query<&SphereType, With<Sphere>>,
     mut level: ResMut<Level>,
     mut next_state: ResMut<NextState<LevelState>>,
     backdrop_pulse: Res<RadialBackdropPulse>,
@@ -73,10 +77,33 @@ fn observe_level_completion(
         return;
     }
 
-    if balls.is_empty() {
+    // Check if only bouncy, absorber, or gravity balls remain (these don't count toward completion)
+    let remaining_balls_count = balls
+        .iter()
+        .filter(|sphere_type| {
+            !matches!(
+                sphere_type,
+                SphereType::Bouncy | SphereType::Absorber | SphereType::Gravity
+            )
+        })
+        .count();
+
+    if remaining_balls_count == 0 {
         commands.run_system(backdrop_pulse.0);
         level_completion.timer = Some(Timer::new(Duration::from_millis(2000), TimerMode::Once));
     }
+}
+
+#[cfg_attr(feature = "hot", bevy_simple_subsecond_system::prelude::hot)]
+fn hot_reloading_walls(
+    mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    material: Res<WallMaterial>,
+    mut levels: ResMut<Levels>,
+    level: Res<Level>,
+    walls: Single<Entity, With<Walls>>,
+) {
+    let props = levels.get(level.0);
 }
 
 fn load_level(
@@ -118,11 +145,15 @@ fn load_level(
         ))
         .id();
 
-    quiver.set_arrow_count(props.arrow_count);
+    //todo: fix
+    quiver.set_arrow_count(Some(props.course_par as u32));
 
     for wall in props.walls.iter() {
         let collider = wall.collider.clone();
-        let mesh = meshes.add(wall.mesh);
+        let mesh = match wall.mesh {
+            WallMesh::Cuboid(cuboid) => meshes.add(cuboid),
+            WallMesh::Cylinder(cylinder) => meshes.add(cylinder),
+        };
         let material = material.0.clone();
         commands.spawn((
             Mesh3d(mesh),

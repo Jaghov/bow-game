@@ -2,12 +2,20 @@ use avian3d::prelude::Collider;
 use bevy::prelude::*;
 
 use crate::world::BLOCK_LEN;
+
+#[allow(dead_code)]
+pub enum WallMesh {
+    Cuboid(Cuboid),
+    Cylinder(Extrusion<Circle>),
+}
+
 // this is a builder.
 pub struct WallBuilder {
-    pub mesh: Cuboid,
+    pub mesh: WallMesh,
     pub collider: Collider,
     pub transform: Transform, //start:
 }
+#[allow(dead_code)]
 impl WallBuilder {
     // note that these values are not multiplied by `BLOCK_LEN`.
     pub fn horizontal(y: f32, start_x: f32, end_x: f32) -> Self {
@@ -21,7 +29,7 @@ impl WallBuilder {
 
         let transform = Transform::from_xyz(middle_x, y, 0.);
         Self {
-            mesh,
+            mesh: WallMesh::Cuboid(mesh),
             collider,
             transform,
         }
@@ -37,7 +45,31 @@ impl WallBuilder {
 
         let transform = Transform::from_xyz(x, middle_y, 0.);
         Self {
-            mesh,
+            mesh: WallMesh::Cuboid(mesh),
+            collider,
+            transform,
+        }
+    }
+    pub fn pole(radius: f32, x: f32, y: f32) -> Self {
+        let mesh = Extrusion::new(Circle::new(radius), BLOCK_LEN);
+
+        let collider = Collider::cylinder(radius, 1.);
+
+        let transform = Transform::from_xyz(x, y, 0.);
+        Self {
+            mesh: WallMesh::Cylinder(mesh),
+            collider,
+            transform,
+        }
+    }
+    pub fn block(x_len: f32, y_len: f32, x: f32, y: f32) -> Self {
+        let mesh = Cuboid::new(x_len, y_len, BLOCK_LEN);
+
+        let collider = Collider::cuboid(x_len, y_len, BLOCK_LEN);
+
+        let transform = Transform::from_xyz(x, y, 0.);
+        Self {
+            mesh: WallMesh::Cuboid(mesh),
             collider,
             transform,
         }
@@ -48,6 +80,7 @@ impl WallBuilder {
 #[macro_export]
 macro_rules! vert {
     ($x:literal, $start_y:literal, $end_y:literal) => {
+        #[allow(clippy::neg_multiply)]
         $crate::gameplay::level::wall::WallBuilder::vertical(
             $crate::world::BLOCK_LEN * $x,
             $crate::world::BLOCK_LEN * $start_y - $crate::world::BLOCK_LEN * 0.5,
@@ -59,6 +92,7 @@ macro_rules! vert {
 #[macro_export]
 macro_rules! horz {
     ($x:literal, $start_y:literal, $end_y:literal) => {
+        #[allow(clippy::neg_multiply)]
         $crate::gameplay::level::wall::WallBuilder::horizontal(
             $crate::world::BLOCK_LEN * $x,
             $crate::world::BLOCK_LEN * $start_y - $crate::world::BLOCK_LEN * 0.5,

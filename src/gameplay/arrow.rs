@@ -74,7 +74,7 @@ pub struct NockedOn(Entity);
 #[require(RigidBody = RigidBody::Dynamic)]
 #[require(GravityScale = GravityScale(0.))]
 #[require(LockedAxes = LockedAxes::ROTATION_LOCKED.lock_translation_z())]
-#[require(Transform = Transform::default().with_scale(Vec3::splat(2.)))]
+#[require(Transform = Transform::from_xyz(0., 0., -50.).with_scale(Vec3::splat(2.)))]
 #[require(MaxFlightTime)]
 pub struct Arrow {
     pub bounces: u8,
@@ -236,7 +236,7 @@ fn update_unfired_arrow_transform(
 
 /// the arrow will be fired, but will be canceled if this velocity is not reached
 //TODO: set this back to 15ish
-pub const ARROW_VELOCITY_THRESHOLD: f32 = 0.;
+pub const ARROW_VELOCITY_THRESHOLD: f32 = 15.;
 
 #[derive(Event)]
 pub struct FireArrow;
@@ -303,7 +303,6 @@ fn on_multiply(
                 Arrow::default(),
                 transform,
                 LinearVelocity(velocity),
-                FromMultiply::default(),
                 scene_root.clone(),
             ))
             .observe(on_multiply)
