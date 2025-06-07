@@ -1,3 +1,5 @@
+use std::path::Path;
+
 use avian3d::prelude::*;
 use bevy::{
     color::palettes::{
@@ -61,6 +63,7 @@ pub struct SphereAssets {
     pub mesh: Handle<Mesh>,
     #[dependency]
     pub gibs: Handle<Scene>,
+    pub break_sfx: Handle<AudioSource>,
     pub normal: Handle<StandardMaterial>,
     pub multiplier: Handle<StandardMaterial>,
     pub time_freeze: Handle<StandardMaterial>,
@@ -76,6 +79,7 @@ impl FromWorld for SphereAssets {
         let model = assets.load("models/sph.glb#Scene0");
         let mesh = assets.load("models/sph.glb#Mesh0/Primitive0");
         let gibs = assets.load("models/glass_fractured.glb#Scene0");
+        let break_sfx = assets.load(Path::new("audio/sfx/GlassBreakSFX.flac"));
         let mut materials = world.resource_mut::<Assets<StandardMaterial>>();
 
         let base = StandardMaterial {
@@ -142,7 +146,11 @@ impl FromWorld for SphereAssets {
         Self {
             model,
             mesh,
+<<<<<<< HEAD
             gibs,
+=======
+            break_sfx,
+>>>>>>> 6c38e7c (feat, WIP: added glass_break_sfx to sphere assets)
             normal,
             absorber,
             multiplier,
