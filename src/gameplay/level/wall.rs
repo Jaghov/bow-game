@@ -3,6 +3,7 @@ use bevy::prelude::*;
 
 use crate::world::BLOCK_LEN;
 
+#[allow(dead_code)]
 pub enum WallMesh {
     Cuboid(Cuboid),
     Cylinder(Extrusion<Circle>),
@@ -14,6 +15,7 @@ pub struct WallBuilder {
     pub collider: Collider,
     pub transform: Transform, //start:
 }
+#[allow(dead_code)]
 impl WallBuilder {
     // note that these values are not multiplied by `BLOCK_LEN`.
     pub fn horizontal(y: f32, start_x: f32, end_x: f32) -> Self {
@@ -49,13 +51,25 @@ impl WallBuilder {
         }
     }
     pub fn pole(radius: f32, x: f32, y: f32) -> Self {
-        let mesh = Extrusion::new(Circle::new(radius), 1.);
+        let mesh = Extrusion::new(Circle::new(radius), BLOCK_LEN);
 
         let collider = Collider::cylinder(radius, 1.);
 
         let transform = Transform::from_xyz(x, y, 0.);
         Self {
             mesh: WallMesh::Cylinder(mesh),
+            collider,
+            transform,
+        }
+    }
+    pub fn block(x_len: f32, y_len: f32, x: f32, y: f32) -> Self {
+        let mesh = Cuboid::new(x_len, y_len, BLOCK_LEN);
+
+        let collider = Collider::cuboid(x_len, y_len, BLOCK_LEN);
+
+        let transform = Transform::from_xyz(x, y, 0.);
+        Self {
+            mesh: WallMesh::Cuboid(mesh),
             collider,
             transform,
         }

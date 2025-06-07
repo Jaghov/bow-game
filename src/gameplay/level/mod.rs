@@ -14,7 +14,7 @@ mod wall;
 pub use wall::*;
 #[macro_use]
 mod sphere;
-#[cfg(feature = "dev")]
+#[cfg(all(feature = "dev", feature = "hot"))]
 mod level_maker;
 mod new_level;
 mod next_level;
@@ -39,7 +39,7 @@ pub(super) fn plugin(app: &mut App) {
     app.add_systems(Startup, setup_wall_material)
         .add_observer(sphere::spawn_sphere);
 
-    #[cfg(feature = "dev")]
+    #[cfg(all(feature = "dev", feature = "hot"))]
     app.add_plugins(level_maker::plugin);
 }
 
@@ -103,20 +103,11 @@ pub struct Levels {
 
 impl Levels {
     #[allow(dead_code)]
-    pub fn insert(&mut self, level: usize, props: LevelProps) {
+    pub fn insert(&mut self, props: LevelProps) {
         self.levels.insert(self.counter, props);
         self.counter += 1;
     }
-    pub fn add(
-        &mut self,
-        arrow_count: Option<u32>,
-        walls: Vec<WallBuilder>,
-        spheres: Vec<SpawnSphere>,
-    ) {
-        self.levels
-            .insert(self.counter, LevelProps::new(arrow_count, walls, spheres));
-        self.counter += 1;
-    }
+
     /// will get or insert a new random level based on the value
     pub fn get(&mut self, level: usize) -> &LevelProps {
         if let Some(level) = self.levels.get(&level) {

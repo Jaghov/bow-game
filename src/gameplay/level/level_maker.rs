@@ -1,5 +1,6 @@
 use avian3d::prelude::*;
 use bevy::prelude::*;
+use bevy_simple_subsecond_system::hot;
 
 use crate::gameplay::bow::Quiver;
 use crate::gameplay::level::WallMesh;
@@ -62,7 +63,7 @@ fn inner(
     }
 }
 
-#[cfg_attr(feature = "hot", bevy_simple_subsecond_system::prelude::hot)]
+#[hot]
 fn set_dev_level(
     commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
@@ -81,7 +82,7 @@ fn set_dev_level(
     );
 }
 
-#[cfg_attr(feature = "hot", bevy_simple_subsecond_system::prelude::hot)]
+#[hot]
 fn set_dev_level_update(
     commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
@@ -93,6 +94,7 @@ fn set_dev_level_update(
     if !should_be_update_reloading() {
         return;
     }
+    warn!("HOT PATCH UPDATING IS ENABLED");
     inner(
         commands,
         &mut meshes,
@@ -123,7 +125,7 @@ fn change_level(
 }
 
 fn should_be_update_reloading() -> bool {
-    true
+    false
 }
 
 fn edit_level() -> LevelProps {
@@ -144,18 +146,37 @@ fn edit_level() -> LevelProps {
             horz!(6., 3., 6.),
             //div bot
             vert!(2., -4., 2.),
-            WallBuilder::pole(0.5, 26., -10.),
+            //WallBuilder::pole(1., 26., -10.),
+            WallBuilder::block(5., 1., 26., -10.),
         ],
         vec![
             //left side
-            sphere!(Normal, -18., -2.),
+            sphere!(TimeFreeze, -18., -2.),
+            sphere!(Multiplier, -18., -8.),
+            //left side array
+            sphere!(Exploder, 6., 6.),
+            sphere!(Exploder, 6., 0.),
+            sphere!(Multiplier, 3., -6.),
+            sphere!(Normal, -5., -4.),
+            sphere!(Normal, -2., -13.),
+            sphere!(Normal, 7., -15.),
+            //middle ball
+            sphere!(Normal, 5., 17.),
             //right side
             sphere!(Exploder, 21., 20.),
             sphere!(Normal, 17., 14.),
             sphere!(Normal, 17., 24.),
             sphere!(TimeFreeze, 26., 21.),
             //bowling
-            sphere!(Multiplier, 26., -12.),
+            sphere!(Exploder, 26., -8.),
+            sphere!(Multiplier, 26., -13.),
+            sphere!(Normal, 26., -24.),
+            sphere!(Normal, 23., -24.),
+            sphere!(Normal, 20., -24.),
+            sphere!(Normal, 18., -23.),
+            sphere!(Normal, 29., -24.),
+            sphere!(Normal, 33., -24.),
+            sphere!(Normal, 35., -23.),
         ],
     )
 }
