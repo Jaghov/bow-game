@@ -14,6 +14,11 @@ pub fn plugin(app: &mut App) {
         avian3d::plugin,
         TraumaPlugin,
         GltfAnimationPlugin,
+<<<<<<< HEAD
+=======
+        #[cfg(feature = "particles")]
+        HanabiPlugin,
+>>>>>>> 270c176 (feat: added breathing background)
         OutlinePlugin,
         TweeningPlugin,
     ));

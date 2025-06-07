@@ -6,9 +6,10 @@ use crate::gameplay::GAMEPLAY_CAMERA_OFFSET;
 
 pub(super) fn plugin(app: &mut App) {
     app.add_systems(Startup, spawn_light)
-        .add_observer(start_light_animation);
+    // .add_observer(start_light_animation)
+    ;
 
-    app.add_systems(Update, move_light.run_if(resource_exists::<LightAnimation>));
+    // app.add_systems(Update, move_light.run_if(resource_exists::<LightAnimation>));
 }
 
 #[derive(Event)]

@@ -1,5 +1,6 @@
 use std::time::Duration;
 
+<<<<<<< HEAD
 use avian3d::prelude::{Collider, CollisionLayers, RigidBody};
 use bevy::{color::palettes::tailwind::GREEN_400, ecs::system::SystemId, prelude::*};
 use bevy_tweening::{Animator, Delay, Sequence, Tween, lens::TransformPositionLens};
@@ -7,11 +8,26 @@ use bevy_tweening::{Animator, Delay, Sequence, Tween, lens::TransformPositionLen
 use crate::{
     rand,
     third_party::avian3d::GameLayer,
+=======
+use avian3d::{
+    math::PI,
+    prelude::{Collider, RigidBody},
+};
+use bevy::{
+    color::palettes::tailwind::GREEN_400, ecs::system::SystemId, math::ops::sin, prelude::*,
+};
+use bevy_tweening::{Animator, Delay, EaseMethod, Sequence, Tween, lens::TransformPositionLens};
+
+use crate::{
+    gameplay::level::LevelState,
+    rand::{self, random_range},
+>>>>>>> 270c176 (feat: added breathing background)
     world::{BACKDROP_OFFSET, BLOCK_LEN, GAME_PLANE},
 };
 
 pub fn plugin(app: &mut App) {
-    app.add_systems(Startup, spawn_backdrop);
+    app.add_systems(Startup, spawn_backdrop)
+        .add_systems(OnEnter(LevelState::Playing), breathing_background);
 
     let backdrop_win = app.register_system(pulse_out_backdrop_on_win);
 
@@ -89,6 +105,10 @@ fn update_backdrop_z(mut blocks: Query<(&mut Transform, &mut ZState)>, time: Res
     }
 }
 
+fn sin_lerp(t: f32) -> f32 {
+    sin(2. * PI * t)
+}
+
 fn pulse_out_backdrop_on_win(
     mut commands: Commands,
     blocks: Query<(Entity, &mut Transform), With<ZState>>,
@@ -96,24 +116,33 @@ fn pulse_out_backdrop_on_win(
     for (block, transform) in blocks {
         let delay = Duration::from_secs_f32((transform.translation.xy().length() / 120.) + 1.0);
         commands.entity(block).insert(Animator::new(
-            Sequence::from_single(Delay::new(delay)).then(
-                Tween::new(
-                    EaseFunction::SineIn,
-                    Duration::from_millis(100),
-                    TransformPositionLens {
-                        start: transform.translation,
-                        end: transform.translation - Vec3::new(0., 0., BLOCK_LEN),
-                    },
-                )
-                .then(Tween::new(
-                    EaseFunction::SineOut,
-                    Duration::from_millis(100),
-                    TransformPositionLens {
-                        start: transform.translation - Vec3::new(0., 0., BLOCK_LEN),
-                        end: transform.translation,
-                    },
-                )),
-            ),
+            Sequence::from_single(Delay::new(delay)).then(Tween::new(
+                EaseMethod::CustomFunction(sin_lerp),
+                Duration::from_millis(300),
+                TransformPositionLens {
+                    start: transform.translation,
+                    end: transform.translation - Vec3::new(0., 0., BLOCK_LEN),
+                },
+            )),
+        ));
+    }
+}
+
+fn breathing_background(
+    mut commands: Commands,
+    blocks: Query<(Entity, &mut Transform), With<ZState>>,
+) {
+    for (block, transform) in blocks {
+        commands.entity(block).insert(Animator::new(
+            Tween::new(
+                EaseMethod::CustomFunction(sin_lerp),
+                Duration::from_secs(random_range(2..5) * 3),
+                TransformPositionLens {
+                    start: transform.translation,
+                    end: transform.translation - Vec3::new(0., 0., BLOCK_LEN / 2.),
+                },
+            )
+            .with_repeat_count(bevy_tweening::RepeatCount::Infinite),
         ));
     }
 }
