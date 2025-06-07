@@ -24,18 +24,15 @@ fn insert_gravity_sphere(
     mut commands: Commands,
     assets: Res<SphereAssets>,
 ) {
-    commands
-        .entity(trigger.target())
-        .insert((
-            CollisionLayers::new(
-                GameLayer::Sphere,
-                [GameLayer::Arrow, GameLayer::Sphere, GameLayer::Walls],
-            ),
-            MeshMaterial3d(assets.gravity.clone()),
-            Restitution::PERFECTLY_ELASTIC,
-            Dominance(1),
-        ))
-        .observe(super::debug_collision);
+    commands.entity(trigger.target()).insert((
+        CollisionLayers::new(
+            GameLayer::Sphere,
+            [GameLayer::Arrow, GameLayer::Sphere, GameLayer::Walls],
+        ),
+        MeshMaterial3d(assets.gravity.clone()),
+        Restitution::PERFECTLY_ELASTIC,
+        Dominance(1),
+    ));
 }
 /// the min distance for the gravity sphere to emit a force
 const ATTRACTION_RADIUS: f32 = 10.;

@@ -14,6 +14,8 @@ mod wall;
 pub use wall::*;
 #[macro_use]
 mod sphere;
+#[cfg(feature = "dev")]
+mod level_maker;
 mod new_level;
 mod next_level;
 mod restart;
@@ -36,6 +38,9 @@ pub(super) fn plugin(app: &mut App) {
         .init_resource::<Levels>();
     app.add_systems(Startup, setup_wall_material)
         .add_observer(sphere::spawn_sphere);
+
+    #[cfg(feature = "dev")]
+    app.add_plugins(level_maker::plugin);
 }
 
 #[derive(Resource)]

@@ -104,25 +104,8 @@ fn hot_reloading_walls(
     walls: Single<Entity, With<Walls>>,
 ) {
     let props = levels.get(level.0);
-
-    commands.entity(*walls).despawn_related::<Children>();
-
-    for wall in props.walls.iter() {
-        let collider = wall.collider.clone();
-        let mesh = meshes.add(wall.mesh);
-        let material = material.0.clone();
-        commands.spawn((
-            Mesh3d(mesh),
-            collider,
-            MeshMaterial3d(material),
-            CollisionLayers::new(GameLayer::Walls, GameLayer::all_bits()),
-            wall.transform,
-            ChildOf(*walls),
-        ));
-    }
 }
 
-#[cfg_attr(feature = "hot", bevy_simple_subsecond_system::prelude::hot)]
 fn load_level(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,

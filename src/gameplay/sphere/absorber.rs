@@ -29,7 +29,6 @@ fn insert_absorber(
             MeshMaterial3d(assets.absorber.clone()),
             Restitution::PERFECTLY_ELASTIC,
         ))
-        .observe(super::debug_collision)
         .observe(absorb_property::<Bouncy>)
         .observe(absorb_property::<Multiplier>)
         .observe(absorb_property::<Exploder>);

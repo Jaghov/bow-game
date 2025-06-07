@@ -171,6 +171,7 @@ fn add_sphere_mesh(
         .try_insert(Mesh3d(assets.mesh.clone()));
 }
 
+#[allow(dead_code)]
 fn debug_collision(
     trigger: Trigger<OnCollisionStart>,
     arrows: Query<&Arrow>,

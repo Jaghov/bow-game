@@ -23,15 +23,13 @@ fn insert_bouncy(
     let mut commands = commands.entity(trigger.target());
 
     if absorbers.get(trigger.target()).is_err() {
-        commands
-            .insert((
-                CollisionLayers::new(
-                    GameLayer::Sphere,
-                    [GameLayer::Arrow, GameLayer::Sphere, GameLayer::Walls],
-                ),
-                MeshMaterial3d(assets.bouncy.clone()),
-            ))
-            .observe(super::debug_collision);
+        commands.insert((
+            CollisionLayers::new(
+                GameLayer::Sphere,
+                [GameLayer::Arrow, GameLayer::Sphere, GameLayer::Walls],
+            ),
+            MeshMaterial3d(assets.bouncy.clone()),
+        ));
     }
 
     commands

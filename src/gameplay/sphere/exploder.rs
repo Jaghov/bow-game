@@ -76,7 +76,6 @@ fn insert_exploder(
     }
 
     commands
-        .observe(super::debug_collision)
         .observe(light_fuse_on_collision)
         .observe(light_fuse)
         .observe(|trigger: Trigger<HitByExplosion>, mut commands: Commands| {
