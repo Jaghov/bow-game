@@ -94,8 +94,7 @@ fn pulse_out_backdrop_on_win(
     blocks: Query<(Entity, &mut Transform), With<ZState>>,
 ) {
     for (block, transform) in blocks {
-        let delay = Duration::from_secs_f32((transform.translation.xy().length() / 120.) + 0.2);
-
+        let delay = Duration::from_secs_f32((transform.translation.xy().length() / 120.) + 1.0);
         commands.entity(block).insert(Animator::new(
             Sequence::from_single(Delay::new(delay)).then(
                 Tween::new(
