@@ -16,8 +16,6 @@ fn insert_normal(
     mut commands: Commands,
     assets: Res<SphereAssets>,
 ) {
-    info!("observed new normal insert");
-
     commands
         .entity(trigger.target())
         .insert((

@@ -62,8 +62,6 @@ fn insert_exploder(
     mut commands: Commands,
     assets: Res<SphereAssets>,
 ) {
-    info!("observed new normal insert");
-
     let mut commands = commands.entity(trigger.target());
     if absorbers.get(trigger.target()).is_err() {
         commands.insert((

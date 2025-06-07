@@ -10,10 +10,8 @@ use crate::world::GAME_PLANE;
 
 // this will hot reload level 0 forever
 pub(super) fn plugin(app: &mut App) {
-    app.add_systems(
-        Update,
-        (set_dev_level, change_level).run_if(in_state(LevelState::Playing)),
-    );
+    app.add_systems(Update, change_level.run_if(in_state(LevelState::Playing)))
+        .add_systems(OnEnter(LevelState::Playing), set_dev_level);
 }
 
 #[cfg_attr(feature = "hot", bevy_simple_subsecond_system::prelude::hot)]
@@ -25,6 +23,9 @@ fn set_dev_level(
     walls: Single<Entity, With<Walls>>,
     spheres: Query<Entity, With<SphereType>>,
 ) {
+    if !should_be_reloading() {
+        return;
+    }
     let props = edit_level();
 
     commands.entity(*walls).despawn_related::<Children>();
@@ -75,20 +76,27 @@ fn change_level(
         state.set(LevelState::NewLevel);
     }
 }
+fn should_be_reloading() -> bool {
+    true
+}
 
 fn edit_level() -> LevelProps {
     LevelProps::new(
-        Some(1),
+        None,
         vec![
-            vert!(8., -5., 5.),
-            horz!(6., -8., 8.),
-            vert!(-8., -5., 5.),
-            horz!(-6., -8., 8.),
-            vert!(0., -5., 5.),
+            vert!(6., -4., 4.),
+            horz!(5., -6., 6.),
+            vert!(-6., -4., 4.),
+            horz!(-5., -6., 6.),
+            vert!(0., 1., 4.),
+            vert!(0., -4., -1.),
         ],
         vec![
-            // sphere!(Multiplier, 5., 0.),
-            sphere!(Normal, 200., 0.),
+            sphere!(Normal, -17., 13.),
+            sphere!(Multiplier, -7., 21.),
+            sphere!(Multiplier, 7., 21.),
+            sphere!(Normal, 15., 21.),
+            sphere!(Normal, 15., 13.),
             // sphere!(Normal, 10., 5.),
             // sphere!(Normal, 10., -5.),
         ],
