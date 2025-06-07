@@ -146,11 +146,8 @@ impl FromWorld for SphereAssets {
         Self {
             model,
             mesh,
-<<<<<<< HEAD
             gibs,
-=======
             break_sfx,
->>>>>>> 6c38e7c (feat, WIP: added glass_break_sfx to sphere assets)
             normal,
             absorber,
             multiplier,

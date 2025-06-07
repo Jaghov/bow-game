@@ -2,7 +2,7 @@ use std::time::Duration;
 
 use avian3d::{
     math::PI,
-    prelude::{Collider, RigidBody},
+    prelude::{Collider, CollisionLayers, RigidBody},
 };
 use bevy::{
     color::palettes::tailwind::GREEN_400, ecs::system::SystemId, math::ops::sin, prelude::*,
@@ -12,6 +12,7 @@ use bevy_tweening::{Animator, Delay, EaseMethod, Tween, lens::TransformPositionL
 use crate::{
     gameplay::level::LevelState,
     rand::{self, random_range},
+    third_party::avian3d::GameLayer,
     world::{BACKDROP_OFFSET, BLOCK_LEN, GAME_PLANE},
 };
 
