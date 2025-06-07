@@ -7,7 +7,7 @@ use avian3d::{
 use bevy::{
     color::palettes::tailwind::GREEN_400, ecs::system::SystemId, math::ops::sin, prelude::*,
 };
-use bevy_tweening::{Animator, Delay, EaseMethod, Sequence, Tween, lens::TransformPositionLens};
+use bevy_tweening::{Animator, Delay, EaseMethod, Tween, lens::TransformPositionLens};
 
 use crate::{
     gameplay::level::LevelState,
@@ -103,7 +103,7 @@ fn pulse_out_backdrop_on_win(
     mut commands: Commands,
     blocks: Query<(Entity, &mut Transform), With<ZState>>,
 ) {
-    for (block, transform) in blocks {
+    for (block, mut transform) in blocks {
         let delay = Duration::from_secs_f32((transform.translation.xy().length() / 120.) + 1.0);
         commands.entity(block).insert(Animator::new(
             // Bring blocks closer to intitial block plane
@@ -112,7 +112,11 @@ fn pulse_out_backdrop_on_win(
                 Duration::from_millis(700),
                 TransformPositionLens {
                     start: transform.translation,
-                    end: transform.translation + Vec3::Z * (GAME_PLANE - BACKDROP_OFFSET) / 2.,
+                    end: {
+                        transform.translation.z =
+                            (transform.translation.z + (GAME_PLANE - 2. * BACKDROP_OFFSET)) / 2.; // avg the z translation to soft reset backdrop
+                        transform.translation
+                    },
                 },
             )
             .then(Delay::new(delay))
