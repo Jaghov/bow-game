@@ -106,12 +106,22 @@ fn pulse_out_backdrop_on_win(
     for (block, transform) in blocks {
         let delay = Duration::from_secs_f32((transform.translation.xy().length() / 120.) + 1.0);
         commands.entity(block).insert(Animator::new(
-            Sequence::from_single(Delay::new(delay)).then(Tween::new(
+            // Bring blocks closer to intitial block plane
+            Tween::new(
+                EaseFunction::QuadraticIn,
+                Duration::from_millis(700),
+                TransformPositionLens {
+                    start: transform.translation,
+                    end: transform.translation + Vec3::Z * (GAME_PLANE - BACKDROP_OFFSET) / 2.,
+                },
+            )
+            .then(Delay::new(delay))
+            .then(Tween::new(
                 EaseMethod::CustomFunction(sin_lerp),
                 Duration::from_millis(300),
                 TransformPositionLens {
                     start: transform.translation,
-                    end: transform.translation - Vec3::new(0., 0., BLOCK_LEN),
+                    end: transform.translation - Vec3::new(0., 0., BLOCK_LEN), // End is more of an amplitude when using sin_lerp ease function
                 },
             )),
         ));
