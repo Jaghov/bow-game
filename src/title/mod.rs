@@ -2,14 +2,17 @@
 
 use bevy::{prelude::*, time::Stopwatch};
 
-use crate::Screen;
+use crate::{Screen, utils};
 
 mod scene;
 mod ui;
 
 pub(super) fn plugin(app: &mut App) {
     app.add_plugins((scene::plugin, ui::plugin))
-        .add_systems(OnEnter(Screen::Title), start_transition_timer)
+        .add_systems(
+            OnEnter(Screen::Title),
+            (start_transition_timer, utils::show_cursor),
+        )
         .add_systems(OnExit(Screen::Title), remove_duration_timer)
         .add_systems(
             PreUpdate,

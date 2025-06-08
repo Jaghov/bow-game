@@ -21,6 +21,7 @@ mod theme;
 mod third_party;
 mod title;
 mod transition;
+mod utils;
 mod world;
 
 const UI_RENDER_LAYER: usize = 2;

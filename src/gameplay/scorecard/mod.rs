@@ -5,6 +5,9 @@ use crate::{
     gameplay::level::{Level, LevelState, Levels},
 };
 
+mod ui_widgets;
+pub use ui_widgets::*;
+
 pub(super) fn plugin(app: &mut App) {
     app.init_resource::<ScoreCard>()
         .add_systems(OnEnter(Screen::Gameplay), wipe_scorecard)

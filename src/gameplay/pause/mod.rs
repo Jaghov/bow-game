@@ -3,26 +3,27 @@ use bevy::{
     prelude::{Val::*, *},
 };
 
-use crate::gameplay::{
-    GameState, hide_cursor,
-    pause::scorecard::{scorecard_row, scorecard_totals},
-    scorecard::ScoreCard,
-    show_cursor,
+use crate::{
+    gameplay::{
+        GameState,
+        scorecard::{ScoreCard, spawn_scorecard},
+    },
+    utils,
 };
 
 mod actions;
 use actions::actions;
 
-mod scorecard;
-use scorecard::scorecard_box;
-
 pub(super) fn plugin(app: &mut App) {
-    app.add_systems(OnEnter(GameState::Paused), (spawn_pause_ui, show_cursor))
-        .add_systems(
-            Update,
-            pause.run_if(in_state(GameState::Playing).and(input_just_pressed(KeyCode::Escape))),
-        )
-        .add_systems(OnExit(GameState::Paused), hide_cursor);
+    app.add_systems(
+        OnEnter(GameState::Paused),
+        (spawn_pause_ui, utils::show_cursor),
+    )
+    .add_systems(
+        Update,
+        pause.run_if(in_state(GameState::Playing).and(input_just_pressed(KeyCode::Escape))),
+    )
+    .add_systems(OnExit(GameState::Paused), utils::hide_cursor);
 }
 
 fn pause(mut game_state: ResMut<NextState<GameState>>) {
@@ -39,7 +40,6 @@ fn spawn_pause_ui(mut commands: Commands, scorecard: Res<ScoreCard>) {
                 width: Percent(100.),
                 height: Percent(100.),
                 flex_direction: FlexDirection::Row,
-                align_items: AlignItems::Center,
                 ..default()
             },
             BackgroundColor(Srgba::new(0., 0., 0., 0.8).into()),
@@ -51,23 +51,22 @@ fn spawn_pause_ui(mut commands: Commands, scorecard: Res<ScoreCard>) {
         .spawn((
             Node {
                 flex_grow: 1.,
+                margin: UiRect::all(Px(20.)),
                 ..default()
             },
             ChildOf(root),
         ))
         .id();
 
-    let scorecard_ui = commands.spawn((scorecard_box(), ChildOf(left))).id();
-
-    for (course, course_score) in scorecard.iter().enumerate() {
-        commands.spawn((scorecard_row(course, course_score), ChildOf(scorecard_ui)));
-    }
-    commands.spawn((scorecard_totals(&scorecard), ChildOf(scorecard_ui)));
+    spawn_scorecard(Some(left), commands.reborrow(), &scorecard);
 
     let right = commands
         .spawn((
             Node {
                 flex_grow: 1.,
+                align_self: AlignSelf::Center,
+                justify_content: JustifyContent::Center,
+                margin: UiRect::all(Px(20.)),
                 ..default()
             },
             ChildOf(root),

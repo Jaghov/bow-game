@@ -3,7 +3,7 @@ use bevy::{platform::collections::HashMap, prelude::*};
 use crate::{
     Screen,
     gameplay::{
-        GameSet,
+        GameSet, GameState,
         level::{Level, LevelState},
     },
     settings::Settings,
@@ -18,7 +18,7 @@ pub(super) fn plugin(app: &mut App) {
         Update,
         listen_for_mulligan
             .in_set(GameSet::RecordInput)
-            .run_if(in_state(LevelState::Playing)),
+            .run_if(in_state(LevelState::Playing).and(not(in_state(GameState::Paused)))),
     );
     //todod
 }

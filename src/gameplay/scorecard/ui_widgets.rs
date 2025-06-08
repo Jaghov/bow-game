@@ -16,6 +16,25 @@ const COURSE_W: Val = Px(240.);
 const SCORE_W: Val = Px(160.);
 const PAR_W: Val = Px(120.);
 
+pub fn spawn_scorecard(
+    parent: Option<Entity>,
+    mut commands: Commands,
+    scorecard: &ScoreCard,
+) -> Entity {
+    let scorecard_ui = match parent {
+        Some(parent) => commands.spawn((scorecard_box(), ChildOf(parent))),
+        None => commands.spawn(scorecard_box()),
+    }
+    .id();
+
+    for (course, course_score) in scorecard.iter().enumerate() {
+        commands.spawn((scorecard_row(course, course_score), ChildOf(scorecard_ui)));
+    }
+    commands.spawn((scorecard_totals(scorecard), ChildOf(scorecard_ui)));
+
+    scorecard_ui
+}
+
 pub fn scorecard_box() -> impl Bundle {
     (
         Node {
@@ -23,7 +42,6 @@ pub fn scorecard_box() -> impl Bundle {
             row_gap: Px(5.),
             flex_direction: FlexDirection::Column,
             align_self: AlignSelf::Start,
-            margin: UiRect::all(Px(20.)),
             border: UiRect::all(Px(10.)),
             ..default()
         },
