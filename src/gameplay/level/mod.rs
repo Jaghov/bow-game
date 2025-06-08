@@ -1,4 +1,6 @@
-use bevy::{platform::collections::HashMap, prelude::*};
+use std::fmt;
+
+use bevy::prelude::*;
 
 use crate::{
     Screen,
@@ -65,6 +67,12 @@ pub(crate) enum LevelState {
 
 #[derive(Resource)]
 pub struct Level(pub usize);
+
+impl fmt::Display for Level {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.0 + 1)
+    }
+}
 
 #[allow(clippy::derivable_impls)]
 impl Default for Level {
