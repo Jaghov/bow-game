@@ -32,7 +32,8 @@ const PERIOD: f32 = 0.3;
 
 #[derive(Component)]
 struct ZState {
-    time_offset: f32,
+    spawn_depth: f32,
+    // time_offset: f32,
 }
 
 fn spawn_backdrop(
@@ -65,7 +66,8 @@ fn spawn_backdrop(
             commands.spawn((
                 MeshMaterial3d(material.clone()),
                 ZState {
-                    time_offset: rand::random_range((-HALF_PERIOD..=HALF_PERIOD)),
+                    spawn_depth: z,
+                    // time_offset: rand::random_range((-HALF_PERIOD..=HALF_PERIOD)),
                 },
                 CollisionLayers::new(
                     GameLayer::Backdrop,
@@ -80,21 +82,21 @@ fn spawn_backdrop(
     }
 }
 
-#[allow(dead_code)]
-fn update_backdrop_z(mut blocks: Query<(&mut Transform, &mut ZState)>, time: Res<Time>) {
-    const TRVL: f32 = BACKDROP_OFFSET * 0.5;
+// #[allow(dead_code)]
+// fn update_backdrop_z(mut blocks: Query<(&mut Transform, &mut ZState)>, time: Res<Time>) {
+//     const TRVL: f32 = BACKDROP_OFFSET * 0.5;
 
-    for (mut trns, zstate) in &mut blocks {
-        let progress_time = (time.elapsed_secs() + zstate.time_offset) % PERIOD;
-        if progress_time > PERIOD * 0.5 {
-            trns.translation.z += TRVL * time.delta_secs()
-            //forward
-        } else {
-            trns.translation.z -= TRVL * time.delta_secs()
-            //backward
-        }
-    }
-}
+//     for (mut trns, zstate) in &mut blocks {
+//         let progress_time = (time.elapsed_secs() + zstate.time_offset) % PERIOD;
+//         if progress_time > PERIOD * 0.5 {
+//             trns.translation.z += TRVL * time.delta_secs()
+//             //forward
+//         } else {
+//             trns.translation.z -= TRVL * time.delta_secs()
+//             //backward
+//         }
+//     }
+// }
 
 fn sin_lerp(t: f32) -> f32 {
     sin(2. * PI * t)
@@ -102,9 +104,9 @@ fn sin_lerp(t: f32) -> f32 {
 
 fn pulse_out_backdrop_on_win(
     mut commands: Commands,
-    blocks: Query<(Entity, &mut Transform), With<ZState>>,
+    blocks: Query<(Entity, &mut Transform, &ZState)>,
 ) {
-    for (block, mut transform) in blocks {
+    for (block, mut transform, depth) in blocks {
         let delay = Duration::from_secs_f32((transform.translation.xy().length() / 120.) + 1.0);
         commands.entity(block).insert(Animator::new(
             // Bring blocks closer to intitial block plane
@@ -114,8 +116,7 @@ fn pulse_out_backdrop_on_win(
                 TransformPositionLens {
                     start: transform.translation,
                     end: {
-                        transform.translation.z =
-                            (transform.translation.z + (GAME_PLANE - 2. * BACKDROP_OFFSET)) / 2.; // avg the z translation to soft reset backdrop
+                        transform.translation.z = depth.spawn_depth; // avg the z translation to soft reset backdrop
                         transform.translation
                     },
                 },
@@ -143,7 +144,7 @@ fn breathing_background(
         commands.entity(block).insert(Animator::new(
             Tween::new(
                 EaseMethod::CustomFunction(sin_lerp),
-                Duration::from_secs(random_range(2..5) * 3),
+                Duration::from_secs(random_range(2..5) * 5),
                 TransformPositionLens {
                     start: transform.translation,
                     end: transform.translation - Vec3::new(0., 0., BLOCK_LEN / 2.),
