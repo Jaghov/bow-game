@@ -14,16 +14,12 @@ use crate::{
         arrow::{ARROW_VELOCITY_THRESHOLD, CancelArrow, FireArrow, ReadyArrow},
         bow::{Bow, BowArrow, BowAssets, EPS, animation},
         cursor::CursorPosition,
+        scorecard::ArrowCountsTowardsScore,
     },
 };
 
-mod quiver;
-pub use quiver::*;
-
 pub(super) fn plugin(app: &mut App) {
     app.register_type::<PrimaryBow>();
-
-    app.add_plugins(quiver::plugin);
 
     app.add_systems(OnEnter(Screen::Gameplay), spawn_primary_bow)
         .add_systems(
@@ -140,14 +136,8 @@ fn update_primary_bow_rotation_not_pulling(
     bow.rotation = bow.rotation.slerp(*bow_should_rotation, ROTATION_SPEED);
 }
 
-fn on_mouse_down(
-    mut commands: Commands,
-    bow: Single<Entity, (With<PrimaryBow>)>,
-    quiver: Res<Quiver>,
-) {
-    if quiver.can_fire() {
-        commands.trigger(ReadyArrow::for_bow(*bow));
-    }
+fn on_mouse_down(mut commands: Commands, bow: Single<Entity, (With<PrimaryBow>)>) {
+    commands.trigger(ReadyArrow::for_bow(*bow));
 }
 fn on_mouse_cancel(mut commands: Commands, bows: Query<&BowArrow>) {
     for arrow in &bows {
@@ -155,11 +145,11 @@ fn on_mouse_cancel(mut commands: Commands, bows: Query<&BowArrow>) {
     }
 }
 
-fn on_mouse_up(mut commands: Commands, bow_arrows: Query<&BowArrow>, mut quiver: ResMut<Quiver>) {
+fn on_mouse_up(mut commands: Commands, bow_arrows: Query<&BowArrow>) {
     for arrow in &bow_arrows {
         commands.trigger_targets(FireArrow, arrow.arrow());
         if arrow.arrow_velocity() > ARROW_VELOCITY_THRESHOLD {
-            quiver.remove_arrow();
+            commands.trigger(ArrowCountsTowardsScore);
         }
     }
 }

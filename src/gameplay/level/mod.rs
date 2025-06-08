@@ -1,4 +1,6 @@
-use bevy::{platform::collections::HashMap, prelude::*};
+use std::fmt;
+
+use bevy::prelude::*;
 
 use crate::{
     Screen,
@@ -18,22 +20,16 @@ mod sphere;
 mod level_maker;
 mod new_level;
 mod next_level;
-mod restart;
 mod timer;
 
 const WALL_START_PLANE: f32 = GAMEPLAY_CAMERA_OFFSET + 20.;
 const SPHERE_START_PLANE: f32 = GAME_PLANE - 20.;
 
 pub(super) fn plugin(app: &mut App) {
-    app.add_plugins((
-        new_level::plugin,
-        next_level::plugin,
-        restart::plugin,
-        timer::plugin,
-    ));
+    app.add_plugins((new_level::plugin, next_level::plugin, timer::plugin));
     app.add_sub_state::<LevelState>()
         .init_resource::<Level>()
-        .insert_resource(Levels::init());
+        .insert_resource(Levels::mulligan_debug());
     app.add_systems(Startup, setup_wall_material)
         .add_observer(sphere::spawn_sphere);
 
@@ -66,6 +62,12 @@ pub(crate) enum LevelState {
 #[derive(Resource)]
 pub struct Level(pub usize);
 
+impl fmt::Display for Level {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.0 + 1)
+    }
+}
+
 #[allow(clippy::derivable_impls)]
 impl Default for Level {
     fn default() -> Self {
@@ -87,14 +89,17 @@ impl LevelProps {
             spheres,
         }
     }
+    pub fn par(&self) -> i32 {
+        self.course_par
+    }
 }
 
 #[derive(Resource, Default)]
 pub struct Levels {
-    levels: HashMap<usize, LevelProps>,
-    counter: usize,
+    levels: Vec<LevelProps>,
 }
 
+#[allow(dead_code)]
 impl Levels {
     pub fn init() -> Self {
         let mut levels = Levels::default();
@@ -249,19 +254,46 @@ impl Levels {
         levels
     }
 
-    #[allow(dead_code)]
-    pub fn insert(&mut self, props: LevelProps) {
-        self.levels.insert(self.counter, props);
-        self.counter += 1;
+    pub fn mulligan_debug() -> Self {
+        let mut levels = Levels::default();
+
+        levels.insert(LevelProps::new(
+            1,
+            vec![
+                vert!(6., -5., 5.),
+                horz!(6., -6., 6.),
+                vert!(-6., -5., 5.),
+                horz!(-6., -6., 6.),
+            ],
+            vec![sphere!(Normal, 5., 0.)],
+        ));
+        levels.insert(LevelProps::new(
+            1,
+            vec![
+                vert!(6., -5., 5.),
+                horz!(6., -6., 6.),
+                vert!(-6., -5., 5.),
+                horz!(-6., -6., 6.),
+            ],
+            vec![sphere!(Normal, -2., 0.)],
+        ));
+
+        levels
+    }
+
+    fn insert(&mut self, props: LevelProps) {
+        self.levels.push(props);
+    }
+    pub fn num_levels(&self) -> usize {
+        self.levels.len()
+    }
+
+    pub fn iter(&self) -> std::slice::Iter<'_, LevelProps> {
+        self.levels.iter()
     }
 
     /// will get or insert a new random level based on the value
-    pub fn get(&mut self, level: usize) -> &LevelProps {
-        if let Some(level) = self.levels.get(&level) {
-            return level;
-        }
-
-        self.levels.get(&1).unwrap()
-        //todo!("generate dynamic random levels")
+    pub fn get(&mut self, level: usize) -> Option<&LevelProps> {
+        self.levels.get(level)
     }
 }

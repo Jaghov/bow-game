@@ -78,7 +78,6 @@ fn spawn_items(
     bow_assets: Res<BowAssets>,
     arrow_assets: Res<ArrowAssets>,
     sphere: Res<SphereAssets>,
-    gltfs: Res<Assets<Gltf>>,
 ) {
     commands.spawn((Bow, Prop, SceneRoot(bow_assets.scene.clone())));
     for i in (0..5) {

@@ -8,14 +8,12 @@ use crate::{
     asset_tracking::LoadResource,
     gameplay::{
         GameSet,
-        bow::Quiver,
         level::{
             Level, LevelState, Levels, SPHERE_START_PLANE, WALL_START_PLANE, WallMaterial,
             WallMesh, Walls, sphere::SphereType, timer::LevelSetupTimer,
         },
         sphere::Sphere,
     },
-    rand::random_range,
     third_party::avian3d::GameLayer,
     world::{GAME_PLANE, backdrop::RadialBackdropPulse, light::SetLightPosition},
 };
@@ -42,10 +40,6 @@ pub(super) fn plugin(app: &mut App) {
         .add_systems(
             Update,
             observe_level_completion.run_if(in_state(LevelState::Playing)),
-        )
-        .add_systems(
-            Update,
-            hot_reloading_walls.run_if(in_state(LevelState::Playing)),
         );
 }
 fn init_timer(mut commands: Commands) {
@@ -122,28 +116,18 @@ fn observe_level_completion(
     }
 }
 
-#[cfg_attr(feature = "hot", bevy_simple_subsecond_system::prelude::hot)]
-fn hot_reloading_walls(
-    mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    material: Res<WallMaterial>,
-    mut levels: ResMut<Levels>,
-    level: Res<Level>,
-    walls: Single<Entity, With<Walls>>,
-) {
-    let props = levels.get(level.0);
-}
-
 fn load_level(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     material: Res<WallMaterial>,
     mut levels: ResMut<Levels>,
-    mut quiver: ResMut<Quiver>,
     level: Res<Level>,
     timer: Res<LevelSetupTimer>,
 ) {
-    let props = levels.get(level.0);
+    let Some(props) = levels.get(level.0) else {
+        // this should probably panic, but yknow
+        return;
+    };
 
     let tween = Tween::new(
         EaseFunction::QuadraticOut,
@@ -172,9 +156,6 @@ fn load_level(
             RigidBody::Static,
         ))
         .id();
-
-    //todo: fix
-    quiver.set_arrow_count(Some(props.course_par as u32));
 
     for wall in props.walls.iter() {
         let collider = wall.collider.clone();

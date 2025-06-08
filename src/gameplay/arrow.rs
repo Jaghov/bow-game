@@ -9,7 +9,7 @@ use crate::{
         GameSet,
         bow::BowArrow,
         level::Walls,
-        sphere::{FromMultiply, HitByExplosion, ShouldMultiply},
+        sphere::{HitByExplosion, ShouldMultiply},
     },
     third_party::avian3d::GameLayer,
     world::GAME_PLANE,

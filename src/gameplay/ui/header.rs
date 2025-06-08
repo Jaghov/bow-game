@@ -2,21 +2,14 @@ use std::time::Duration;
 
 use bevy::color::palettes::tailwind::GRAY_700;
 
-use crate::{
-    gameplay::{bow::Quiver, level::Level, sphere::Sphere},
-    keybinds::Keybinds,
-};
+use crate::gameplay::{level::Level, sphere::Sphere};
 
 use super::*;
 
 pub(super) fn plugin(app: &mut App) {
     app.init_resource::<BallCountState>().add_systems(
         Update,
-        (
-            update_level_info,
-            update_restart_text.run_if(resource_changed::<Quiver>),
-            (tick_bctimer, update_ball_count).chain(),
-        ),
+        (update_level_info, (tick_bctimer, update_ball_count).chain()),
     );
 }
 
@@ -70,21 +63,6 @@ fn update_ball_count(
     }
 }
 
-fn update_restart_text(
-    quiver: Res<Quiver>,
-    mut restart: Single<&mut Text, With<RestartText>>,
-    keybinds: Res<Keybinds>,
-) {
-    let text = if quiver.arrow_count().is_some_and(|count| count == 0) {
-        let mut key_str = format!("{:?}", keybinds.restart);
-        format!("Press [{}] to restart", key_str.split_off(3))
-    } else {
-        String::new()
-    };
-
-    restart.0 = text;
-}
-
 #[derive(Component)]
 pub struct Header;
 
@@ -113,15 +91,11 @@ pub fn header() -> impl Bundle {
                 },
                 children![ball_count()]
             ),
-            (
-                Node {
-                    display: Display::Flex,
-                    flex_grow: 1.,
-                    justify_content: JustifyContent::FlexEnd,
-                    ..default()
-                },
-                children![restart_text()]
-            )
+            (Node {
+                display: Display::Flex,
+                flex_grow: 1.,
+                ..default()
+            },)
         ],
     )
 }
@@ -216,21 +190,5 @@ fn ball_count() -> impl Bundle {
         ),
         BorderRadius::all(Px(12.)),
         children![ball_count_text],
-    )
-}
-
-#[derive(Component)]
-pub struct RestartText;
-
-fn restart_text() -> impl Bundle {
-    (
-        Node {
-            display: Display::Flex,
-            position_type: PositionType::Absolute,
-            ..default()
-        },
-        RestartText,
-        Text::new("Press R to restart"),
-        TextFont::from_font_size(30.),
     )
 }
