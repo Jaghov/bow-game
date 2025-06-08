@@ -1,6 +1,6 @@
 use bevy::prelude::{Val::*, *};
 
-use crate::{Screen, settings::Keybinds};
+use crate::{Screen, settings::Settings};
 
 mod footer;
 pub use footer::*;
@@ -13,7 +13,7 @@ pub(super) fn plugin(app: &mut App) {
     app.add_systems(OnEnter(Screen::Gameplay), setup);
 }
 
-fn setup(mut commands: Commands, settings: Res<Keybinds>) {
+fn setup(mut commands: Commands, settings: Res<Settings>) {
     commands.spawn((
         Name::new("UI Root"),
         StateScoped(Screen::Gameplay),

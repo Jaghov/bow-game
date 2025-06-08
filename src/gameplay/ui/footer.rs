@@ -5,7 +5,7 @@ use bevy::color::palettes::{
 
 use crate::{
     gameplay::{level::Level, mulligan::Mulligan, scorecard::ScoreCard},
-    settings::Keybinds,
+    settings::Settings,
 };
 
 use super::*;
@@ -17,7 +17,7 @@ pub(super) fn plugin(app: &mut App) {
             (
                 update_mulligan_ui
                     .run_if(resource_changed::<Mulligan>.or(resource_changed::<Level>)),
-                update_mulligan_keybind.run_if(resource_changed::<Keybinds>),
+                update_mulligan_keybind.run_if(resource_changed::<Settings>),
                 update_ui_playing_course_score_count
                     .run_if(resource_changed::<ScoreCard>.or(resource_changed::<Level>)),
             ),
@@ -74,7 +74,7 @@ fn update_ui_playing_course_score_count(
 #[derive(Component)]
 pub struct Footer;
 
-pub fn footer(settings: Res<Keybinds>) -> impl Bundle {
+pub fn footer(settings: Res<Settings>) -> impl Bundle {
     (
         Node {
             margin: UiRect::all(Px(10.)),
@@ -107,7 +107,7 @@ fn update_mulligan_ui(
 
 fn update_mulligan_keybind(
     mut text: Single<&mut Text, With<UiMulliganText>>,
-    settings: Res<Keybinds>,
+    settings: Res<Settings>,
 ) {
     let keycode = format!("{:?}", settings.restart).split_off(3);
     text.0 = format!("Press [{}]", keycode);
@@ -207,7 +207,7 @@ pub struct UiMulliganAvailable;
 #[derive(Component)]
 pub struct UiMulliganText;
 
-fn mulligan(settings: Res<Keybinds>) -> impl Bundle {
+fn mulligan(settings: Res<Settings>) -> impl Bundle {
     let keycode = format!("{:?}", settings.restart).split_off(3);
 
     (

@@ -2,12 +2,12 @@ use bevy::{audio::Volume, prelude::*};
 
 pub(super) fn plugin(app: &mut App) {
     // CHANGE THIS
-    app.insert_resource(Keybinds::dan());
+    app.insert_resource(Settings::dan());
 }
 
 #[allow(dead_code)]
 #[derive(Resource)]
-pub struct Keybinds {
+pub struct Settings {
     pub sfx: Volume,
     pub music: Volume,
     pub tutorials_enabled: bool,
@@ -19,7 +19,7 @@ pub struct Keybinds {
     pub inspector_toggle: KeyCode,
 }
 
-impl Keybinds {
+impl Settings {
     fn dan() -> Self {
         Self {
             sfx: Volume::Linear(1.),
@@ -34,7 +34,7 @@ impl Keybinds {
     }
 }
 
-impl Default for Keybinds {
+impl Default for Settings {
     fn default() -> Self {
         Self {
             sfx: Volume::Linear(1.),
