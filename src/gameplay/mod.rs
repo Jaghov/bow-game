@@ -11,6 +11,7 @@ mod scorecard;
 pub mod sphere;
 pub mod timefreeze;
 
+mod pause;
 mod ui;
 
 use crate::{Screen, camera::WorldCamera};
@@ -82,6 +83,7 @@ pub fn plugin(app: &mut App) {
         audio::plugin,
         scorecard::plugin,
         mulligan::plugin,
+        pause::plugin,
     ))
     .add_systems(OnEnter(Screen::Gameplay), move_camera)
     .add_systems(OnEnter(GameState::Paused), pause_physics_time)
