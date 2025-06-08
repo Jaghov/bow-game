@@ -33,7 +33,7 @@ pub(super) fn plugin(app: &mut App) {
     ));
     app.add_sub_state::<LevelState>()
         .init_resource::<Level>()
-        .insert_resource(Levels::init());
+        .insert_resource(Levels::mulligan_debug());
     app.add_systems(Startup, setup_wall_material)
         .add_observer(sphere::spawn_sphere);
 
@@ -243,6 +243,33 @@ impl Levels {
                 sphere!(Normal, 33., -24.),
                 sphere!(Normal, 35., -23.),
             ],
+        ));
+
+        levels
+    }
+
+    pub fn mulligan_debug() -> Self {
+        let mut levels = Levels::default();
+
+        levels.insert(LevelProps::new(
+            1,
+            vec![
+                vert!(6., -5., 5.),
+                horz!(6., -6., 6.),
+                vert!(-6., -5., 5.),
+                horz!(-6., -6., 6.),
+            ],
+            vec![sphere!(Normal, 5., 0.)],
+        ));
+        levels.insert(LevelProps::new(
+            1,
+            vec![
+                vert!(6., -5., 5.),
+                horz!(6., -6., 6.),
+                vert!(-6., -5., 5.),
+                horz!(-6., -6., 6.),
+            ],
+            vec![sphere!(Normal, -2., 0.)],
         ));
 
         levels
