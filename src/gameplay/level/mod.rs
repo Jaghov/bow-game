@@ -157,6 +157,7 @@ impl Levels {
         //     ],
         // ));
 
+        // simple first level
         levels.insert(LevelProps::new(
             1,
             vec![
@@ -167,6 +168,8 @@ impl Levels {
             ],
             vec![sphere!(Normal, 5., 0.), sphere!(Normal, 10., 0.)],
         ));
+
+        //multiplier simple
         levels.insert(LevelProps::new(
             1,
             vec![
@@ -183,6 +186,7 @@ impl Levels {
             ],
         ));
 
+        // multiplier advanced
         levels.insert(LevelProps::new(
             1,
             vec![
@@ -200,6 +204,38 @@ impl Levels {
                 sphere!(Normal, 18., 8.),
                 sphere!(Normal, 18., 0.),
                 sphere!(Normal, 18., -8.),
+            ],
+        ));
+
+        //exploder introduction
+        levels.insert(LevelProps::new(
+            3,
+            vec![
+                vert!(6., -5., 5.),
+                horz!(6., -6., 6.),
+                vert!(-6., -5., 5.),
+                horz!(-6., -6., 6.),
+            ],
+            vec![
+                sphere!(Exploder, 24., 24.),
+                sphere!(Exploder, -24., -24.),
+                sphere!(Exploder, 24., -24.),
+                sphere!(Exploder, -24., 24.),
+                sphere!(Multiplier, 0., -7.),
+                sphere!(Multiplier, 0., 7.),
+                sphere!(Normal, 0., 0.),
+                sphere!(Normal, 24., 31.),
+                sphere!(Normal, -24., -31.),
+                sphere!(Normal, -24., 31.),
+                sphere!(Normal, 24., -31.),
+                sphere!(Normal, 31., 24.),
+                sphere!(Normal, -31., -24.),
+                sphere!(Normal, -31., 24.),
+                sphere!(Normal, 31., -24.),
+                sphere!(Normal, 24., 17.),
+                sphere!(Normal, -24., -17.),
+                sphere!(Normal, 24., -17.),
+                sphere!(Normal, -24., 17.),
             ],
         ));
 

@@ -37,7 +37,7 @@ fn main() -> AppExit {
             })
             .set(WindowPlugin {
                 primary_window: Window {
-                    title: "RENAME ME".to_string(),
+                    title: "Bolf".to_string(),
                     fit_canvas_to_parent: true,
                     position: WindowPosition::Centered(MonitorSelection::Index(1)),
                     resolution: WindowResolution::new(1920., 1080.),
