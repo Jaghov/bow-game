@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{audio::Volume, prelude::*};
 
 pub(super) fn plugin(app: &mut App) {
     // CHANGE THIS
@@ -8,13 +8,9 @@ pub(super) fn plugin(app: &mut App) {
 #[allow(dead_code)]
 #[derive(Resource)]
 pub struct Keybinds {
-    pub key_up: KeyCode,
-    pub key_down: KeyCode,
-    pub key_left: KeyCode,
-    pub key_right: KeyCode,
-    pub key_rotate_left: KeyCode,
-    pub key_rotate_right: KeyCode,
-
+    pub sfx: Volume,
+    pub music: Volume,
+    pub tutorials_enabled: bool,
     pub restart: KeyCode,
 
     #[cfg(feature = "dev")]
@@ -26,15 +22,10 @@ pub struct Keybinds {
 impl Keybinds {
     fn dan() -> Self {
         Self {
-            key_up: KeyCode::KeyI,
-            key_down: KeyCode::KeyK,
-            key_left: KeyCode::KeyJ,
-            key_right: KeyCode::KeyL,
-            key_rotate_left: KeyCode::KeyU,
-            key_rotate_right: KeyCode::KeyO,
-
+            sfx: Volume::Linear(1.),
+            music: Volume::Linear(1.),
             restart: KeyCode::KeyU,
-
+            tutorials_enabled: true,
             #[cfg(feature = "dev")]
             debug_toggle: KeyCode::KeyY,
             #[cfg(feature = "dev")]
@@ -46,15 +37,10 @@ impl Keybinds {
 impl Default for Keybinds {
     fn default() -> Self {
         Self {
-            key_up: KeyCode::KeyW,
-            key_down: KeyCode::KeyS,
-            key_left: KeyCode::KeyA,
-            key_right: KeyCode::KeyD,
-            key_rotate_left: KeyCode::KeyQ,
-            key_rotate_right: KeyCode::KeyE,
-
+            sfx: Volume::Linear(1.),
+            music: Volume::Linear(1.),
+            tutorials_enabled: true,
             restart: KeyCode::KeyR,
-
             #[cfg(feature = "dev")]
             debug_toggle: KeyCode::KeyF,
             #[cfg(feature = "dev")]
