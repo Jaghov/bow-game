@@ -29,7 +29,7 @@ pub(super) fn plugin(app: &mut App) {
     app.add_plugins((new_level::plugin, next_level::plugin, timer::plugin));
     app.add_sub_state::<LevelState>()
         .init_resource::<Level>()
-        .insert_resource(Levels::init());
+        .insert_resource(Levels::mulligan_debug());
     app.add_systems(Startup, setup_wall_material)
         .add_systems(OnEnter(Screen::Gameplay), reset_level)
         .add_observer(sphere::spawn_sphere);
@@ -324,7 +324,7 @@ impl Levels {
         let mut levels = Levels::default();
 
         levels.insert(LevelProps::new(
-            1,
+            2,
             vec![
                 vert!(6., -5., 5.),
                 horz!(6., -6., 6.),

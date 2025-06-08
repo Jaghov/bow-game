@@ -2,7 +2,7 @@ use bevy::prelude::{Val::*, *};
 
 use crate::{
     Screen,
-    gameplay::scorecard::{ABOVE_PAR, BELOW_PAR, ScoreCard, spawn_scorecard},
+    gameplay::scorecard::{ABOVE_PAR, AT_PAR, BELOW_PAR, ScoreCard, spawn_scorecard},
     theme::widgets,
     utils,
 };
@@ -47,34 +47,51 @@ fn spawn_gameover_ui(mut commands: Commands, scorecard: Res<ScoreCard>) {
 
     let mut total_par = 0;
     let mut total_arrows_shot = 0;
+    let mut perf_score_enabled = true;
     for course in scorecard.iter() {
         let Some(score) = course.arrows_shot() else {
+            perf_score_enabled = false;
             continue;
         };
         total_arrows_shot += score;
         total_par += course.course_par();
     }
+
+    let perfect_score = scorecard.iter().count() + 1;
     let diff = total_arrows_shot - total_par;
 
-    let statement = match diff {
-        (..-2) => "You've got skills!",
-        (-2..0) => "Good eye!",
-        0 => "Congrats! You met the expectation. Try again?",
-        (1..3) => "Decent score, but can you do better?",
-        (3..) => "Damn, it's rough out there",
+    let statement = if perf_score_enabled && total_arrows_shot as usize <= perfect_score {
+        "HOLY !@#$, a perfect score! GG."
+    } else {
+        match diff {
+            (..-3) => "Impressive! You score was almost perfect!",
+            (-3..-2) => "Now that's some aim!",
+            (-2..0) => "Good eye!",
+            0 => "Congrats! You met the expectation. Try again?",
+            (1..4) => "Decent score! can you do better?",
+            (4..) => "That's tough. Try again?",
+        }
     };
     let color = if diff < 0 {
         BELOW_PAR
     } else if diff > 0 {
         ABOVE_PAR
     } else {
-        Color::WHITE
+        AT_PAR
     };
 
     commands.spawn((
-        Text::new(statement),
-        TextColor(color),
-        TextFont::from_font_size(40.),
+        Node {
+            padding: UiRect::axes(Px(24.), Px(16.)),
+            ..default()
+        },
+        BackgroundColor(Srgba::new(1., 1., 1., 0.6).into()),
+        BorderRadius::all(Px(12.)),
+        children![(
+            Text::new(statement),
+            TextColor(color),
+            TextFont::from_font_size(40.)
+        )],
         ChildOf(root),
     ));
 
