@@ -3,8 +3,8 @@ command = "bevy"
 args = ["run", "--features", "web", "web"]
 
 [tasks.chrome]
-command = "trunk"
-args = ["serve", "--release", "--features", "webgpu"]
+command = "bevy"
+args = ["run", "--features", "webgpu", "web"]
 
 
 [tasks.run]

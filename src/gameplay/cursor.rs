@@ -4,10 +4,7 @@ use bevy::{color::palettes::css::RED, prelude::*};
 
 use crate::{
     camera::WorldCamera,
-    gameplay::{
-        GameSet,
-        bow::{Bow, BowArrow},
-    },
+    gameplay::{GameSet, bow::BowArrow},
     world::GAME_PLANE,
 };
 
@@ -15,73 +12,29 @@ pub(super) fn plugin(app: &mut App) {
     app.register_type::<CursorPosition>()
         .init_resource::<CursorPosition>();
     app.add_systems(Update, set_cursor_position.in_set(GameSet::RecordInput));
-    app.add_systems(
-        Update,
-        show_cursor_if_readying_arrow.in_set(GameSet::Update),
-    );
+    app.add_systems(Update, new_pointer_pos.in_set(GameSet::Update));
 }
 
 #[derive(Component)]
 struct NockCursor;
 
-fn pointer_pos(pointer: Res<CursorPosition>, mut gizmos: Gizmos) {
+fn new_pointer_pos(pointer: Res<CursorPosition>, mut gizmos: Gizmos, bows: Query<&BowArrow>) {
     let Some(point) = pointer.current() else {
         return;
     };
+
+    let strength = bows.single().map(|bow| bow.strength()).unwrap_or_default();
+
+    let max_color = Color::Srgba(RED);
+
+    let color = Color::WHITE.mix(&max_color, strength);
 
     // Draw a circle just above the ground plane at that position.
     gizmos.circle(
         Isometry3d::new(point, Quat::from_rotation_y(PI)),
         0.2,
-        Color::WHITE,
+        color,
     );
-}
-
-fn show_cursor_if_readying_arrow(
-    mut commands: Commands,
-    bows: Query<&BowArrow>,
-    pointer: Res<CursorPosition>,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
-    mut cursor: Query<
-        (Entity, &mut Transform, &MeshMaterial3d<StandardMaterial>),
-        (With<NockCursor>, Without<Bow>),
-    >,
-) {
-    if bows.is_empty() {
-        for (cursor, _, _) in cursor {
-            commands.entity(cursor).despawn();
-        }
-        return;
-    }
-
-    let Some(point) = pointer.current() else {
-        return;
-    };
-
-    let Ok(bow) = bows.single() else {
-        return;
-    };
-
-    let max_color = Color::Srgba(RED);
-
-    let color = Color::WHITE.mix(&max_color, bow.strength());
-
-    if cursor.is_empty() {
-        commands.spawn((
-            NockCursor,
-            Transform::from_translation(point).with_rotation(Quat::from_rotation_y(PI)),
-            Mesh3d(meshes.add(Extrusion::new(Annulus::new(0.2, 0.3), 0.2))),
-            MeshMaterial3d(materials.add(color)),
-        ));
-        return;
-    }
-
-    for (_, mut transform, material) in &mut cursor {
-        transform.translation = point;
-        let material = materials.get_mut(&material.0).unwrap();
-        material.base_color = color;
-    }
 }
 
 /// Tells us where the pointer would be on the game plane
