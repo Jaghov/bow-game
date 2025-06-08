@@ -87,6 +87,9 @@ impl LevelProps {
             spheres,
         }
     }
+    pub fn par(&self) -> i32 {
+        self.course_par
+    }
 }
 
 #[derive(Resource, Default)]
@@ -94,6 +97,7 @@ pub struct Levels {
     levels: Vec<LevelProps>,
 }
 
+#[allow(dead_code)]
 impl Levels {
     pub fn init() -> Self {
         let mut levels = Levels::default();
@@ -280,6 +284,10 @@ impl Levels {
     }
     pub fn num_levels(&self) -> usize {
         self.levels.len()
+    }
+
+    pub fn iter(&self) -> std::slice::Iter<'_, LevelProps> {
+        self.levels.iter()
     }
 
     /// will get or insert a new random level based on the value

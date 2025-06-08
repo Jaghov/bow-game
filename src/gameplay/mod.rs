@@ -6,6 +6,7 @@ mod audio;
 pub mod bow;
 pub mod cursor;
 pub mod level;
+mod scorecard;
 pub mod sphere;
 pub mod timefreeze;
 
@@ -78,6 +79,7 @@ pub fn plugin(app: &mut App) {
         timefreeze::plugin,
         ui::plugin,
         audio::plugin,
+        scorecard::plugin,
     ))
     .add_systems(OnEnter(Screen::Gameplay), move_camera)
     .add_systems(OnEnter(GameState::Paused), pause_physics_time)
