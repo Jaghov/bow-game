@@ -6,7 +6,7 @@ use crate::{
         GameSet,
         level::{Level, LevelState},
     },
-    keybinds::Keybinds,
+    settings::Keybinds,
 };
 
 pub(super) fn plugin(app: &mut App) {
@@ -48,12 +48,12 @@ fn update_mulligans(level: Res<Level>, mut mulligans: ResMut<Mulligan>) {
 
 fn listen_for_mulligan(
     input: Res<ButtonInput<KeyCode>>,
-    keybinds: Res<Keybinds>,
+    settings: Res<Keybinds>,
     mulligan: Res<Mulligan>,
     level: Res<Level>,
     mut level_state: ResMut<NextState<LevelState>>,
 ) {
-    if !input.just_pressed(keybinds.restart) {
+    if !input.just_pressed(settings.restart) {
         return;
     }
     if mulligan.can_mulligan(level.0) {

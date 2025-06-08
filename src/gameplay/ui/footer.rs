@@ -5,7 +5,7 @@ use bevy::color::palettes::{
 
 use crate::{
     gameplay::{level::Level, mulligan::Mulligan, scorecard::ScoreCard},
-    keybinds::Keybinds,
+    settings::Keybinds,
 };
 
 use super::*;
@@ -74,7 +74,7 @@ fn update_ui_playing_course_score_count(
 #[derive(Component)]
 pub struct Footer;
 
-pub fn footer(keybinds: Res<Keybinds>) -> impl Bundle {
+pub fn footer(settings: Res<Keybinds>) -> impl Bundle {
     (
         Node {
             margin: UiRect::all(Px(10.)),
@@ -83,7 +83,7 @@ pub fn footer(keybinds: Res<Keybinds>) -> impl Bundle {
         },
         Pickable::IGNORE,
         Footer,
-        children![arrowcount_node(), mulligan(keybinds)],
+        children![arrowcount_node(), mulligan(settings)],
     )
 }
 
@@ -107,9 +107,9 @@ fn update_mulligan_ui(
 
 fn update_mulligan_keybind(
     mut text: Single<&mut Text, With<UiMulliganText>>,
-    keybinds: Res<Keybinds>,
+    settings: Res<Keybinds>,
 ) {
-    let keycode = format!("{:?}", keybinds.restart).split_off(3);
+    let keycode = format!("{:?}", settings.restart).split_off(3);
     text.0 = format!("Press [{}]", keycode);
 }
 
@@ -207,8 +207,8 @@ pub struct UiMulliganAvailable;
 #[derive(Component)]
 pub struct UiMulliganText;
 
-fn mulligan(keybinds: Res<Keybinds>) -> impl Bundle {
-    let keycode = format!("{:?}", keybinds.restart).split_off(3);
+fn mulligan(settings: Res<Keybinds>) -> impl Bundle {
+    let keycode = format!("{:?}", settings.restart).split_off(3);
 
     (
         ui_box(),
