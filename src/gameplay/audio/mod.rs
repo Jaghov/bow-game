@@ -1,7 +1,35 @@
 use bevy::{audio::Volume, prelude::*};
 
+use crate::{Screen, asset_tracking::LoadResource};
+
 pub fn plugin(app: &mut App) {
-    app.add_systems(Update, (pause, mute, volume));
+    app.load_resource::<MusicTracks>()
+        .add_systems(OnEnter(Screen::Title), play_menu_theme)
+        .add_systems(Update, (pause, mute, volume));
+}
+#[derive(Asset, Resource, Reflect, Clone)]
+struct MusicTracks {
+    #[dependency]
+    menu: Handle<AudioSource>,
+}
+
+impl FromWorld for MusicTracks {
+    fn from_world(world: &mut World) -> Self {
+        let asset_server = world.resource::<AssetServer>();
+        Self {
+            menu: asset_server.load("audio/music/Menu Theme - V2 - BevyJam6.flac"),
+        }
+    }
+}
+
+fn play_menu_theme(mut commands: Commands, tracks: Res<MusicTracks>) {
+    commands.spawn((
+        AudioPlayer(tracks.menu.clone()),
+        PlaybackSettings {
+            mode: bevy::audio::PlaybackMode::Loop,
+            ..Default::default()
+        },
+    ));
 }
 
 fn pause(keyboard_input: Res<ButtonInput<KeyCode>>, music_controller: Query<&AudioSink>) {
@@ -9,7 +37,7 @@ fn pause(keyboard_input: Res<ButtonInput<KeyCode>>, music_controller: Query<&Aud
         return;
     };
 
-    if keyboard_input.just_pressed(KeyCode::Space) {
+    if keyboard_input.just_pressed(KeyCode::Escape) {
         sink.toggle_playback();
     }
 }
