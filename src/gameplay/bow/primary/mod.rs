@@ -136,7 +136,10 @@ fn update_primary_bow_rotation_not_pulling(
     bow.rotation = bow.rotation.slerp(*bow_should_rotation, ROTATION_SPEED);
 }
 
-fn on_mouse_down(mut commands: Commands, bow: Single<Entity, (With<PrimaryBow>)>) {
+fn on_mouse_down(
+    mut commands: Commands,
+    bow: Single<Entity, (With<PrimaryBow>, Without<BowArrow>)>,
+) {
     commands.trigger(ReadyArrow::for_bow(*bow));
 }
 fn on_mouse_cancel(mut commands: Commands, bows: Query<&BowArrow>) {

@@ -45,9 +45,9 @@ fn update_wall_transform(
     time: Res<LevelSetupTimer>,
     mut walls: Query<&mut Transform, (With<Walls>, Without<Sphere>)>,
 ) {
-    let mut walls = walls
-        .single_mut()
-        .expect("No wall for level loading. This is unrecoverable!");
+    let Ok(mut walls) = walls.single_mut() else {
+        return;
+    };
 
     let progress = time.fraction();
     let eased_progress = progress * progress * (3.0 - 2.0 * progress);

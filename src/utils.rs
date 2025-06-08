@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, window::PrimaryWindow};
 
 pub fn hide_cursor(mut q_windows: Query<&mut Window, With<PrimaryWindow>>) {
     let mut primary_window = q_windows.single_mut().unwrap();
