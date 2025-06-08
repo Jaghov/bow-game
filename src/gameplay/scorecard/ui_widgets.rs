@@ -41,7 +41,6 @@ pub fn scorecard_box() -> impl Bundle {
             display: Display::Flex,
             row_gap: Px(5.),
             flex_direction: FlexDirection::Column,
-            align_self: AlignSelf::Start,
             border: UiRect::all(Px(10.)),
             ..default()
         },

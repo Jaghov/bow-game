@@ -14,6 +14,8 @@ pub mod timefreeze;
 mod pause;
 mod ui;
 
+mod gameover;
+
 use crate::{Screen, camera::WorldCamera};
 
 /// camera z-offset from the gameplay plane.
@@ -85,6 +87,7 @@ pub fn plugin(app: &mut App) {
         scorecard::plugin,
         mulligan::plugin,
         pause::plugin,
+        gameover::plugin,
     ))
     .add_systems(OnEnter(Screen::Gameplay), move_camera)
     .add_systems(OnEnter(GameState::Paused), pause_physics_time)

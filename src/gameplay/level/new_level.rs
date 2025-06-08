@@ -8,6 +8,7 @@ use crate::{
     asset_tracking::LoadResource,
     gameplay::{
         GameSet,
+        gameover::GameOverState,
         level::{
             Level, LevelState, Levels, SPHERE_START_PLANE, WALL_START_PLANE, WallMaterial,
             WallMesh, Walls, sphere::SphereType, timer::LevelSetupTimer,
@@ -40,7 +41,8 @@ pub(super) fn plugin(app: &mut App) {
         )
         .add_systems(
             Update,
-            observe_level_completion.run_if(in_state(LevelState::Playing)),
+            observe_level_completion
+                .run_if(in_state(LevelState::Playing).and(in_state(GameOverState::None))),
         );
 }
 fn init_timer(mut commands: Commands) {

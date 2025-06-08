@@ -8,6 +8,7 @@ use crate::{
         GameSet, GameState,
         arrow::Arrow,
         bow::{Bow, PrimaryBow},
+        gameover::GameOverState,
         level::{
             Level, LevelState, Levels, SPHERE_START_PLANE, WALL_START_PLANE, Walls,
             timer::LevelSetupTimer,
@@ -80,6 +81,7 @@ fn get_ready_for_next_level_state(
     walls: Query<Entity, With<Walls>>,
     game_state: Res<State<GameState>>,
     mut next_game_state: ResMut<NextState<GameState>>,
+    mut gameover_state: ResMut<NextState<GameOverState>>,
     level: Res<Level>,
     levels: Res<Levels>,
 ) {
@@ -101,13 +103,11 @@ fn get_ready_for_next_level_state(
 
     if level.0 == levels.num_levels() {
         // all levels have been played
-        next_game_state.set(GameState::GameOver);
-        return;
+        gameover_state.set(GameOverState::View);
     }
 
     if *game_state.get() == GameState::TimeFreeze {
         next_game_state.set(GameState::Playing);
     }
-
     level_state.set(LevelState::NewLevel);
 }
