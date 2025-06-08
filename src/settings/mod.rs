@@ -1,6 +1,17 @@
 use bevy::{audio::Volume, prelude::*};
 
+mod ui;
+
+#[derive(States, Debug, Hash, PartialEq, Eq, Clone, Copy, Default, Reflect)]
+pub enum SettingsState {
+    #[default]
+    None,
+    View,
+}
+
 pub(super) fn plugin(app: &mut App) {
+    app.init_state::<SettingsState>();
+    app.add_plugins(ui::plugin);
     // CHANGE THIS
     app.insert_resource(Settings::dan());
 }
