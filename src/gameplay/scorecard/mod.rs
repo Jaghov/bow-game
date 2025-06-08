@@ -5,6 +5,9 @@ use crate::{
     gameplay::level::{Level, LevelState, Levels},
 };
 
+mod ui_widgets;
+pub use ui_widgets::*;
+
 pub(super) fn plugin(app: &mut App) {
     app.init_resource::<ScoreCard>()
         .add_systems(OnEnter(Screen::Gameplay), wipe_scorecard)
@@ -29,6 +32,9 @@ impl ScoreCard {
     pub fn get(&self, course: usize) -> Option<&CourseScore> {
         self.courses.get(course)
     }
+    pub fn iter(&self) -> std::slice::Iter<'_, CourseScore> {
+        self.courses.iter()
+    }
 }
 
 pub struct CourseScore {
@@ -39,6 +45,7 @@ pub struct CourseScore {
     arrows_shot: Option<i32>,
     par: i32,
 }
+
 impl CourseScore {
     pub fn arrows_shot(&self) -> Option<i32> {
         self.arrows_shot

@@ -8,12 +8,14 @@ use crate::{
     asset_tracking::LoadResource,
     gameplay::{
         GameSet,
+        gameover::GameOverState,
         level::{
             Level, LevelState, Levels, SPHERE_START_PLANE, WALL_START_PLANE, WallMaterial,
             WallMesh, Walls, sphere::SphereType, timer::LevelSetupTimer,
         },
         sphere::Sphere,
     },
+    settings::Settings,
     third_party::avian3d::GameLayer,
     world::{GAME_PLANE, backdrop::RadialBackdropPulse, light::SetLightPosition},
 };
@@ -39,7 +41,8 @@ pub(super) fn plugin(app: &mut App) {
         )
         .add_systems(
             Update,
-            observe_level_completion.run_if(in_state(LevelState::Playing)),
+            observe_level_completion
+                .run_if(in_state(LevelState::Playing).and(in_state(GameOverState::None))),
         );
 }
 fn init_timer(mut commands: Commands) {
@@ -74,6 +77,7 @@ fn observe_level_completion(
     mut level_completion: Local<LevelCompletion>,
     time: Res<Time>,
     sfx: Res<LevelAssets>,
+    settings: Res<Settings>,
 ) {
     let mut reset_timer = false;
     if let Some(timer) = &mut level_completion.timer {
@@ -108,6 +112,7 @@ fn observe_level_completion(
             AudioPlayer::new(sfx.level_complete_sfx.clone()),
             PlaybackSettings {
                 mode: bevy::audio::PlaybackMode::Once,
+                volume: settings.sfx,
                 // speed: random_range(0.9..1.1),
                 ..Default::default()
             },

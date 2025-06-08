@@ -5,7 +5,8 @@ use avian3d::{
     prelude::{Collider, CollisionLayers, RigidBody},
 };
 use bevy::{
-    color::palettes::tailwind::GREEN_400, ecs::system::SystemId, math::ops::sin, prelude::*,
+    audio::Volume, color::palettes::tailwind::GREEN_400, ecs::system::SystemId, math::ops::sin,
+    prelude::*,
 };
 use bevy_tweening::{
     Animator, Delay, EaseMethod, Tween, TweenCompleted, lens::TransformPositionLens,
@@ -14,6 +15,7 @@ use bevy_tweening::{
 use crate::{
     asset_tracking::LoadResource,
     rand::{self, random_range},
+    settings::Settings,
     third_party::avian3d::GameLayer,
     world::{BACKDROP_OFFSET, BLOCK_LEN, GAME_PLANE},
 };
@@ -163,6 +165,7 @@ fn play_backdrop_sfx(
     trigger: Trigger<TweenCompleted>,
     mut commands: Commands,
     backdrop: Res<BackdropAssets>,
+    settings: Res<Settings>,
 ) {
     if trigger.user_data != 0 {
         return;
@@ -170,7 +173,7 @@ fn play_backdrop_sfx(
     commands.spawn((
         AudioPlayer(backdrop.sfx.clone()),
         PlaybackSettings {
-            volume: bevy::audio::Volume::Linear(0.05),
+            volume: Volume::Linear(0.05) * settings.sfx,
             speed: 1. / PERIOD,
             mode: bevy::audio::PlaybackMode::Remove,
             ..Default::default()

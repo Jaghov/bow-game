@@ -1,6 +1,8 @@
 use std::path::Path;
 
-use crate::{Screen, asset_tracking::LoadResource, theme::interaction::OnPress};
+use crate::{
+    Screen, asset_tracking::LoadResource, settings::Settings, theme::interaction::OnPress,
+};
 use bevy::prelude::{Val::*, *};
 
 mod actions;
@@ -67,7 +69,14 @@ fn play_click_sound_on_button_click(
     mut trigger: Trigger<OnPress>,
     mut commands: Commands,
     click: Res<UiAssets>,
+    settings: Res<Settings>,
 ) {
-    commands.spawn(AudioPlayer(click.click_sfx.clone()));
+    commands.spawn((
+        AudioPlayer(click.click_sfx.clone()),
+        PlaybackSettings {
+            volume: settings.sfx,
+            ..Default::default()
+        },
+    ));
     trigger.propagate(false);
 }

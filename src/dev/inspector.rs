@@ -8,7 +8,7 @@ use bevy_inspector_egui::{
 };
 use egui_dock::egui;
 
-use crate::keybinds::Keybinds;
+use crate::settings::Settings;
 
 pub fn gadget(app: &mut App) {
     app.register_type::<AnimationNodeIndex>();
@@ -33,10 +33,10 @@ fn is_inspector_active(inspector: Res<InspectorActive>) -> bool {
 
 fn toggle_inspector(
     input: Res<ButtonInput<KeyCode>>,
-    keybinds: Res<Keybinds>,
+    settings: Res<Settings>,
     mut inspector: ResMut<InspectorActive>,
 ) {
-    if input.just_pressed(keybinds.inspector_toggle) {
+    if input.just_pressed(settings.inspector_toggle) {
         inspector.0 = !inspector.0;
     }
 }

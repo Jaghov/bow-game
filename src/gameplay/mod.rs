@@ -1,5 +1,5 @@
 use avian3d::prelude::{Physics, PhysicsTime};
-use bevy::{prelude::*, window::PrimaryWindow};
+use bevy::prelude::*;
 
 pub mod arrow;
 mod audio;
@@ -11,7 +11,10 @@ mod scorecard;
 pub mod sphere;
 pub mod timefreeze;
 
+mod pause;
 mod ui;
+
+mod gameover;
 
 use crate::{Screen, camera::WorldCamera};
 
@@ -28,6 +31,7 @@ pub enum GameState {
     Playing,
     Paused,
     TimeFreeze,
+    GameOver,
 }
 
 /// High level groups of systems in the "Update" schedule.
@@ -82,14 +86,16 @@ pub fn plugin(app: &mut App) {
         audio::plugin,
         scorecard::plugin,
         mulligan::plugin,
+        pause::plugin,
+        gameover::plugin,
     ))
     .add_systems(OnEnter(Screen::Gameplay), move_camera)
     .add_systems(OnEnter(GameState::Paused), pause_physics_time)
     .add_systems(OnExit(GameState::Paused), resume_physics_time);
 
     #[cfg(not(feature = "dev"))]
-    app.add_systems(OnExit(Screen::Gameplay), show_cursor)
-        .add_systems(OnEnter(Screen::Gameplay), hide_cursor);
+    app.add_systems(OnExit(Screen::Gameplay), crate::utils::show_cursor)
+        .add_systems(OnEnter(Screen::Gameplay), crate::utils::hide_cursor);
 }
 
 // this is a hack until I implement smooth nudge
@@ -97,18 +103,6 @@ fn move_camera(mut camera: Query<&mut Transform, With<WorldCamera>>) {
     let mut camera = camera.single_mut().unwrap();
 
     *camera = Transform::from_xyz(0., 0., GAMEPLAY_CAMERA_OFFSET).looking_at(Vec3::ZERO, Vec3::Y);
-}
-
-fn hide_cursor(mut q_windows: Query<&mut Window, With<PrimaryWindow>>) {
-    let mut primary_window = q_windows.single_mut().unwrap();
-
-    primary_window.cursor_options.visible = false;
-}
-
-fn show_cursor(mut q_windows: Query<&mut Window, With<PrimaryWindow>>) {
-    let mut primary_window = q_windows.single_mut().unwrap();
-
-    primary_window.cursor_options.visible = true;
 }
 
 fn pause_physics_time(mut time: ResMut<Time<Physics>>) {

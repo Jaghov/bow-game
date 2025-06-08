@@ -1,7 +1,7 @@
 //! Toggles for the different debug UIs that our plugins provide.
 
 use crate::camera::RenderLayer;
-use crate::keybinds::Keybinds;
+use crate::settings::Settings;
 use crate::{AppSystems, theme::widgets};
 use avian3d::prelude::*;
 use bevy::render::view::RenderLayers;
@@ -88,10 +88,10 @@ struct DebugUiText;
 
 fn advance_debug_state(
     button_inputs: Res<ButtonInput<KeyCode>>,
-    keybinds: Res<Keybinds>,
+    settings: Res<Settings>,
     mut debug_state: ResMut<DebugState>,
 ) {
-    if button_inputs.just_pressed(keybinds.debug_toggle) {
+    if button_inputs.just_pressed(settings.debug_toggle) {
         *debug_state = debug_state.next();
     }
 }

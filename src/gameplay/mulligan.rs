@@ -3,10 +3,10 @@ use bevy::{platform::collections::HashMap, prelude::*};
 use crate::{
     Screen,
     gameplay::{
-        GameSet,
+        GameSet, GameState,
         level::{Level, LevelState},
     },
-    keybinds::Keybinds,
+    settings::Settings,
 };
 
 pub(super) fn plugin(app: &mut App) {
@@ -18,7 +18,7 @@ pub(super) fn plugin(app: &mut App) {
         Update,
         listen_for_mulligan
             .in_set(GameSet::RecordInput)
-            .run_if(in_state(LevelState::Playing)),
+            .run_if(in_state(LevelState::Playing).and(not(in_state(GameState::Paused)))),
     );
     //todod
 }
@@ -48,12 +48,12 @@ fn update_mulligans(level: Res<Level>, mut mulligans: ResMut<Mulligan>) {
 
 fn listen_for_mulligan(
     input: Res<ButtonInput<KeyCode>>,
-    keybinds: Res<Keybinds>,
+    settings: Res<Settings>,
     mulligan: Res<Mulligan>,
     level: Res<Level>,
     mut level_state: ResMut<NextState<LevelState>>,
 ) {
-    if !input.just_pressed(keybinds.restart) {
+    if !input.just_pressed(settings.restart) {
         return;
     }
     if mulligan.can_mulligan(level.0) {

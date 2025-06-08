@@ -6,6 +6,7 @@ use crate::{
     asset_tracking::LoadResource,
     gameplay::{ArrowSet, arrow::NockedOn, cursor::CursorPosition},
     rand::random_range,
+    settings::Settings,
 };
 
 mod animation;
@@ -96,23 +97,31 @@ fn play_draw_on_ready_arrow(
     _: Trigger<ReadyArrow>,
     assets: Res<BowAssets>,
     mut commands: Commands,
+    settings: Res<Settings>,
 ) {
     commands.spawn((
         AudioPlayer::new(assets.bow_draw.clone()),
         PlaybackSettings {
             mode: bevy::audio::PlaybackMode::Once,
             speed: random_range(0.9..1.1), // Varied sfx speed to keep sounds more interesting
+            volume: settings.sfx,
             ..Default::default()
         },
     ));
 }
 
-fn play_shot_on_fire_arrow(_: Trigger<FireArrow>, assets: Res<BowAssets>, mut commands: Commands) {
+fn play_shot_on_fire_arrow(
+    _: Trigger<FireArrow>,
+    assets: Res<BowAssets>,
+    mut commands: Commands,
+    settings: Res<Settings>,
+) {
     commands.spawn((
         AudioPlayer::new(assets.bow_shoot.clone()),
         PlaybackSettings {
             mode: bevy::audio::PlaybackMode::Once,
             speed: random_range(0.9..1.1),
+            volume: settings.sfx,
             ..Default::default()
         },
     ));

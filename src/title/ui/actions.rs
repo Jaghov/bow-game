@@ -1,5 +1,6 @@
 use crate::{
     Screen,
+    settings::SettingsState,
     theme::{interaction::OnPress, widgets},
 };
 use bevy::prelude::{Val::*, *};
@@ -24,7 +25,8 @@ pub fn spawn_actions() -> impl Bundle {
         {
             children![
                 widgets::button("Play", transition_to_gameplay),
-                widgets::button("Credits", enter_credits_screen),
+                widgets::button("Credits", enter_credits_screen)
+                widgets::button("Settings", enter_settings),
             ]
         },
         #[cfg(not(target_family = "wasm"))]
@@ -32,6 +34,7 @@ pub fn spawn_actions() -> impl Bundle {
             children![
                 widgets::button("Play", transition_to_gameplay),
                 widgets::button("Credits", enter_credits_screen),
+                widgets::button("Settings", enter_settings),
                 widgets::button("Exit", exit_app),
             ]
         },
@@ -44,6 +47,10 @@ fn transition_to_gameplay(_trigger: Trigger<OnPress>, mut next_screen: ResMut<Ne
 
 fn enter_credits_screen(_trigger: Trigger<OnPress>, mut next_screen: ResMut<NextState<Screen>>) {
     next_screen.set(Screen::Credits);
+}
+
+fn enter_settings(_: Trigger<OnPress>, mut settings: ResMut<NextState<SettingsState>>) {
+    settings.set(SettingsState::View);
 }
 
 #[cfg(not(target_family = "wasm"))]

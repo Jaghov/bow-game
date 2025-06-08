@@ -11,16 +11,17 @@ mod credits;
 mod dev;
 mod gameplay;
 mod hdr_hack;
-mod keybinds;
 mod loading;
 #[cfg(feature = "particles")]
 mod particles;
 mod rand;
+mod settings;
 mod splash;
 mod theme;
 mod third_party;
 mod title;
 mod transition;
+mod utils;
 mod world;
 
 const UI_RENDER_LAYER: usize = 2;
@@ -77,7 +78,7 @@ fn main() -> AppExit {
         third_party::plugin,
         asset_tracking::plugin,
         theme::plugin,
-        keybinds::plugin,
+        settings::plugin,
         world::plugin,
         splash::plugin,
         loading::plugin,
