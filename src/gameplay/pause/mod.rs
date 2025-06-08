@@ -4,7 +4,10 @@ use bevy::{
 };
 
 use crate::gameplay::{
-    GameState, hide_cursor, pause::scorecard::scorecard_rows, scorecard::ScoreCard, show_cursor,
+    GameState, hide_cursor,
+    pause::scorecard::{scorecard_row, scorecard_totals},
+    scorecard::ScoreCard,
+    show_cursor,
 };
 
 mod actions;
@@ -57,8 +60,9 @@ fn spawn_pause_ui(mut commands: Commands, scorecard: Res<ScoreCard>) {
     let scorecard_ui = commands.spawn((scorecard_box(), ChildOf(left))).id();
 
     for (course, course_score) in scorecard.iter().enumerate() {
-        commands.spawn((scorecard_rows(course, course_score), ChildOf(scorecard_ui)));
+        commands.spawn((scorecard_row(course, course_score), ChildOf(scorecard_ui)));
     }
+    commands.spawn((scorecard_totals(&scorecard), ChildOf(scorecard_ui)));
 
     let right = commands
         .spawn((
