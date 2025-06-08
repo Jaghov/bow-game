@@ -23,7 +23,8 @@ pub fn plugin(app: &mut App) {
     app.add_systems(Startup, spawn_backdrop)
         .load_resource::<BackdropAssets>()
         .add_observer(play_backdrop_sfx)
-        .add_systems(OnEnter(LevelState::Playing), breathing_background);
+        // .add_systems(OnEnter(LevelState::Playing), breathing_background)
+    ;
 
     let backdrop_win = app.register_system(pulse_out_backdrop_on_win);
 
@@ -54,7 +55,7 @@ impl FromWorld for BackdropAssets {
 #[derive(Component)]
 struct ZState {
     spawn_depth: f32,
-    // time_offset: f32,
+    time_offset: f32,
 }
 
 fn spawn_backdrop(
@@ -88,7 +89,9 @@ fn spawn_backdrop(
                 MeshMaterial3d(material.clone()),
                 ZState {
                     spawn_depth: z,
-                    // time_offset: rand::random_range((-HALF_PERIOD..=HALF_PERIOD)),
+                    time_offset: std::hint::black_box(rand::random_range(
+                        (-HALF_PERIOD..=HALF_PERIOD),
+                    )),
                 },
                 CollisionLayers::new(
                     GameLayer::Backdrop,
@@ -103,21 +106,21 @@ fn spawn_backdrop(
     }
 }
 
-// #[allow(dead_code)]
-// fn update_backdrop_z(mut blocks: Query<(&mut Transform, &mut ZState)>, time: Res<Time>) {
-//     const TRVL: f32 = BACKDROP_OFFSET * 0.5;
+#[allow(dead_code)]
+fn update_backdrop_z(mut blocks: Query<(&mut Transform, &mut ZState)>, time: Res<Time>) {
+    const TRVL: f32 = BACKDROP_OFFSET * 0.5;
 
-//     for (mut trns, zstate) in &mut blocks {
-//         let progress_time = (time.elapsed_secs() + zstate.time_offset) % PERIOD;
-//         if progress_time > PERIOD * 0.5 {
-//             trns.translation.z += TRVL * time.delta_secs()
-//             //forward
-//         } else {
-//             trns.translation.z -= TRVL * time.delta_secs()
-//             //backward
-//         }
-//     }
-// }
+    for (mut trns, zstate) in &mut blocks {
+        let progress_time = (time.elapsed_secs() + zstate.time_offset) % PERIOD;
+        if progress_time > PERIOD * 0.5 {
+            trns.translation.z += TRVL * time.delta_secs()
+            //forward
+        } else {
+            trns.translation.z -= TRVL * time.delta_secs()
+            //backward
+        }
+    }
+}
 
 fn sin_lerp(t: f32) -> f32 {
     sin(2. * PI * t)
