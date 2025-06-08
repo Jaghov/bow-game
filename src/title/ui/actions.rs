@@ -25,7 +25,7 @@ pub fn spawn_actions() -> impl Bundle {
         {
             children![
                 widgets::button("Play", transition_to_gameplay),
-                widgets::button("Credits", enter_credits_screen)
+                widgets::button("Credits", enter_credits_screen),
                 widgets::button("Settings", enter_settings),
             ]
         },
