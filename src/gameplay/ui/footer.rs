@@ -17,7 +17,7 @@ pub(super) fn plugin(app: &mut App) {
     );
 }
 
-fn update_ui_quiver_count(mut text: Single<&mut Text, With<ArrowCountText>>) {
+fn update_ui_quiver_count(mut text: Single<&mut Text, With<ArrowsFiredText>>) {
     // let value = match quiver.arrow_count() {
     //     Some(count) => count.to_string(),
     //     None => "inf".to_string(),
@@ -38,12 +38,12 @@ pub fn footer(keybinds: Res<Keybinds>) -> impl Bundle {
         },
         Pickable::IGNORE,
         Footer,
-        children![quiver_node(), mulligan(keybinds)],
+        children![arrowcount_node(), mulligan(keybinds)],
     )
 }
 
 #[derive(Component)]
-pub struct ArrowCountText;
+pub struct ArrowsFiredText;
 
 #[derive(Component)]
 pub struct CourseParText;
@@ -68,8 +68,8 @@ fn update_mulligan_keybind(
     text.0 = format!("Press [{}]", keycode);
 }
 
-pub fn quiver_node() -> impl Bundle {
-    let quiver_text = (
+pub fn arrowcount_node() -> impl Bundle {
+    let arrows_fired_text = (
         Node {
             flex_direction: FlexDirection::Column,
             justify_content: JustifyContent::SpaceBetween,
@@ -89,7 +89,7 @@ pub fn quiver_node() -> impl Bundle {
                 ],
             ),
             (
-                ArrowCountText,
+                ArrowsFiredText,
                 Text::default(),
                 TextColor(Color::BLACK),
                 TextFont::from_font_size(40.),
@@ -118,7 +118,7 @@ pub fn quiver_node() -> impl Bundle {
     (
         ui_box(),
         children![
-            quiver_text,
+            arrows_fired_text,
             (
                 Node {
                     width: Px(2.),
