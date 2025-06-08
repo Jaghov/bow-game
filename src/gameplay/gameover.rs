@@ -2,7 +2,10 @@ use bevy::prelude::{Val::*, *};
 
 use crate::{
     Screen,
-    gameplay::scorecard::{ABOVE_PAR, AT_PAR, BELOW_PAR, ScoreCard, spawn_scorecard},
+    gameplay::{
+        GameState,
+        scorecard::{ABOVE_PAR, AT_PAR, BELOW_PAR, ScoreCard, spawn_scorecard},
+    },
     theme::widgets,
     utils,
 };
@@ -21,6 +24,10 @@ pub(super) fn plugin(app: &mut App) {
     app.add_systems(
         OnEnter(GameOverState::View),
         (spawn_gameover_ui, utils::show_cursor),
+    )
+    .add_systems(
+        Update,
+        autoreplay.run_if(resource_exists::<AutoReplay>.and(in_state(Screen::Title))),
     );
 }
 
@@ -99,6 +106,24 @@ fn spawn_gameover_ui(mut commands: Commands, scorecard: Res<ScoreCard>) {
 
     commands.spawn((
         widgets::button_base(
+            "Play Again",
+            play_again,
+            (
+                Node {
+                    width: Px(500.0),
+                    height: Px(80.0),
+                    align_items: AlignItems::Center,
+                    justify_content: JustifyContent::Center,
+                    ..default()
+                },
+                BorderRadius::MAX,
+            ),
+        ),
+        ChildOf(root),
+    ));
+
+    commands.spawn((
+        widgets::button_base(
             "Return to Title",
             return_to_title,
             (
@@ -118,4 +143,21 @@ fn spawn_gameover_ui(mut commands: Commands, scorecard: Res<ScoreCard>) {
 
 fn return_to_title(_: Trigger<Pointer<Click>>, mut state: ResMut<NextState<Screen>>) {
     state.set(Screen::Title);
+}
+
+#[derive(Resource, Default)]
+pub struct AutoReplay;
+
+fn play_again(
+    _: Trigger<Pointer<Click>>,
+    mut commands: Commands,
+    mut state: ResMut<NextState<Screen>>,
+) {
+    state.set(Screen::Title);
+    commands.init_resource::<AutoReplay>();
+}
+
+fn autoreplay(mut commands: Commands, mut state: ResMut<NextState<Screen>>) {
+    commands.remove_resource::<AutoReplay>();
+    state.set(Screen::Transition)
 }
