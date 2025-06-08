@@ -2,10 +2,7 @@ use bevy::prelude::{Val::*, *};
 
 use crate::{
     Screen,
-    gameplay::{
-        GameState,
-        scorecard::{ABOVE_PAR, AT_PAR, BELOW_PAR, ScoreCard, spawn_scorecard},
-    },
+    gameplay::scorecard::{ABOVE_PAR, AT_PAR, BELOW_PAR, ScoreCard, spawn_scorecard},
     theme::widgets,
     utils,
 };

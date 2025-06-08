@@ -29,7 +29,7 @@ pub(super) fn plugin(app: &mut App) {
     app.add_plugins((new_level::plugin, next_level::plugin, timer::plugin));
     app.add_sub_state::<LevelState>()
         .init_resource::<Level>()
-        .insert_resource(Levels::mulligan_debug());
+        .insert_resource(Levels::init());
     app.add_systems(Startup, setup_wall_material)
         .add_systems(OnEnter(Screen::Gameplay), reset_level)
         .add_observer(sphere::spawn_sphere);
