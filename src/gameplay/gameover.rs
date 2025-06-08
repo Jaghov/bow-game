@@ -2,10 +2,7 @@ use bevy::prelude::{Val::*, *};
 
 use crate::{
     Screen,
-    gameplay::{
-        GameState,
-        scorecard::{ScoreCard, spawn_scorecard},
-    },
+    gameplay::scorecard::{ABOVE_PAR, BELOW_PAR, ScoreCard, spawn_scorecard},
     theme::widgets,
     utils,
 };
@@ -47,6 +44,39 @@ fn spawn_gameover_ui(mut commands: Commands, scorecard: Res<ScoreCard>) {
             Pickable::default(),
         ))
         .id();
+
+    let mut total_par = 0;
+    let mut total_arrows_shot = 0;
+    for course in scorecard.iter() {
+        let Some(score) = course.arrows_shot() else {
+            continue;
+        };
+        total_arrows_shot += score;
+        total_par += course.course_par();
+    }
+    let diff = total_arrows_shot - total_par;
+
+    let statement = match diff {
+        (..-2) => "You've got skills!",
+        (-2..0) => "Good eye!",
+        0 => "Congrats! You met the expectation. Try again?",
+        (1..3) => "Decent score, but can you do better?",
+        (3..) => "Damn, it's rough out there",
+    };
+    let color = if diff < 0 {
+        BELOW_PAR
+    } else if diff > 0 {
+        ABOVE_PAR
+    } else {
+        Color::WHITE
+    };
+
+    commands.spawn((
+        Text::new(statement),
+        TextColor(color),
+        TextFont::from_font_size(40.),
+        ChildOf(root),
+    ));
 
     spawn_scorecard(Some(root), commands.reborrow(), &scorecard);
 

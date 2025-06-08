@@ -139,7 +139,7 @@ pub fn scorecard_totals(score_card: &ScoreCard) -> impl Bundle + use<> {
             width: COURSE_W,
             ..default()
         },
-        Text::new("Totals"),
+        Text::new("Total"),
         TextColor(Color::BLACK),
     );
 
@@ -155,12 +155,29 @@ pub fn scorecard_totals(score_card: &ScoreCard) -> impl Bundle + use<> {
         //todo
     }
 
+    let mut arrows_fired = Text::default();
+    let mut arrows_tc = TextColor(AT_PAR);
+
+    let diff = total_arrows_shot - total_par;
+    let sign = if diff < 0 {
+        arrows_tc.0 = BELOW_PAR;
+        ""
+    } else if diff > 0 {
+        arrows_tc.0 = ABOVE_PAR;
+        "+"
+    } else {
+        arrows_tc.0 = AT_PAR;
+        "+"
+    };
+    arrows_fired.0 = format!("{}{}", sign, diff);
+
     let score = (
         Node {
             width: SCORE_W,
             ..default()
         },
-        arrows_shot(Some(total_arrows_shot), total_par),
+        arrows_fired,
+        arrows_tc,
     );
 
     let par = (

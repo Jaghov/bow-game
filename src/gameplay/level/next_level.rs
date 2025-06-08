@@ -3,7 +3,6 @@ use std::time::Duration;
 use bevy::prelude::*;
 
 use crate::{
-    Screen,
     gameplay::{
         GameSet, GameState,
         arrow::Arrow,

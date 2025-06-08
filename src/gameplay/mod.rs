@@ -1,5 +1,5 @@
 use avian3d::prelude::{Physics, PhysicsTime};
-use bevy::{prelude::*, window::PrimaryWindow};
+use bevy::prelude::*;
 
 pub mod arrow;
 mod audio;
