@@ -132,11 +132,26 @@ fn edit_level() -> LevelProps {
     LevelProps::new(
         2,
         vec![
-            vert!(6., -5., 5.),
-            horz!(6., -6., 6.),
-            vert!(-6., -5., 5.),
+            vert!(-8., -5., 6.),
             horz!(-6., -8., 8.),
+            vert!(8., -5., 5.),
+            horz!(6., -4., 8.),
+            vert!(-4., -2., 5.),
+            horz!(-2., -3., 4.),
+            vert!(4., -1., 1.),
+            horz!(2., 0., 4.),
         ],
-        vec![sphere!(Normal, 0., 0.)],
+        vec![
+            sphere!(Normal, -36., 24.),
+            sphere!(TimeFreeze, -36., -24.),
+            sphere!(TimeFreeze, 36., -24.),
+            sphere!(TimeFreeze, 36., 24.),
+            sphere!(TimeFreeze, -12., 24.),
+            sphere!(TimeFreeze, -12., 0.),
+            sphere!(Multiplier, 10., 0.),
+            sphere!(Normal, 18., 0.),
+            sphere!(Normal, 18., 6.),
+            sphere!(Normal, 18., -6.),
+        ],
     )
 }
