@@ -110,7 +110,7 @@ fn spawn_gameover_ui(mut commands: Commands, scorecard: Res<ScoreCard>) {
             play_again,
             (
                 Node {
-                    width: Px(500.0),
+                    width: Px(450.0),
                     height: Px(80.0),
                     align_items: AlignItems::Center,
                     justify_content: JustifyContent::Center,
@@ -128,7 +128,7 @@ fn spawn_gameover_ui(mut commands: Commands, scorecard: Res<ScoreCard>) {
             return_to_title,
             (
                 Node {
-                    width: Px(500.0),
+                    width: Px(450.0),
                     height: Px(80.0),
                     align_items: AlignItems::Center,
                     justify_content: JustifyContent::Center,
