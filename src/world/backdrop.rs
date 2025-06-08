@@ -147,7 +147,7 @@ fn breathing_background(
                 Duration::from_secs(random_range(2..5) * 5),
                 TransformPositionLens {
                     start: transform.translation,
-                    end: transform.translation - Vec3::new(0., 0., BLOCK_LEN / 2.),
+                    end: transform.translation - Vec3::new(0., 0., BLOCK_LEN / 4.),
                 },
             )
             .with_repeat_count(bevy_tweening::RepeatCount::Infinite),
