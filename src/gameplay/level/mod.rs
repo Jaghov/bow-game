@@ -29,8 +29,9 @@ pub(super) fn plugin(app: &mut App) {
     app.add_plugins((new_level::plugin, next_level::plugin, timer::plugin));
     app.add_sub_state::<LevelState>()
         .init_resource::<Level>()
-        .insert_resource(Levels::mulligan_debug());
+        .insert_resource(Levels::init());
     app.add_systems(Startup, setup_wall_material)
+        .add_systems(OnEnter(Screen::Gameplay), reset_level)
         .add_observer(sphere::spawn_sphere);
 
     #[cfg(all(feature = "dev", feature = "hot"))]
@@ -94,6 +95,10 @@ impl LevelProps {
     }
 }
 
+fn reset_level(mut level: ResMut<Level>) {
+    *level = Level::default();
+}
+
 #[derive(Resource, Default)]
 pub struct Levels {
     levels: Vec<LevelProps>,
@@ -103,55 +108,54 @@ pub struct Levels {
 impl Levels {
     pub fn init() -> Self {
         let mut levels = Levels::default();
-        //this is the debug level
-        #[cfg(feature = "dev")]
-        levels.insert(LevelProps::new(
-            9999,
-            vec![
-                vert!(8., -5., 5.),
-                horz!(6., -8., 8.),
-                vert!(-8., -5., 5.),
-                horz!(-6., -8., 8.),
-            ],
-            vec![
-                //gravity column
-                sphere!(Gravity, -40., 0.),
-                sphere!(Normal, -40., 5.),
-                sphere!(Multiplier, -40., -5.),
-                //absorber column
-                sphere!(Absorber, -30., 0.),
-                sphere!(Multiplier, -30., 5.),
-                sphere!(Exploder, -30., 10.),
-                sphere!(Bouncy, -30., 15.),
-                //exploder testing column
-                sphere!(Exploder, -20., 0.),
-                sphere!(Multiplier, -23., 5.),
-                sphere!(Multiplier, -23., -5.),
-                sphere!(Multiplier, -17., 5.),
-                sphere!(Multiplier, -17., -5.),
-                //others
-                sphere!(TimeFreeze, -10., 0.),
-                sphere!(Normal, 0., 0.),
-                // exploder column
-                sphere!(Exploder, 10., 0.),
-                sphere!(Exploder, 10., 5.),
-                sphere!(Exploder, 10., 10.),
-                sphere!(Normal, 8., 8.),
-                // bouncy column
-                sphere!(Bouncy, 20., 0.),
-                sphere!(Multiplier, 20., 5.),
-                sphere!(Normal, 20., 10.),
-                // bouncy timefreeze column
-                sphere!(Bouncy, 30., 0.),
-                sphere!(TimeFreeze, 30., 5.),
-                sphere!(Multiplier, 30., 10.),
-                // multiplier column
-                sphere!(Multiplier, 40., 0.),
-                sphere!(Multiplier, 40., 5.),
-                sphere!(Multiplier, 40., 10.),
-                sphere!(Normal, 40., 15.),
-            ],
-        ));
+        // #[cfg(feature = "dev")]
+        // levels.insert(LevelProps::new(
+        //     9999,
+        //     vec![
+        //         vert!(8., -5., 5.),
+        //         horz!(6., -8., 8.),
+        //         vert!(-8., -5., 5.),
+        //         horz!(-6., -8., 8.),
+        //     ],
+        //     vec![
+        //         //gravity column
+        //         sphere!(Gravity, -40., 0.),
+        //         sphere!(Normal, -40., 5.),
+        //         sphere!(Multiplier, -40., -5.),
+        //         //absorber column
+        //         sphere!(Absorber, -30., 0.),
+        //         sphere!(Multiplier, -30., 5.),
+        //         sphere!(Exploder, -30., 10.),
+        //         sphere!(Bouncy, -30., 15.),
+        //         //exploder testing column
+        //         sphere!(Exploder, -20., 0.),
+        //         sphere!(Multiplier, -23., 5.),
+        //         sphere!(Multiplier, -23., -5.),
+        //         sphere!(Multiplier, -17., 5.),
+        //         sphere!(Multiplier, -17., -5.),
+        //         //others
+        //         sphere!(TimeFreeze, -10., 0.),
+        //         sphere!(Normal, 0., 0.),
+        //         // exploder column
+        //         sphere!(Exploder, 10., 0.),
+        //         sphere!(Exploder, 10., 5.),
+        //         sphere!(Exploder, 10., 10.),
+        //         sphere!(Normal, 8., 8.),
+        //         // bouncy column
+        //         sphere!(Bouncy, 20., 0.),
+        //         sphere!(Multiplier, 20., 5.),
+        //         sphere!(Normal, 20., 10.),
+        //         // bouncy timefreeze column
+        //         sphere!(Bouncy, 30., 0.),
+        //         sphere!(TimeFreeze, 30., 5.),
+        //         sphere!(Multiplier, 30., 10.),
+        //         // multiplier column
+        //         sphere!(Multiplier, 40., 0.),
+        //         sphere!(Multiplier, 40., 5.),
+        //         sphere!(Multiplier, 40., 10.),
+        //         sphere!(Normal, 40., 15.),
+        //     ],
+        // ));
 
         levels.insert(LevelProps::new(
             1,
@@ -254,6 +258,7 @@ impl Levels {
         levels
     }
 
+    #[allow(dead_code)]
     pub fn mulligan_debug() -> Self {
         let mut levels = Levels::default();
 

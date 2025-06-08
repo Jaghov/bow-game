@@ -52,6 +52,7 @@ fn spawn_pause_ui(mut commands: Commands, scorecard: Res<ScoreCard>) {
             Node {
                 flex_grow: 1.,
                 margin: UiRect::all(Px(20.)),
+                align_items: AlignItems::Start,
                 ..default()
             },
             ChildOf(root),
