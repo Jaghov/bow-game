@@ -165,7 +165,7 @@ impl Levels {
                 vert!(-6., -5., 5.),
                 horz!(-6., -6., 6.),
             ],
-            vec![sphere!(Normal, 5., 0.)],
+            vec![sphere!(Normal, 5., 0.), sphere!(Normal, 10., 0.)],
         ));
         levels.insert(LevelProps::new(
             1,
@@ -200,8 +200,6 @@ impl Levels {
                 sphere!(Normal, 18., 8.),
                 sphere!(Normal, 18., 0.),
                 sphere!(Normal, 18., -8.),
-                // sphere!(Normal, 10., 5.),
-                // sphere!(Normal, 10., -5.),
             ],
         ));
 

@@ -107,6 +107,14 @@ fn change_level(
 fn should_be_update_reloading() -> bool {
     false
 }
+/*
+- simple normals
+- simple multiplier
+- advanced multiplier
+- multiplier + exploder TODO
+- timefreeze TODO
+- Advanced 1 (done)
+*/
 
 fn edit_level() -> LevelProps {
     LevelProps::new(
