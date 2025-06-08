@@ -179,6 +179,8 @@ fn play_backdrop_sfx(
     ));
 }
 
+/// Could be useful somewhere else maybe
+#[allow(dead_code)]
 fn breathing_background(
     mut commands: Commands,
     blocks: Query<(Entity, &mut Transform), With<ZState>>,

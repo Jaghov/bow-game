@@ -6,10 +6,9 @@ use crate::gameplay::GAMEPLAY_CAMERA_OFFSET;
 
 pub(super) fn plugin(app: &mut App) {
     app.add_systems(Startup, spawn_light)
-    // .add_observer(start_light_animation)
-    ;
+        .add_observer(start_light_animation);
 
-    // app.add_systems(Update, move_light.run_if(resource_exists::<LightAnimation>));
+    app.add_systems(Update, move_light.run_if(resource_exists::<LightAnimation>));
 }
 
 #[derive(Event)]
@@ -20,13 +19,6 @@ pub struct SetLightPosition {
 
 #[allow(dead_code)]
 impl SetLightPosition {
-    pub fn to_above() -> Self {
-        SetLightPosition {
-            to: Transform::from_xyz(0., 50., GAMEPLAY_CAMERA_OFFSET + 5.)
-                .looking_at(Vec3::ZERO, Vec3::Y),
-            duration: Duration::from_secs(2),
-        }
-    }
     pub fn to_below() -> Self {
         SetLightPosition {
             to: Transform::from_xyz(4., -50., GAMEPLAY_CAMERA_OFFSET + 5.)
@@ -34,7 +26,7 @@ impl SetLightPosition {
             duration: Duration::from_secs(2),
         }
     }
-    pub fn to_wall_load_position() -> Self {
+    pub fn to_gameplay() -> Self {
         SetLightPosition {
             to: Transform::from_xyz(0., 50., GAMEPLAY_CAMERA_OFFSET + 5.)
                 .looking_at(Vec3::new(0., -50., 0.), Vec3::Y),
@@ -54,7 +46,7 @@ fn spawn_light(mut commands: Commands) {
             shadows_enabled: true,
             ..default()
         },
-        SetLightPosition::to_above().to,
+        SetLightPosition::to_gameplay().to,
     ));
 }
 

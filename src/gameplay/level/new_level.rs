@@ -214,7 +214,7 @@ fn update_sphere_transform(
 }
 
 fn set_light_position(mut commands: Commands) {
-    commands.trigger(SetLightPosition::to_above().with_duration(Duration::from_millis(700)));
+    commands.trigger(SetLightPosition::to_gameplay().with_duration(Duration::from_millis(700)));
 }
 
 fn update_level_state(timer: Res<LevelSetupTimer>, mut level_state: ResMut<NextState<LevelState>>) {
