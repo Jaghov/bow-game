@@ -15,9 +15,6 @@ pub(super) fn plugin(app: &mut App) {
     app.add_systems(Update, new_pointer_pos.in_set(GameSet::Update));
 }
 
-#[derive(Component)]
-struct NockCursor;
-
 fn new_pointer_pos(pointer: Res<CursorPosition>, mut gizmos: Gizmos, bows: Query<&BowArrow>) {
     let Some(point) = pointer.current() else {
         return;
