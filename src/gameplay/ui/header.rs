@@ -3,7 +3,7 @@ use std::time::Duration;
 use bevy::color::palettes::tailwind::GRAY_700;
 
 use crate::{
-    gameplay::{bow::Quiver, level::Level, sphere::Sphere},
+    gameplay::{level::Level, sphere::Sphere},
     keybinds::Keybinds,
 };
 
@@ -14,7 +14,7 @@ pub(super) fn plugin(app: &mut App) {
         Update,
         (
             update_level_info,
-            update_restart_text.run_if(resource_changed::<Quiver>),
+            update_restart_text,
             (tick_bctimer, update_ball_count).chain(),
         ),
     );
@@ -70,19 +70,8 @@ fn update_ball_count(
     }
 }
 
-fn update_restart_text(
-    quiver: Res<Quiver>,
-    mut restart: Single<&mut Text, With<RestartText>>,
-    keybinds: Res<Keybinds>,
-) {
-    let text = if quiver.arrow_count().is_some_and(|count| count == 0) {
-        let mut key_str = format!("{:?}", keybinds.restart);
-        format!("Press [{}] to restart", key_str.split_off(3))
-    } else {
-        String::new()
-    };
-
-    restart.0 = text;
+fn update_restart_text(mut restart: Single<&mut Text, With<RestartText>>, keybinds: Res<Keybinds>) {
+    restart.0 = "TODO".to_string();
 }
 
 #[derive(Component)]

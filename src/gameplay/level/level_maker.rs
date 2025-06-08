@@ -2,11 +2,9 @@ use avian3d::prelude::*;
 use bevy::prelude::*;
 use bevy_simple_subsecond_system::hot;
 
-use crate::gameplay::bow::Quiver;
-use crate::gameplay::level::WallMesh;
-use crate::gameplay::level::wall::WallBuilder;
 use crate::gameplay::level::{
-    Level, LevelProps, LevelState, WallMaterial, Walls, sphere::SphereType,
+    Level, LevelProps, LevelState, WallMaterial, WallMesh, Walls, sphere::SphereType,
+    wall::WallBuilder,
 };
 use crate::third_party::avian3d::GameLayer;
 use crate::world::GAME_PLANE;
@@ -26,7 +24,6 @@ fn inner(
     meshes: &mut Assets<Mesh>,
     walls: Entity,
     material: &WallMaterial,
-    quiver: &mut Quiver,
     spheres: Query<Entity, With<SphereType>>,
 ) {
     let props = edit_level();
@@ -50,8 +47,6 @@ fn inner(
         ));
     }
 
-    //todo: fix
-    quiver.set_arrow_count(Some(props.course_par as u32));
     for sphere in spheres {
         commands.entity(sphere).despawn();
     }
@@ -69,18 +64,10 @@ fn set_dev_level(
     commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     material: Res<WallMaterial>,
-    mut quiver: ResMut<Quiver>,
     walls: Single<Entity, With<Walls>>,
     spheres: Query<Entity, With<SphereType>>,
 ) {
-    inner(
-        commands,
-        &mut meshes,
-        *walls,
-        &material,
-        &mut quiver,
-        spheres,
-    );
+    inner(commands, &mut meshes, *walls, &material, spheres);
 }
 
 #[hot]
@@ -88,7 +75,6 @@ fn set_dev_level_update(
     commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     material: Res<WallMaterial>,
-    mut quiver: ResMut<Quiver>,
     walls: Single<Entity, With<Walls>>,
     spheres: Query<Entity, With<SphereType>>,
 ) {
@@ -96,14 +82,7 @@ fn set_dev_level_update(
         return;
     }
     warn!("HOT PATCH UPDATING IS ENABLED");
-    inner(
-        commands,
-        &mut meshes,
-        *walls,
-        &material,
-        &mut quiver,
-        spheres,
-    );
+    inner(commands, &mut meshes, *walls, &material, spheres);
 }
 #[cfg(feature = "dev")]
 fn change_level(

@@ -8,7 +8,6 @@ use crate::{
     asset_tracking::LoadResource,
     gameplay::{
         GameSet,
-        bow::Quiver,
         level::{
             Level, LevelState, Levels, SPHERE_START_PLANE, WALL_START_PLANE, WallMaterial,
             WallMesh, Walls, sphere::SphereType, timer::LevelSetupTimer,
@@ -122,7 +121,6 @@ fn load_level(
     mut meshes: ResMut<Assets<Mesh>>,
     material: Res<WallMaterial>,
     mut levels: ResMut<Levels>,
-    mut quiver: ResMut<Quiver>,
     level: Res<Level>,
     timer: Res<LevelSetupTimer>,
 ) {
@@ -158,9 +156,6 @@ fn load_level(
             RigidBody::Static,
         ))
         .id();
-
-    //todo: fix
-    quiver.set_arrow_count(Some(props.course_par as u32));
 
     for wall in props.walls.iter() {
         let collider = wall.collider.clone();

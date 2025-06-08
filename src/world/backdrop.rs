@@ -13,7 +13,6 @@ use bevy_tweening::{
 
 use crate::{
     asset_tracking::LoadResource,
-    gameplay::level::LevelState,
     rand::{self, random_range},
     third_party::avian3d::GameLayer,
     world::{BACKDROP_OFFSET, BLOCK_LEN, GAME_PLANE},
