@@ -1,29 +1,74 @@
-use bevy::color::palettes::tailwind::GRAY_700;
+use bevy::color::palettes::{
+    css::{GREEN, RED},
+    tailwind::GRAY_700,
+};
 
 use crate::{
-    gameplay::{level::Level, mulligan::Mulligan},
+    gameplay::{level::Level, mulligan::Mulligan, scorecard::ScoreCard},
     keybinds::Keybinds,
 };
 
 use super::*;
 
 pub(super) fn plugin(app: &mut App) {
-    app.add_systems(Update, update_ui_quiver_count).add_systems(
-        Update,
-        (
-            update_mulligan_ui.run_if(resource_changed::<Mulligan>.or(resource_changed::<Level>)),
-            update_mulligan_keybind.run_if(resource_changed::<Keybinds>),
-        ),
-    );
+    app.add_systems(Update, update_ui_playing_course_score_count)
+        .add_systems(
+            Update,
+            (
+                update_mulligan_ui
+                    .run_if(resource_changed::<Mulligan>.or(resource_changed::<Level>)),
+                update_mulligan_keybind.run_if(resource_changed::<Keybinds>),
+                update_ui_playing_course_score_count
+                    .run_if(resource_changed::<ScoreCard>.or(resource_changed::<Level>)),
+            ),
+        );
 }
 
-fn update_ui_quiver_count(mut text: Single<&mut Text, With<ArrowsFiredText>>) {
-    // let value = match quiver.arrow_count() {
-    //     Some(count) => count.to_string(),
-    //     None => "inf".to_string(),
-    // };
+fn update_ui_playing_course_score_count(
+    arrows_fired: Single<
+        (&mut Text, &mut TextColor),
+        (With<ArrowsFiredText>, Without<CourseParText>),
+    >,
+    mut course_par: Single<&mut Text, (With<CourseParText>, Without<ArrowsFiredText>)>,
+    scorecard: Res<ScoreCard>,
+    level: Res<Level>,
+) {
+    const NORM: Color = Color::BLACK;
+    const BELOW_PAR: Color = Color::Srgba(GREEN);
+    const ABOVE_PAR: Color = Color::Srgba(RED);
 
-    text.0 = "TODO".to_string();
+    let (mut arrows_fired, mut arrows_tc) = arrows_fired.into_inner();
+    let Some(course_score) = scorecard.get(level.0) else {
+        arrows_fired.0 = "???".to_string();
+        arrows_tc.0 = NORM;
+        course_par.0 = "???".to_string();
+        return;
+    };
+
+    let par = course_score.course_par();
+
+    course_par.0 = par.to_string();
+
+    match course_score.arrows_shot() {
+        Some(arrows) => {
+            let diff = arrows - par;
+            let sign = if diff < 0 {
+                arrows_tc.0 = BELOW_PAR;
+                "-"
+            } else if diff > 0 {
+                arrows_tc.0 = ABOVE_PAR;
+                "+"
+            } else {
+                arrows_tc.0 = NORM;
+                ""
+            };
+            arrows_fired.0 = format!("{} ({}{})", arrows, sign, diff);
+        }
+        None => {
+            arrows_fired.0 = "???".to_string();
+            arrows_tc.0 = NORM;
+        }
+    }
 }
 
 #[derive(Component)]

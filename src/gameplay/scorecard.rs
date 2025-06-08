@@ -25,6 +25,10 @@ impl ScoreCard {
     pub fn get_mut(&mut self, course: usize) -> Option<&mut CourseScore> {
         self.courses.get_mut(course)
     }
+
+    pub fn get(&self, course: usize) -> Option<&CourseScore> {
+        self.courses.get(course)
+    }
 }
 
 pub struct CourseScore {
@@ -34,6 +38,14 @@ pub struct CourseScore {
     /// Otherwise, this is none.
     arrows_shot: Option<i32>,
     par: i32,
+}
+impl CourseScore {
+    pub fn arrows_shot(&self) -> Option<i32> {
+        self.arrows_shot
+    }
+    pub fn course_par(&self) -> i32 {
+        self.par
+    }
 }
 
 fn wipe_scorecard(mut scorecard: ResMut<ScoreCard>, levels: Res<Levels>) {
