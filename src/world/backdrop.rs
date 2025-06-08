@@ -7,9 +7,12 @@ use avian3d::{
 use bevy::{
     color::palettes::tailwind::GREEN_400, ecs::system::SystemId, math::ops::sin, prelude::*,
 };
-use bevy_tweening::{Animator, Delay, EaseMethod, Tween, lens::TransformPositionLens};
+use bevy_tweening::{
+    Animator, Delay, EaseMethod, Tween, TweenCompleted, lens::TransformPositionLens,
+};
 
 use crate::{
+    asset_tracking::LoadResource,
     gameplay::level::LevelState,
     rand::{self, random_range},
     third_party::avian3d::GameLayer,
@@ -18,6 +21,8 @@ use crate::{
 
 pub fn plugin(app: &mut App) {
     app.add_systems(Startup, spawn_backdrop)
+        .load_resource::<BackdropAssets>()
+        .add_observer(play_backdrop_sfx)
         .add_systems(OnEnter(LevelState::Playing), breathing_background);
 
     let backdrop_win = app.register_system(pulse_out_backdrop_on_win);
@@ -29,6 +34,22 @@ pub fn plugin(app: &mut App) {
 pub struct RadialBackdropPulse(pub SystemId);
 
 const PERIOD: f32 = 0.3;
+
+#[derive(Asset, Resource, Reflect, Clone)]
+struct BackdropAssets {
+    #[dependency]
+    sfx: Handle<AudioSource>,
+}
+
+impl FromWorld for BackdropAssets {
+    fn from_world(world: &mut World) -> Self {
+        let asset_server = world.resource::<AssetServer>();
+
+        Self {
+            sfx: asset_server.load("audio/sfx/block_shuffle.flac"),
+        }
+    }
+}
 
 #[derive(Component)]
 struct ZState {
@@ -122,11 +143,11 @@ fn pulse_out_backdrop_on_win(
                 },
             )
             // Pause to add suspense :)
-            .then(Delay::new(delay))
+            .then(Delay::new(delay).with_completed_event(0))
             // Pulse out from center
             .then(Tween::new(
                 EaseMethod::CustomFunction(sin_lerp),
-                Duration::from_millis(300),
+                Duration::from_secs_f32(PERIOD),
                 TransformPositionLens {
                     start: transform.translation,
                     end: transform.translation - Vec3::new(0., 0., BLOCK_LEN), // End is more of an amplitude when using sin_lerp ease function
@@ -134,6 +155,25 @@ fn pulse_out_backdrop_on_win(
             )),
         ));
     }
+}
+
+fn play_backdrop_sfx(
+    trigger: Trigger<TweenCompleted>,
+    mut commands: Commands,
+    backdrop: Res<BackdropAssets>,
+) {
+    if trigger.user_data != 0 {
+        return;
+    }
+    commands.spawn((
+        AudioPlayer(backdrop.sfx.clone()),
+        PlaybackSettings {
+            volume: bevy::audio::Volume::Linear(0.05),
+            speed: 1. / PERIOD,
+            mode: bevy::audio::PlaybackMode::Remove,
+            ..Default::default()
+        },
+    ));
 }
 
 fn breathing_background(
