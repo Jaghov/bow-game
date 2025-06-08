@@ -1,9 +1,16 @@
-use bevy::prelude::*;
+use bevy::{
+    color::palettes::{css::GREEN, tailwind::RED_700},
+    prelude::*,
+};
 
 use crate::{
     Screen,
     gameplay::level::{Level, LevelState, Levels},
 };
+
+pub const AT_PAR: Color = Color::BLACK;
+pub const BELOW_PAR: Color = Color::Srgba(GREEN);
+pub const ABOVE_PAR: Color = Color::Srgba(RED_700);
 
 pub(super) fn plugin(app: &mut App) {
     app.init_resource::<ScoreCard>()
@@ -29,6 +36,9 @@ impl ScoreCard {
     pub fn get(&self, course: usize) -> Option<&CourseScore> {
         self.courses.get(course)
     }
+    pub fn iter(&self) -> std::slice::Iter<'_, CourseScore> {
+        self.courses.iter()
+    }
 }
 
 pub struct CourseScore {
@@ -39,12 +49,48 @@ pub struct CourseScore {
     arrows_shot: Option<i32>,
     par: i32,
 }
+
 impl CourseScore {
     pub fn arrows_shot(&self) -> Option<i32> {
         self.arrows_shot
     }
     pub fn course_par(&self) -> i32 {
         self.par
+    }
+
+    pub fn arrows_shot_ui(&self) -> impl Bundle + use<> {
+        let par = self.course_par();
+        let mut arrows_fired = Text::default();
+        let mut arrows_tc = TextColor(AT_PAR);
+
+        match self.arrows_shot() {
+            Some(arrows) => {
+                let diff = arrows - par;
+                let sign = if diff < 0 {
+                    arrows_tc.0 = BELOW_PAR;
+                    ""
+                } else if diff > 0 {
+                    arrows_tc.0 = ABOVE_PAR;
+                    "+"
+                } else {
+                    arrows_tc.0 = AT_PAR;
+                    "+"
+                };
+                arrows_fired.0 = format!("{}({}{})", arrows, sign, diff);
+            }
+            None => {
+                arrows_fired.0 = "".to_string();
+                arrows_tc.0 = AT_PAR;
+            }
+        }
+
+        (arrows_fired, arrows_tc)
+    }
+    pub fn par_ui(&self) -> impl Bundle + use<> {
+        //todod
+        //
+
+        (Text::new(self.par.to_string()), TextColor(Color::BLACK))
     }
 }
 
