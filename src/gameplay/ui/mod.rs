@@ -1,6 +1,6 @@
 use bevy::prelude::{Val::*, *};
 
-use crate::Screen;
+use crate::{Screen, keybinds::Keybinds};
 
 mod footer;
 pub use footer::*;
@@ -13,7 +13,7 @@ pub(super) fn plugin(app: &mut App) {
     app.add_systems(OnEnter(Screen::Gameplay), setup);
 }
 
-fn setup(mut commands: Commands, assets: Res<AssetServer>) {
+fn setup(mut commands: Commands, keybinds: Res<Keybinds>) {
     commands.spawn((
         Name::new("UI Root"),
         StateScoped(Screen::Gameplay),
@@ -24,7 +24,7 @@ fn setup(mut commands: Commands, assets: Res<AssetServer>) {
             flex_direction: FlexDirection::Column,
             ..default()
         },
-        children![header(), content(), footer(&assets)],
+        children![header(), content(), footer(keybinds)],
         Pickable::IGNORE,
     ));
 }
