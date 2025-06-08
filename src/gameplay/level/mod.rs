@@ -91,8 +91,7 @@ impl LevelProps {
 
 #[derive(Resource, Default)]
 pub struct Levels {
-    levels: HashMap<usize, LevelProps>,
-    counter: usize,
+    levels: Vec<LevelProps>,
 }
 
 impl Levels {
@@ -249,19 +248,15 @@ impl Levels {
         levels
     }
 
-    #[allow(dead_code)]
-    pub fn insert(&mut self, props: LevelProps) {
-        self.levels.insert(self.counter, props);
-        self.counter += 1;
+    fn insert(&mut self, props: LevelProps) {
+        self.levels.push(props);
+    }
+    pub fn num_levels(&self) -> usize {
+        self.levels.len()
     }
 
     /// will get or insert a new random level based on the value
-    pub fn get(&mut self, level: usize) -> &LevelProps {
-        if let Some(level) = self.levels.get(&level) {
-            return level;
-        }
-
-        self.levels.get(&1).unwrap()
-        //todo!("generate dynamic random levels")
+    pub fn get(&mut self, level: usize) -> Option<&LevelProps> {
+        self.levels.get(level)
     }
 }
