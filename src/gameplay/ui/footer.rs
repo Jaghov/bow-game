@@ -1,11 +1,20 @@
 use bevy::color::palettes::tailwind::GRAY_700;
 
-use crate::keybinds::Keybinds;
+use crate::{
+    gameplay::{level::Level, mulligan::Mulligan},
+    keybinds::Keybinds,
+};
 
 use super::*;
 
 pub(super) fn plugin(app: &mut App) {
-    app.add_systems(Update, update_ui_quiver_count);
+    app.add_systems(Update, update_ui_quiver_count).add_systems(
+        Update,
+        (
+            update_mulligan_ui.run_if(resource_changed::<Mulligan>.or(resource_changed::<Level>)),
+            update_mulligan_keybind.run_if(resource_changed::<Keybinds>),
+        ),
+    );
 }
 
 fn update_ui_quiver_count(mut text: Single<&mut Text, With<ArrowCountText>>) {
@@ -38,6 +47,26 @@ pub struct ArrowCountText;
 
 #[derive(Component)]
 pub struct CourseParText;
+
+fn update_mulligan_ui(
+    mut ui: Single<&mut Node, With<UiMulliganAvailable>>,
+    mulligans: Res<Mulligan>,
+    level: Res<Level>,
+) {
+    if mulligans.can_mulligan(level.0) {
+        ui.display = Display::Flex;
+    } else {
+        ui.display = Display::None;
+    }
+}
+
+fn update_mulligan_keybind(
+    mut text: Single<&mut Text, With<UiMulliganText>>,
+    keybinds: Res<Keybinds>,
+) {
+    let keycode = format!("{:?}", keybinds.restart).split_off(3);
+    text.0 = format!("Press [{}]", keycode);
+}
 
 pub fn quiver_node() -> impl Bundle {
     let quiver_text = (
@@ -130,11 +159,15 @@ fn ui_box() -> impl Bundle {
 #[derive(Component)]
 pub struct UiMulliganAvailable;
 
+#[derive(Component)]
+pub struct UiMulliganText;
+
 fn mulligan(keybinds: Res<Keybinds>) -> impl Bundle {
     let keycode = format!("{:?}", keybinds.restart).split_off(3);
 
     (
         ui_box(),
+        UiMulliganAvailable,
         children![(
             Node {
                 flex_direction: FlexDirection::Column,
@@ -150,8 +183,8 @@ fn mulligan(keybinds: Res<Keybinds>) -> impl Bundle {
                         align_items: AlignItems::Center,
                         ..default()
                     },
-                    UiMulliganAvailable,
                     children![(
+                        UiMulliganText,
                         Text::new(format!("Press [{}]", keycode)),
                         TextColor(Color::BLACK),
                         TextFont::from_font_size(20.),

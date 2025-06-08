@@ -20,19 +20,13 @@ mod sphere;
 mod level_maker;
 mod new_level;
 mod next_level;
-mod restart;
 mod timer;
 
 const WALL_START_PLANE: f32 = GAMEPLAY_CAMERA_OFFSET + 20.;
 const SPHERE_START_PLANE: f32 = GAME_PLANE - 20.;
 
 pub(super) fn plugin(app: &mut App) {
-    app.add_plugins((
-        new_level::plugin,
-        next_level::plugin,
-        restart::plugin,
-        timer::plugin,
-    ));
+    app.add_plugins((new_level::plugin, next_level::plugin, timer::plugin));
     app.add_sub_state::<LevelState>()
         .init_resource::<Level>()
         .insert_resource(Levels::mulligan_debug());
