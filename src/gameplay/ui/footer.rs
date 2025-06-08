@@ -1,6 +1,6 @@
 use bevy::color::palettes::{
-    css::{GREEN, RED},
-    tailwind::GRAY_700,
+    css::GREEN,
+    tailwind::{GRAY_700, RED_700},
 };
 
 use crate::{
@@ -34,8 +34,6 @@ fn update_ui_playing_course_score_count(
     level: Res<Level>,
 ) {
     const NORM: Color = Color::BLACK;
-    const BELOW_PAR: Color = Color::Srgba(GREEN);
-    const ABOVE_PAR: Color = Color::Srgba(RED);
 
     let (mut arrows_fired, mut arrows_tc) = arrows_fired.into_inner();
     let Some(course_score) = scorecard.get(level.0) else {
@@ -49,14 +47,16 @@ fn update_ui_playing_course_score_count(
 
     course_par.0 = par.to_string();
 
+    let below_par = Color::Srgba(GREEN);
+    let above_par = Color::Srgba(RED_700);
     match course_score.arrows_shot() {
         Some(arrows) => {
             let diff = arrows - par;
             let sign = if diff < 0 {
-                arrows_tc.0 = BELOW_PAR;
+                arrows_tc.0 = below_par;
                 ""
             } else if diff > 0 {
-                arrows_tc.0 = ABOVE_PAR;
+                arrows_tc.0 = above_par;
                 "+"
             } else {
                 arrows_tc.0 = NORM;
@@ -65,7 +65,7 @@ fn update_ui_playing_course_score_count(
             arrows_fired.0 = format!("{}({}{})", arrows, sign, diff);
         }
         None => {
-            arrows_fired.0 = "???".to_string();
+            arrows_fired.0 = "".to_string();
             arrows_tc.0 = NORM;
         }
     }
