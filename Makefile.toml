@@ -28,6 +28,11 @@ args = ["run", "--features", "dev dynamic_linking native"]
 command = "cargo"
 args = ["build", "--features", "native", "--profile", "release-dist"]
 
+
+[tasks.run-release]
+command = "cargo"
+args = ["run", "--features", "native", "--profile", "release-dist"]
+
 [tasks.brp]
 command = "cargo"
 args = ["run", "--features", "dev", "--bin", "brp"]

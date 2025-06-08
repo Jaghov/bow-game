@@ -82,7 +82,6 @@ fn get_ready_for_next_level_state(
     mut next_game_state: ResMut<NextState<GameState>>,
     level: Res<Level>,
     levels: Res<Levels>,
-    mut screen_state: ResMut<NextState<Screen>>,
 ) {
     if !timer.finished() {
         return;
@@ -102,7 +101,7 @@ fn get_ready_for_next_level_state(
 
     if level.0 == levels.num_levels() {
         // all levels have been played
-        screen_state.set(Screen::Title);
+        next_game_state.set(GameState::GameOver);
         return;
     }
 
