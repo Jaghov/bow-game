@@ -1,10 +1,11 @@
-use std::time::Duration;
+use std::{path::Path, time::Duration};
 
 use avian3d::prelude::{CollisionLayers, PhysicsLayer, RigidBody};
 use bevy::prelude::*;
 use bevy_tweening::{Animator, Tween, lens::TransformPositionLens};
 
 use crate::{
+    asset_tracking::LoadResource,
     gameplay::{
         GameSet,
         bow::Quiver,
@@ -14,40 +15,58 @@ use crate::{
         },
         sphere::Sphere,
     },
+    rand::random_range,
     third_party::avian3d::GameLayer,
     world::{GAME_PLANE, backdrop::RadialBackdropPulse, light::SetLightPosition},
 };
 
 pub(super) fn plugin(app: &mut App) {
-    app.add_systems(
-        OnEnter(LevelState::NewLevel),
-        (init_timer, load_level, set_light_position).chain(),
-    )
-    .add_systems(
-        Update,
-        (
-            // update_wall_transform,
-            update_sphere_transform
+    app.load_resource::<LevelAssets>()
+        .add_systems(
+            OnEnter(LevelState::NewLevel),
+            (init_timer, load_level, set_light_position).chain(),
         )
-            .in_set(GameSet::Update)
-            .run_if(in_state(LevelState::NewLevel)),
-    )
-    .add_systems(
-        PostUpdate,
-        update_level_state.run_if(in_state(LevelState::NewLevel)),
-    )
-    .add_systems(
-        Update,
-        observe_level_completion.run_if(in_state(LevelState::Playing)),
-    )
-    .add_systems(
-        Update,
-        hot_reloading_walls.run_if(in_state(LevelState::Playing)),
-    );
+        .add_systems(
+            Update,
+            (
+                // update_wall_transform,
+                update_sphere_transform
+            )
+                .in_set(GameSet::Update)
+                .run_if(in_state(LevelState::NewLevel)),
+        )
+        .add_systems(
+            PostUpdate,
+            update_level_state.run_if(in_state(LevelState::NewLevel)),
+        )
+        .add_systems(
+            Update,
+            observe_level_completion.run_if(in_state(LevelState::Playing)),
+        )
+        .add_systems(
+            Update,
+            hot_reloading_walls.run_if(in_state(LevelState::Playing)),
+        );
 }
 fn init_timer(mut commands: Commands) {
     commands.init_resource::<LevelSetupTimer>();
 }
+
+#[derive(Resource, Asset, Reflect, Clone)]
+pub struct LevelAssets {
+    #[dependency]
+    level_complete_sfx: Handle<AudioSource>,
+}
+
+impl FromWorld for LevelAssets {
+    fn from_world(world: &mut World) -> Self {
+        let assets = world.resource::<AssetServer>();
+        Self {
+            level_complete_sfx: assets.load(Path::new("audio/sfx/level_complete.flac")),
+        }
+    }
+}
+
 #[derive(Default)]
 struct LevelCompletion {
     timer: Option<Timer>,
@@ -60,6 +79,7 @@ fn observe_level_completion(
     backdrop_pulse: Res<RadialBackdropPulse>,
     mut level_completion: Local<LevelCompletion>,
     time: Res<Time>,
+    sfx: Res<LevelAssets>,
 ) {
     let mut reset_timer = false;
     if let Some(timer) = &mut level_completion.timer {
@@ -90,6 +110,14 @@ fn observe_level_completion(
 
     if remaining_balls_count == 0 {
         commands.run_system(backdrop_pulse.0);
+        commands.spawn((
+            AudioPlayer::new(sfx.level_complete_sfx.clone()),
+            PlaybackSettings {
+                mode: bevy::audio::PlaybackMode::Once,
+                // speed: random_range(0.9..1.1),
+                ..Default::default()
+            },
+        ));
         level_completion.timer = Some(Timer::new(Duration::from_millis(2000), TimerMode::Once));
     }
 }
@@ -186,7 +214,7 @@ fn update_sphere_transform(
 }
 
 fn set_light_position(mut commands: Commands) {
-    commands.trigger(SetLightPosition::to_above().with_duration(Duration::from_millis(700)));
+    commands.trigger(SetLightPosition::to_gameplay().with_duration(Duration::from_millis(700)));
 }
 
 fn update_level_state(timer: Res<LevelSetupTimer>, mut level_state: ResMut<NextState<LevelState>>) {

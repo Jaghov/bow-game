@@ -1,17 +1,30 @@
 use std::time::Duration;
 
-use avian3d::prelude::{Collider, CollisionLayers, RigidBody};
-use bevy::{color::palettes::tailwind::GREEN_400, ecs::system::SystemId, prelude::*};
-use bevy_tweening::{Animator, Delay, Sequence, Tween, lens::TransformPositionLens};
+use avian3d::{
+    math::PI,
+    prelude::{Collider, CollisionLayers, RigidBody},
+};
+use bevy::{
+    color::palettes::tailwind::GREEN_400, ecs::system::SystemId, math::ops::sin, prelude::*,
+};
+use bevy_tweening::{
+    Animator, Delay, EaseMethod, Tween, TweenCompleted, lens::TransformPositionLens,
+};
 
 use crate::{
-    rand,
+    asset_tracking::LoadResource,
+    gameplay::level::LevelState,
+    rand::{self, random_range},
     third_party::avian3d::GameLayer,
     world::{BACKDROP_OFFSET, BLOCK_LEN, GAME_PLANE},
 };
 
 pub fn plugin(app: &mut App) {
-    app.add_systems(Startup, spawn_backdrop);
+    app.add_systems(Startup, spawn_backdrop)
+        .load_resource::<BackdropAssets>()
+        .add_observer(play_backdrop_sfx)
+        // .add_systems(OnEnter(LevelState::Playing), breathing_background)
+    ;
 
     let backdrop_win = app.register_system(pulse_out_backdrop_on_win);
 
@@ -23,8 +36,25 @@ pub struct RadialBackdropPulse(pub SystemId);
 
 const PERIOD: f32 = 0.3;
 
+#[derive(Asset, Resource, Reflect, Clone)]
+struct BackdropAssets {
+    #[dependency]
+    sfx: Handle<AudioSource>,
+}
+
+impl FromWorld for BackdropAssets {
+    fn from_world(world: &mut World) -> Self {
+        let asset_server = world.resource::<AssetServer>();
+
+        Self {
+            sfx: asset_server.load("audio/sfx/block_shuffle.flac"),
+        }
+    }
+}
+
 #[derive(Component)]
 struct ZState {
+    spawn_depth: f32,
     time_offset: f32,
 }
 
@@ -58,7 +88,10 @@ fn spawn_backdrop(
             commands.spawn((
                 MeshMaterial3d(material.clone()),
                 ZState {
-                    time_offset: rand::random_range((-HALF_PERIOD..=HALF_PERIOD)),
+                    spawn_depth: z,
+                    time_offset: std::hint::black_box(rand::random_range(
+                        (-HALF_PERIOD..=HALF_PERIOD),
+                    )),
                 },
                 CollisionLayers::new(
                     GameLayer::Backdrop,
@@ -89,32 +122,80 @@ fn update_backdrop_z(mut blocks: Query<(&mut Transform, &mut ZState)>, time: Res
     }
 }
 
+fn sin_lerp(t: f32) -> f32 {
+    sin(2. * PI * t)
+}
+
 fn pulse_out_backdrop_on_win(
+    mut commands: Commands,
+    blocks: Query<(Entity, &mut Transform, &ZState)>,
+) {
+    for (block, mut transform, depth) in blocks {
+        let delay = Duration::from_secs_f32((transform.translation.xy().length() / 120.) + 1.0);
+        commands.entity(block).insert(Animator::new(
+            // Bring blocks closer to intitial block plane
+            Tween::new(
+                EaseFunction::QuadraticIn,
+                Duration::from_millis(700),
+                TransformPositionLens {
+                    start: transform.translation,
+                    end: {
+                        transform.translation.z = depth.spawn_depth; // avg the z translation to soft reset backdrop
+                        transform.translation
+                    },
+                },
+            )
+            // Pause to add suspense :)
+            .then(Delay::new(delay).with_completed_event(0))
+            // Pulse out from center
+            .then(Tween::new(
+                EaseMethod::CustomFunction(sin_lerp),
+                Duration::from_secs_f32(PERIOD),
+                TransformPositionLens {
+                    start: transform.translation,
+                    end: transform.translation - Vec3::new(0., 0., BLOCK_LEN), // End is more of an amplitude when using sin_lerp ease function
+                },
+            )),
+        ));
+    }
+}
+
+fn play_backdrop_sfx(
+    trigger: Trigger<TweenCompleted>,
+    mut commands: Commands,
+    backdrop: Res<BackdropAssets>,
+) {
+    if trigger.user_data != 0 {
+        return;
+    }
+    commands.spawn((
+        AudioPlayer(backdrop.sfx.clone()),
+        PlaybackSettings {
+            volume: bevy::audio::Volume::Linear(0.05),
+            speed: 1. / PERIOD,
+            mode: bevy::audio::PlaybackMode::Remove,
+            ..Default::default()
+        },
+    ));
+}
+
+/// Could be useful somewhere else maybe
+#[allow(dead_code)]
+fn breathing_background(
     mut commands: Commands,
     blocks: Query<(Entity, &mut Transform), With<ZState>>,
 ) {
     for (block, transform) in blocks {
-        let delay = Duration::from_secs_f32((transform.translation.xy().length() / 120.) + 0.2);
-
         commands.entity(block).insert(Animator::new(
-            Sequence::from_single(Delay::new(delay)).then(
-                Tween::new(
-                    EaseFunction::SineIn,
-                    Duration::from_millis(100),
-                    TransformPositionLens {
-                        start: transform.translation,
-                        end: transform.translation - Vec3::new(0., 0., BLOCK_LEN),
-                    },
-                )
-                .then(Tween::new(
-                    EaseFunction::SineOut,
-                    Duration::from_millis(100),
-                    TransformPositionLens {
-                        start: transform.translation - Vec3::new(0., 0., BLOCK_LEN),
-                        end: transform.translation,
-                    },
-                )),
-            ),
+            Tween::new(
+                EaseMethod::CustomFunction(sin_lerp),
+                Duration::from_secs(random_range(2..5) * 5),
+                TransformPositionLens {
+                    start: transform.translation,
+                    end: transform.translation - Vec3::new(0., 0., BLOCK_LEN / 4.),
+                },
+            )
+            .with_repeat_count(bevy_tweening::RepeatCount::Infinite),
         ));
     }
 }

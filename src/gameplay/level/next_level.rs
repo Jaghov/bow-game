@@ -31,9 +31,7 @@ pub(super) fn plugin(app: &mut App) {
 }
 
 fn set_light_position(mut commands: Commands) {
-    commands.trigger(
-        SetLightPosition::to_wall_load_position().with_duration(Duration::from_millis(700)),
-    );
+    commands.trigger(SetLightPosition::to_gameplay().with_duration(Duration::from_millis(700)));
 }
 fn init_timer(mut commands: Commands) {
     commands.insert_resource(LevelSetupTimer::new(Duration::from_millis(500)));
