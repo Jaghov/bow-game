@@ -1,12 +1,15 @@
-use bevy::{audio::Volume, prelude::*};
+use bevy::prelude::*;
 
-use crate::{Screen, asset_tracking::LoadResource};
+use crate::{Screen, asset_tracking::LoadResource, settings::Settings};
 
 pub fn plugin(app: &mut App) {
     app.load_resource::<MusicTracks>()
         .add_systems(OnEnter(Screen::Title), play_menu_theme)
         .add_systems(OnEnter(Screen::Transition), play_gameplay_theme)
-        .add_systems(Update, (pause, mute, volume));
+        .add_systems(
+            Update,
+            (pause, mute, volume.run_if(resource_changed::<Settings>)),
+        );
 }
 #[derive(Asset, Resource, Reflect, Clone)]
 struct MusicTracks {
@@ -28,12 +31,21 @@ impl FromWorld for MusicTracks {
 #[derive(Component)]
 struct Music;
 
-fn play_menu_theme(mut commands: Commands, tracks: Res<MusicTracks>) {
+fn play_menu_theme(
+    mut commands: Commands,
+    tracks: Res<MusicTracks>,
+    players: Query<Entity, With<Music>>,
+    settings: Res<Settings>,
+) {
+    for player in players {
+        commands.entity(player).despawn();
+    }
     commands.spawn((
         Music,
         AudioPlayer(tracks.menu.clone()),
         PlaybackSettings {
             mode: bevy::audio::PlaybackMode::Loop,
+            volume: settings.music,
             ..Default::default()
         },
     ));
@@ -43,12 +55,14 @@ fn play_gameplay_theme(
     mut commands: Commands,
     tracks: Res<MusicTracks>,
     player: Query<(Entity), With<Music>>,
+    settings: Res<Settings>,
 ) {
     info!("Playing gameplay theme");
     let bgm = (
         AudioPlayer(tracks.game.clone()),
         PlaybackSettings {
             mode: bevy::audio::PlaybackMode::Loop,
+            volume: settings.music,
             ..Default::default()
         },
     );
@@ -90,19 +104,10 @@ fn mute(
     }
 }
 
-fn volume(
-    keyboard_input: Res<ButtonInput<KeyCode>>,
-    mut music_controller: Query<&mut AudioSink, With<Music>>,
-) {
+fn volume(settings: Res<Settings>, mut music_controller: Query<&mut AudioSink, With<Music>>) {
     let Ok(mut sink) = music_controller.single_mut() else {
         return;
     };
 
-    if keyboard_input.just_pressed(KeyCode::Equal) {
-        let current_volume = sink.volume();
-        sink.set_volume(current_volume + Volume::Linear(0.1));
-    } else if keyboard_input.just_pressed(KeyCode::Minus) {
-        let current_volume = sink.volume();
-        sink.set_volume(current_volume - Volume::Linear(0.1));
-    }
+    sink.set_volume(settings.music);
 }

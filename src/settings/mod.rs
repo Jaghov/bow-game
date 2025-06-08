@@ -3,6 +3,7 @@ use bevy::{audio::Volume, prelude::*};
 mod ui;
 
 #[derive(States, Debug, Hash, PartialEq, Eq, Clone, Copy, Default, Reflect)]
+#[states(scoped_entities)]
 pub enum SettingsState {
     #[default]
     None,
@@ -34,7 +35,7 @@ impl Settings {
     fn dan() -> Self {
         Self {
             sfx: Volume::Linear(1.),
-            music: Volume::Linear(1.),
+            music: Volume::Linear(0.),
             restart: KeyCode::KeyU,
             tutorials_enabled: true,
             #[cfg(feature = "dev")]
