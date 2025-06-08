@@ -6,10 +6,7 @@ pub fn plugin(app: &mut App) {
     app.load_resource::<MusicTracks>()
         .add_systems(OnEnter(Screen::Title), play_menu_theme)
         .add_systems(OnEnter(Screen::Transition), play_gameplay_theme)
-        .add_systems(
-            Update,
-            (pause, mute, volume.run_if(resource_changed::<Settings>)),
-        );
+        .add_systems(Update, volume.run_if(resource_changed::<Settings>));
 }
 #[derive(Asset, Resource, Reflect, Clone)]
 struct MusicTracks {
@@ -75,33 +72,6 @@ fn play_gameplay_theme(
             commands.spawn((bgm, Music));
         }
     };
-}
-
-// Toggles between menu and bgm
-fn pause(
-    keyboard_input: Res<ButtonInput<KeyCode>>,
-    music_controller: Query<&AudioSink, With<Music>>,
-) {
-    let Ok(sink) = music_controller.single() else {
-        return;
-    };
-
-    if keyboard_input.just_pressed(KeyCode::Escape) {
-        sink.toggle_playback();
-    }
-}
-
-fn mute(
-    keyboard_input: Res<ButtonInput<KeyCode>>,
-    mut music_controller: Query<&mut AudioSink, With<Music>>,
-) {
-    let Ok(mut sink) = music_controller.single_mut() else {
-        return;
-    };
-
-    if keyboard_input.just_pressed(KeyCode::KeyM) {
-        sink.toggle_mute();
-    }
 }
 
 fn volume(settings: Res<Settings>, mut music_controller: Query<&mut AudioSink, With<Music>>) {

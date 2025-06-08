@@ -24,6 +24,19 @@ pub(super) fn plugin(app: &mut App) {
 #[derive(Component)]
 struct NockCursor;
 
+fn pointer_pos(pointer: Res<CursorPosition>, mut gizmos: Gizmos) {
+    let Some(point) = pointer.current() else {
+        return;
+    };
+
+    // Draw a circle just above the ground plane at that position.
+    gizmos.circle(
+        Isometry3d::new(point, Quat::from_rotation_y(PI)),
+        0.2,
+        Color::WHITE,
+    );
+}
+
 fn show_cursor_if_readying_arrow(
     mut commands: Commands,
     bows: Query<&BowArrow>,

@@ -8,6 +8,7 @@ use crate::{
         GameState,
         scorecard::{ScoreCard, spawn_scorecard},
     },
+    settings::SettingsState,
     utils,
 };
 
@@ -21,13 +22,28 @@ pub(super) fn plugin(app: &mut App) {
     )
     .add_systems(
         Update,
-        pause.run_if(in_state(GameState::Playing).and(input_just_pressed(KeyCode::Escape))),
+        (
+            pause.run_if(in_state(GameState::Playing).and(input_just_pressed(KeyCode::Escape))),
+            unpause.run_if(in_state(GameState::Paused).and(input_just_pressed(KeyCode::Escape))),
+        ),
     )
-    .add_systems(OnExit(GameState::Paused), utils::hide_cursor);
+    .add_systems(
+        OnExit(GameState::Paused),
+        (
+            utils::hide_cursor,
+            cleanup_settings.run_if(in_state(SettingsState::View)),
+        ),
+    );
 }
 
 fn pause(mut game_state: ResMut<NextState<GameState>>) {
     game_state.set(GameState::Paused);
+}
+fn unpause(mut game_state: ResMut<NextState<GameState>>) {
+    game_state.set(GameState::Playing);
+}
+fn cleanup_settings(mut settings_state: ResMut<NextState<SettingsState>>) {
+    settings_state.set(SettingsState::None);
 }
 
 // scorecard left, ui opts right

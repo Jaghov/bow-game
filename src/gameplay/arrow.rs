@@ -117,10 +117,7 @@ fn add_arrow_colliders(trigger: Trigger<OnAdd, Arrow>, mut commands: Commands) {
         .spawn((
             collider,
             ColliderDensity(10.),
-            CollisionLayers::new(
-                GameLayer::Arrow,
-                [GameLayer::Arrow, GameLayer::Sphere, GameLayer::Backdrop],
-            ),
+            CollisionLayers::new(GameLayer::Arrow, [GameLayer::Sphere, GameLayer::Backdrop]),
         ))
         .id();
 
