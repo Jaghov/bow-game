@@ -14,6 +14,7 @@ use crate::{
         },
         sphere::Sphere,
     },
+    settings::Settings,
     third_party::avian3d::GameLayer,
     world::{GAME_PLANE, backdrop::RadialBackdropPulse, light::SetLightPosition},
 };
@@ -74,6 +75,7 @@ fn observe_level_completion(
     mut level_completion: Local<LevelCompletion>,
     time: Res<Time>,
     sfx: Res<LevelAssets>,
+    settings: Res<Settings>,
 ) {
     let mut reset_timer = false;
     if let Some(timer) = &mut level_completion.timer {
@@ -108,6 +110,7 @@ fn observe_level_completion(
             AudioPlayer::new(sfx.level_complete_sfx.clone()),
             PlaybackSettings {
                 mode: bevy::audio::PlaybackMode::Once,
+                volume: settings.sfx,
                 // speed: random_range(0.9..1.1),
                 ..Default::default()
             },

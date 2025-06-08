@@ -18,7 +18,7 @@ pub(super) fn plugin(app: &mut App) {
 
     app.add_systems(
         Update,
-        update_music_volume_label.run_if(in_state(SettingsState::View)),
+        (update_music_volume_label, update_sfx_volume_label).run_if(in_state(SettingsState::View)),
     );
 }
 
@@ -55,22 +55,30 @@ fn settings_grid() -> impl Bundle {
         },
         children![
             (
-                widgets::label("Master Volume"),
+                widgets::label("Music Volume"),
                 Node {
                     justify_self: JustifySelf::End,
                     ..default()
                 }
             ),
-            global_volume_widget(),
+            music_volume_widget(),
+            (
+                widgets::label("Sound Effects Volume"),
+                Node {
+                    justify_self: JustifySelf::End,
+                    ..default()
+                }
+            ),
+            sfx_volume_widget(),
         ],
     )
 }
 const MIN_VOLUME: f32 = 0.0;
 const MAX_VOLUME: f32 = 3.0;
 
-fn global_volume_widget() -> impl Bundle {
+fn music_volume_widget() -> impl Bundle {
     (
-        Name::new("Global Volume Widget"),
+        Name::new("Music Volume Widget"),
         Node {
             justify_self: JustifySelf::Start,
             ..default()
@@ -78,7 +86,7 @@ fn global_volume_widget() -> impl Bundle {
         children![
             widgets::button_small("-", lower_music_volume),
             (
-                Name::new("Current Volume"),
+                Name::new("Music Volume"),
                 Node {
                     padding: UiRect::horizontal(Px(10.0)),
                     justify_content: JustifyContent::Center,
@@ -110,5 +118,50 @@ fn update_music_volume_label(
     mut label: Single<&mut Text, With<MusicVolumeLabel>>,
 ) {
     let percent = 100.0 * global_volume.music.to_linear();
+    label.0 = format!("{percent:3.0}%");
+}
+
+fn sfx_volume_widget() -> impl Bundle {
+    (
+        Name::new("Sfx Volume Widget"),
+        Node {
+            justify_self: JustifySelf::Start,
+            ..default()
+        },
+        children![
+            widgets::button_small("-", lower_sfx_volume),
+            (
+                Name::new("Sfx Volume"),
+                Node {
+                    padding: UiRect::horizontal(Px(10.0)),
+                    justify_content: JustifyContent::Center,
+                    ..default()
+                },
+                children![(widgets::label(""), SfxVolumeLabel)],
+            ),
+            widgets::button_small("+", raise_sfx_volume),
+        ],
+    )
+}
+
+fn lower_sfx_volume(_: Trigger<Pointer<Click>>, mut settings: ResMut<Settings>) {
+    let linear = (settings.sfx.to_linear() - 0.1).max(MIN_VOLUME);
+    settings.sfx = Volume::Linear(linear);
+}
+
+fn raise_sfx_volume(_: Trigger<Pointer<Click>>, mut settings: ResMut<Settings>) {
+    let linear = (settings.sfx.to_linear() + 0.1).min(MAX_VOLUME);
+    settings.sfx = Volume::Linear(linear);
+}
+
+#[derive(Component, Reflect)]
+#[reflect(Component)]
+struct SfxVolumeLabel;
+
+fn update_sfx_volume_label(
+    global_volume: Res<Settings>,
+    mut label: Single<&mut Text, With<SfxVolumeLabel>>,
+) {
+    let percent = 100.0 * global_volume.sfx.to_linear();
     label.0 = format!("{percent:3.0}%");
 }
