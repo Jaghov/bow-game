@@ -54,15 +54,15 @@ fn update_ui_playing_course_score_count(
             let diff = arrows - par;
             let sign = if diff < 0 {
                 arrows_tc.0 = BELOW_PAR;
-                "-"
+                ""
             } else if diff > 0 {
                 arrows_tc.0 = ABOVE_PAR;
                 "+"
             } else {
                 arrows_tc.0 = NORM;
-                ""
+                "+"
             };
-            arrows_fired.0 = format!("{} ({}{})", arrows, sign, diff);
+            arrows_fired.0 = format!("{}({}{})", arrows, sign, diff);
         }
         None => {
             arrows_fired.0 = "???".to_string();
