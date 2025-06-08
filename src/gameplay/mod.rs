@@ -31,7 +31,6 @@ pub enum GameState {
     Playing,
     Paused,
     TimeFreeze,
-    GameOver,
 }
 
 /// High level groups of systems in the "Update" schedule.

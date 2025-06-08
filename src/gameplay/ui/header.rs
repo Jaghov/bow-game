@@ -104,7 +104,7 @@ pub fn header() -> impl Bundle {
 pub struct LevelInfo;
 
 fn update_level_info(level: Res<Level>, mut level_info: Single<&mut Text, With<LevelInfo>>) {
-    level_info.0 = level.0.to_string();
+    level_info.0 = (level.0 + 1).to_string();
 }
 
 fn level_info() -> impl Bundle {
@@ -116,7 +116,7 @@ fn level_info() -> impl Bundle {
             ..default()
         },
         children![
-            (Text::new("Level"), TextColor(GRAY_700.into())),
+            (Text::new("Course"), TextColor(GRAY_700.into())),
             (
                 LevelInfo,
                 Text::new("N/A"),

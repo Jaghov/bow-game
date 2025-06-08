@@ -4,8 +4,8 @@ use bevy_simple_subsecond_system::hot;
 
 use crate::gameplay::level::{
     Level, LevelProps, LevelState, WallMaterial, WallMesh, Walls, sphere::SphereType,
-    wall::WallBuilder,
 };
+use crate::settings::Settings;
 use crate::third_party::avian3d::GameLayer;
 use crate::world::GAME_PLANE;
 
@@ -15,7 +15,7 @@ pub(super) fn plugin(app: &mut App) {
         .add_systems(OnEnter(LevelState::Playing), set_dev_level)
         .add_systems(
             Update,
-            set_dev_level_update.run_if(in_state(LevelState::Playing)),
+            (set_dev_level_update, infinite_mulligans).run_if(in_state(LevelState::Playing)),
         );
 }
 
@@ -70,6 +70,16 @@ fn set_dev_level(
     inner(commands, &mut meshes, *walls, &material, spheres);
 }
 
+fn infinite_mulligans(
+    input: Res<ButtonInput<KeyCode>>,
+    settings: Res<Settings>,
+    mut level_state: ResMut<NextState<LevelState>>,
+) {
+    if input.just_pressed(settings.restart) {
+        level_state.set(LevelState::NextLevel);
+    }
+}
+
 #[hot]
 fn set_dev_level_update(
     commands: Commands,
@@ -107,56 +117,41 @@ fn change_level(
 fn should_be_update_reloading() -> bool {
     false
 }
+/*
+- simple normals
+- simple multiplier
+- advanced multiplier
+- multiplier + exploder
+- timefreeze TODO
+- Advanced 1 (done)
+*/
 
 fn edit_level() -> LevelProps {
+    //32 on bounds
+    // making a spiral
     LevelProps::new(
-        3,
+        2,
         vec![
-            //right
-            vert!(7., -4., 6.),
-            //horz left
-            horz!(5., -7., 1.),
-            //left
-            vert!(-7., -4., 4.),
-            //bottom
-            horz!(-5., -7., 7.),
-            //divider top
-            vert!(2., 4., 6.),
-            //horz top right
-            horz!(6., 3., 6.),
-            //div bot
-            vert!(2., -4., 2.),
-            //WallBuilder::pole(1., 26., -10.),
-            WallBuilder::block(5., 1., 26., -10.),
+            vert!(-8., -5., 6.),
+            horz!(-6., -8., 8.),
+            vert!(8., -5., 5.),
+            horz!(6., -4., 8.),
+            vert!(-4., -2., 5.),
+            horz!(-2., -3., 4.),
+            vert!(4., -1., 1.),
+            horz!(2., 0., 4.),
         ],
         vec![
-            //left side
-            sphere!(TimeFreeze, -18., -2.),
-            sphere!(Multiplier, -18., -8.),
-            //left side array
-            sphere!(Exploder, 6., 6.),
-            sphere!(Exploder, 6., 0.),
-            sphere!(Multiplier, 3., -6.),
-            sphere!(Normal, -5., -4.),
-            sphere!(Normal, -2., -13.),
-            sphere!(Normal, 7., -15.),
-            //middle ball
-            sphere!(Normal, 5., 17.),
-            //right side
-            sphere!(Exploder, 21., 20.),
-            sphere!(Normal, 17., 14.),
-            sphere!(Normal, 17., 24.),
-            sphere!(TimeFreeze, 26., 21.),
-            //bowling
-            sphere!(Exploder, 26., -8.),
-            sphere!(Multiplier, 26., -13.),
-            sphere!(Normal, 26., -24.),
-            sphere!(Normal, 23., -24.),
-            sphere!(Normal, 20., -24.),
-            sphere!(Normal, 18., -23.),
-            sphere!(Normal, 29., -24.),
-            sphere!(Normal, 33., -24.),
-            sphere!(Normal, 35., -23.),
+            sphere!(Normal, -36., 24.),
+            sphere!(TimeFreeze, -36., -24.),
+            sphere!(TimeFreeze, 36., -24.),
+            sphere!(TimeFreeze, 36., 24.),
+            sphere!(TimeFreeze, -12., 24.),
+            sphere!(TimeFreeze, -12., 0.),
+            sphere!(Multiplier, 10., 0.),
+            sphere!(Normal, 18., 0.),
+            sphere!(Normal, 18., 6.),
+            sphere!(Normal, 18., -6.),
         ],
     )
 }

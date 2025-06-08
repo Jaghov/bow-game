@@ -4,7 +4,7 @@ use std::time::Duration;
 
 use bevy::prelude::*;
 
-use crate::{Screen, world::light::SetLightPosition};
+use crate::{Screen, gameplay::arrow::Arrow, world::light::SetLightPosition};
 
 const TRANSITION_DURATION: Duration = Duration::from_millis(2500);
 
@@ -14,7 +14,7 @@ pub(super) fn plugin(app: &mut App) {
     app.add_plugins(camera::plugin);
     app.add_systems(
         OnEnter(Screen::Transition),
-        (start_transition_timer, move_light),
+        (start_transition_timer, move_light, remove_lasting_arrows),
     )
     .add_systems(OnExit(Screen::Transition), remove_duration_timer)
     .add_systems(
@@ -25,6 +25,12 @@ pub(super) fn plugin(app: &mut App) {
         PostUpdate,
         start_gameplay.run_if(in_state(Screen::Transition)),
     );
+}
+
+fn remove_lasting_arrows(mut commands: Commands, arrows: Query<Entity, With<Arrow>>) {
+    for arrow in arrows {
+        commands.entity(arrow).try_despawn();
+    }
 }
 
 #[derive(Resource)]

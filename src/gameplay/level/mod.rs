@@ -29,8 +29,9 @@ pub(super) fn plugin(app: &mut App) {
     app.add_plugins((new_level::plugin, next_level::plugin, timer::plugin));
     app.add_sub_state::<LevelState>()
         .init_resource::<Level>()
-        .insert_resource(Levels::mulligan_debug());
+        .insert_resource(Levels::init());
     app.add_systems(Startup, setup_wall_material)
+        .add_systems(OnEnter(Screen::Gameplay), reset_level)
         .add_observer(sphere::spawn_sphere);
 
     #[cfg(all(feature = "dev", feature = "hot"))]
@@ -94,6 +95,10 @@ impl LevelProps {
     }
 }
 
+fn reset_level(mut level: ResMut<Level>) {
+    *level = Level::default();
+}
+
 #[derive(Resource, Default)]
 pub struct Levels {
     levels: Vec<LevelProps>,
@@ -103,56 +108,56 @@ pub struct Levels {
 impl Levels {
     pub fn init() -> Self {
         let mut levels = Levels::default();
-        //this is the debug level
-        #[cfg(feature = "dev")]
-        levels.insert(LevelProps::new(
-            9999,
-            vec![
-                vert!(8., -5., 5.),
-                horz!(6., -8., 8.),
-                vert!(-8., -5., 5.),
-                horz!(-6., -8., 8.),
-            ],
-            vec![
-                //gravity column
-                sphere!(Gravity, -40., 0.),
-                sphere!(Normal, -40., 5.),
-                sphere!(Multiplier, -40., -5.),
-                //absorber column
-                sphere!(Absorber, -30., 0.),
-                sphere!(Multiplier, -30., 5.),
-                sphere!(Exploder, -30., 10.),
-                sphere!(Bouncy, -30., 15.),
-                //exploder testing column
-                sphere!(Exploder, -20., 0.),
-                sphere!(Multiplier, -23., 5.),
-                sphere!(Multiplier, -23., -5.),
-                sphere!(Multiplier, -17., 5.),
-                sphere!(Multiplier, -17., -5.),
-                //others
-                sphere!(TimeFreeze, -10., 0.),
-                sphere!(Normal, 0., 0.),
-                // exploder column
-                sphere!(Exploder, 10., 0.),
-                sphere!(Exploder, 10., 5.),
-                sphere!(Exploder, 10., 10.),
-                sphere!(Normal, 8., 8.),
-                // bouncy column
-                sphere!(Bouncy, 20., 0.),
-                sphere!(Multiplier, 20., 5.),
-                sphere!(Normal, 20., 10.),
-                // bouncy timefreeze column
-                sphere!(Bouncy, 30., 0.),
-                sphere!(TimeFreeze, 30., 5.),
-                sphere!(Multiplier, 30., 10.),
-                // multiplier column
-                sphere!(Multiplier, 40., 0.),
-                sphere!(Multiplier, 40., 5.),
-                sphere!(Multiplier, 40., 10.),
-                sphere!(Normal, 40., 15.),
-            ],
-        ));
+        // #[cfg(feature = "dev")]
+        // levels.insert(LevelProps::new(
+        //     9999,
+        //     vec![
+        //         vert!(8., -5., 5.),
+        //         horz!(6., -8., 8.),
+        //         vert!(-8., -5., 5.),
+        //         horz!(-6., -8., 8.),
+        //     ],
+        //     vec![
+        //         //gravity column
+        //         sphere!(Gravity, -40., 0.),
+        //         sphere!(Normal, -40., 5.),
+        //         sphere!(Multiplier, -40., -5.),
+        //         //absorber column
+        //         sphere!(Absorber, -30., 0.),
+        //         sphere!(Multiplier, -30., 5.),
+        //         sphere!(Exploder, -30., 10.),
+        //         sphere!(Bouncy, -30., 15.),
+        //         //exploder testing column
+        //         sphere!(Exploder, -20., 0.),
+        //         sphere!(Multiplier, -23., 5.),
+        //         sphere!(Multiplier, -23., -5.),
+        //         sphere!(Multiplier, -17., 5.),
+        //         sphere!(Multiplier, -17., -5.),
+        //         //others
+        //         sphere!(TimeFreeze, -10., 0.),
+        //         sphere!(Normal, 0., 0.),
+        //         // exploder column
+        //         sphere!(Exploder, 10., 0.),
+        //         sphere!(Exploder, 10., 5.),
+        //         sphere!(Exploder, 10., 10.),
+        //         sphere!(Normal, 8., 8.),
+        //         // bouncy column
+        //         sphere!(Bouncy, 20., 0.),
+        //         sphere!(Multiplier, 20., 5.),
+        //         sphere!(Normal, 20., 10.),
+        //         // bouncy timefreeze column
+        //         sphere!(Bouncy, 30., 0.),
+        //         sphere!(TimeFreeze, 30., 5.),
+        //         sphere!(Multiplier, 30., 10.),
+        //         // multiplier column
+        //         sphere!(Multiplier, 40., 0.),
+        //         sphere!(Multiplier, 40., 5.),
+        //         sphere!(Multiplier, 40., 10.),
+        //         sphere!(Normal, 40., 15.),
+        //     ],
+        // ));
 
+        // simple first level
         levels.insert(LevelProps::new(
             1,
             vec![
@@ -161,8 +166,10 @@ impl Levels {
                 vert!(-6., -5., 5.),
                 horz!(-6., -6., 6.),
             ],
-            vec![sphere!(Normal, 5., 0.)],
+            vec![sphere!(Normal, 5., 0.), sphere!(Normal, 10., 0.)],
         ));
+
+        //multiplier simple
         levels.insert(LevelProps::new(
             1,
             vec![
@@ -179,6 +186,7 @@ impl Levels {
             ],
         ));
 
+        // multiplier advanced
         levels.insert(LevelProps::new(
             1,
             vec![
@@ -196,8 +204,65 @@ impl Levels {
                 sphere!(Normal, 18., 8.),
                 sphere!(Normal, 18., 0.),
                 sphere!(Normal, 18., -8.),
-                // sphere!(Normal, 10., 5.),
-                // sphere!(Normal, 10., -5.),
+            ],
+        ));
+
+        //exploder introduction
+        levels.insert(LevelProps::new(
+            3,
+            vec![
+                vert!(6., -5., 5.),
+                horz!(6., -6., 6.),
+                vert!(-6., -5., 5.),
+                horz!(-6., -6., 6.),
+            ],
+            vec![
+                sphere!(Exploder, 24., 24.),
+                sphere!(Exploder, -24., -24.),
+                sphere!(Exploder, 24., -24.),
+                sphere!(Exploder, -24., 24.),
+                sphere!(Multiplier, 0., -7.),
+                sphere!(Multiplier, 0., 7.),
+                sphere!(Normal, 0., 0.),
+                sphere!(Normal, 24., 31.),
+                sphere!(Normal, -24., -31.),
+                sphere!(Normal, -24., 31.),
+                sphere!(Normal, 24., -31.),
+                sphere!(Normal, 31., 24.),
+                sphere!(Normal, -31., -24.),
+                sphere!(Normal, -31., 24.),
+                sphere!(Normal, 31., -24.),
+                sphere!(Normal, 24., 17.),
+                sphere!(Normal, -24., -17.),
+                sphere!(Normal, 24., -17.),
+                sphere!(Normal, -24., 17.),
+            ],
+        ));
+
+        //timefreeze spiral
+        levels.insert(LevelProps::new(
+            2,
+            vec![
+                vert!(-8., -5., 6.),
+                horz!(-6., -8., 8.),
+                vert!(8., -5., 5.),
+                horz!(6., -4., 8.),
+                vert!(-4., -2., 5.),
+                horz!(-2., -3., 4.),
+                vert!(4., -1., 1.),
+                horz!(2., 0., 4.),
+            ],
+            vec![
+                sphere!(Normal, -36., 24.),
+                sphere!(TimeFreeze, -36., -24.),
+                sphere!(TimeFreeze, 36., -24.),
+                sphere!(TimeFreeze, 36., 24.),
+                sphere!(TimeFreeze, -12., 24.),
+                sphere!(TimeFreeze, -12., 0.),
+                sphere!(Multiplier, 10., 0.),
+                sphere!(Normal, 18., 0.),
+                sphere!(Normal, 18., 6.),
+                sphere!(Normal, 18., -6.),
             ],
         ));
 
@@ -254,11 +319,12 @@ impl Levels {
         levels
     }
 
+    #[allow(dead_code)]
     pub fn mulligan_debug() -> Self {
         let mut levels = Levels::default();
 
         levels.insert(LevelProps::new(
-            1,
+            2,
             vec![
                 vert!(6., -5., 5.),
                 horz!(6., -6., 6.),
