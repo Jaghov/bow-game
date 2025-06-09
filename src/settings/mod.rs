@@ -30,6 +30,7 @@ pub struct Settings {
 }
 
 impl Settings {
+    #[allow(dead_code)]
     fn dan() -> Self {
         Self {
             sfx: Volume::Linear(1.),

@@ -97,7 +97,7 @@ fn set_dev_level_update(
     warn!("HOT PATCH UPDATING IS ENABLED");
     inner(commands, &mut meshes, *walls, &material, spheres);
 }
-#[cfg(feature = "dev")]
+
 fn change_level(
     keys: Res<ButtonInput<KeyCode>>,
     mut level: ResMut<Level>,
