@@ -61,7 +61,6 @@ fn despawn_arrow_on_contact(
         return;
     };
     if arrows.get(collider.body).is_err() {
-        warn!("collided, not with arrow");
         return;
     }
     commands.entity(collider.body).try_despawn();

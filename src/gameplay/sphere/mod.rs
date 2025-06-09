@@ -252,7 +252,6 @@ fn despawn_on_arrow_collision(
         return;
     };
     if arrows.get(collider.body).is_err() {
-        warn!("collided, not with arrow");
         return;
     }
     let Ok(sphere_collider) = colliders.get(trigger.target()) else {
@@ -277,7 +276,6 @@ fn despawn_on_bouncyball_collision(
         return;
     };
     if spheres.get(collider.body).is_err() {
-        warn!("collided, not with sphere");
         return;
     }
     let parent = colliders.get(trigger.target()).unwrap().body;
