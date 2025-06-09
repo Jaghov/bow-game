@@ -55,7 +55,6 @@ fn update_load_state(mut next_screen: ResMut<NextState<LoadingState>>) {
 }
 
 fn all_assets_loaded(resource_handles: Res<ResourceHandles>) -> bool {
-    info!("resource handles!");
     resource_handles.is_all_done()
 }
 

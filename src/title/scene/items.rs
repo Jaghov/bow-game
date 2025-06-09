@@ -5,6 +5,7 @@ use std::{f32::consts::FRAC_PI_2, time::Duration};
 
 use crate::{
     Screen,
+    asset_tracking::LoadResource,
     gameplay::{
         arrow::ArrowAssets,
         bow::BowAssets,
@@ -17,6 +18,9 @@ use crate::{
 };
 
 pub(super) fn plugin(app: &mut App) {
+    app.register_type::<BolfTitle>()
+        .load_resource::<BolfTitle>();
+
     app.add_systems(OnEnter(Screen::Title), spawn_items)
         .add_systems(OnEnter(Screen::Transition), start_transition_clock)
         .add_systems(
@@ -28,7 +32,25 @@ pub(super) fn plugin(app: &mut App) {
             despawn_on_complete.run_if(in_state(Screen::Transition)),
         )
         .add_systems(OnExit(Screen::Transition), remove_transition_clock)
-        .add_systems(Update, set_locations.run_if(in_state(Screen::Title)));
+        .add_systems(
+            Update,
+            update_sphere_transforms.run_if(in_state(Screen::Title)),
+        );
+}
+
+#[derive(Asset, Resource, Reflect, Clone)]
+pub struct BolfTitle {
+    #[dependency]
+    model: Handle<Scene>,
+}
+
+impl FromWorld for BolfTitle {
+    fn from_world(world: &mut World) -> Self {
+        let assets = world.resource::<AssetServer>();
+        Self {
+            model: assets.load("models/thumbnail2.glb#Scene0"),
+        }
+    }
 }
 
 #[derive(Resource)]
@@ -63,13 +85,6 @@ fn despawn_on_complete(
 #[derive(Component)]
 struct Prop;
 
-// note these are different from the game components
-#[derive(Component)]
-struct Arrow(usize);
-
-#[derive(Component)]
-struct Bow;
-
 #[derive(Component)]
 struct SphereCount(usize);
 
@@ -78,10 +93,40 @@ fn spawn_items(
     bow_assets: Res<BowAssets>,
     arrow_assets: Res<ArrowAssets>,
     sphere: Res<SphereAssets>,
+    title: Res<BolfTitle>,
 ) {
-    commands.spawn((Bow, Prop, SceneRoot(bow_assets.scene.clone())));
+    commands.spawn((
+        Prop,
+        Transform::from_xyz(
+            BLOCK_LEN * 7. - 2.85,
+            BLOCK_LEN * 4. + 1.2,
+            -1.5 - BACKDROP_OFFSET,
+        )
+        .with_rotation(Quat::from_euler(
+            EulerRot::XYX,
+            FRAC_PI_2 - 0.15,
+            FRAC_PI_2 + 0.02,
+            -0.2,
+        ))
+        .with_scale(Vec3::splat(0.5)),
+        SceneRoot(bow_assets.scene.clone()),
+    ));
     for i in (0..5) {
-        commands.spawn((Arrow(i), Prop, SceneRoot(arrow_assets.glowing.clone())));
+        let offset = i as f32 * 0.2;
+        let transform = Transform::from_xyz(
+            BLOCK_LEN * 7. - 2.83,
+            BLOCK_LEN * 4. + 0.7 - offset,
+            -1.65 - BACKDROP_OFFSET,
+        )
+        .with_rotation(Quat::from_euler(
+            EulerRot::XYX,
+            FRAC_PI_2 - 0.15,
+            FRAC_PI_2 + 0.02,
+            -0.2,
+        ))
+        .with_scale(Vec3::splat(0.5));
+
+        commands.spawn((Prop, transform, SceneRoot(arrow_assets.glowing.clone())));
     }
 
     let mesh = Mesh3d(sphere.mesh.clone());
@@ -163,44 +208,7 @@ fn spawn_items(
     ));
 }
 
-#[cfg_attr(feature = "hot", bevy_simple_subsecond_system::prelude::hot)]
-fn set_locations(
-    mut bow: Query<&mut Transform, (With<Bow>, Without<SphereCount>)>,
-    mut arrows: Query<(&mut Transform, &Arrow), (Without<Bow>, Without<SphereCount>)>,
-    mut spheres: Query<(&mut Transform, &SphereCount), (Without<Bow>, Without<Arrow>)>,
-    time: Res<Time>,
-) {
-    let mut bow = bow.single_mut().unwrap();
-
-    *bow = Transform::from_xyz(
-        BLOCK_LEN * 7. - 2.85,
-        BLOCK_LEN * 4. + 1.2,
-        -1.5 - BACKDROP_OFFSET,
-    )
-    .with_rotation(Quat::from_euler(
-        EulerRot::XYX,
-        FRAC_PI_2 - 0.15,
-        FRAC_PI_2 + 0.02,
-        -0.2,
-    ))
-    .with_scale(Vec3::splat(0.5));
-
-    for (mut arrow_trns, arrow) in &mut arrows {
-        let offset = arrow.0 as f32 * 0.2;
-        *arrow_trns = Transform::from_xyz(
-            BLOCK_LEN * 7. - 2.83,
-            BLOCK_LEN * 4. + 0.7 - offset,
-            -1.65 - BACKDROP_OFFSET,
-        )
-        .with_rotation(Quat::from_euler(
-            EulerRot::XYX,
-            FRAC_PI_2 - 0.15,
-            FRAC_PI_2 + 0.02,
-            -0.2,
-        ))
-        .with_scale(Vec3::splat(0.5));
-    }
-
+fn update_sphere_transforms(mut spheres: Query<(&mut Transform, &SphereCount)>, time: Res<Time>) {
     for (mut trns, sphere) in &mut spheres {
         use std::f32::consts::PI;
 
