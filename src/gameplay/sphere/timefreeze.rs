@@ -49,9 +49,10 @@ fn freeze_on_arrow_collision(
     let Ok(arrow) = arrows.get(collider.body) else {
         return;
     };
+    let Ok(t_collider) = colliders.get(trigger.target()) else {
+        return;
+    };
     info!("timefreeze collision: freezing time");
     commands.entity(arrow).despawn();
-    commands.trigger(FreezeTime::new(
-        colliders.get(trigger.target()).unwrap().body,
-    ));
+    commands.trigger(FreezeTime::new(t_collider.body));
 }

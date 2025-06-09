@@ -60,11 +60,15 @@ fn absorb_property<Prop>(
     };
 
     let collider_color = {
-        let material = materials.get(collider_material).unwrap();
+        let Some(material) = materials.get(collider_material) else {
+            return;
+        };
         material.base_color
     };
 
-    let absorber_material = materials.get_mut(absorber_material).unwrap();
+    let Some(absorber_material) = materials.get_mut(absorber_material) else {
+        return;
+    };
 
     absorber_material.base_color.mix_assign(collider_color, 0.3);
 

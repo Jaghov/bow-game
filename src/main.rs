@@ -1,3 +1,5 @@
+#![cfg_attr(not(feature = "dev"), windows_subsystem = "windows")]
+
 use bevy::{
     asset::AssetMetaCheck,
     prelude::*,
@@ -27,34 +29,27 @@ const UI_RENDER_LAYER: usize = 2;
 fn main() -> AppExit {
     let mut app = App::new();
 
-    app.add_plugins((
-        DefaultPlugins
-            .set(AssetPlugin {
-                meta_check: AssetMetaCheck::Never,
+    app.add_plugins((DefaultPlugins
+        .set(AssetPlugin {
+            meta_check: AssetMetaCheck::Never,
+            ..default()
+        })
+        .set(WindowPlugin {
+            primary_window: Window {
+                title: "Bolf".to_string(),
+                fit_canvas_to_parent: true,
+                resolution: WindowResolution::new(1920., 1080.),
+                // might need to adjust this for WASM
+                mode: WindowMode::Windowed,
+                //mode: WindowMode::BorderlessFullscreen(MonitorSelection::Primary),
+                // Tells wasm not to override default event handling, like F5 and Ctrl+R
+                prevent_default_event_handling: false,
+                //mode: WindowMode::BorderlessFullscreen(MonitorSelection::Primary),
                 ..default()
-            })
-            .set(WindowPlugin {
-                primary_window: Window {
-                    title: "Bolf".to_string(),
-                    fit_canvas_to_parent: true,
-                    position: WindowPosition::Centered(MonitorSelection::Index(1)),
-                    resolution: WindowResolution::new(1920., 1080.),
-                    // might need to adjust this for WASM
-                    mode: WindowMode::Windowed,
-                    // Tells wasm not to override default event handling, like F5 and Ctrl+R
-                    prevent_default_event_handling: false,
-                    //mode: WindowMode::BorderlessFullscreen(MonitorSelection::Primary),
-                    ..default()
-                }
-                .into(),
-                ..default()
-            }),
-        MeshPickingPlugin,
-    ))
-    .insert_resource(MeshPickingSettings {
-        require_markers: true,
-        ..default()
-    });
+            }
+            .into(),
+            ..default()
+        }),));
 
     app.register_type::<AppSystems>()
         .register_type::<Screen>()
@@ -101,7 +96,6 @@ pub enum Screen {
     Splash,
     Loading,
     Title,
-    Credits,
     Transition,
     Gameplay,
 }

@@ -33,9 +33,13 @@ pub fn freeze_time(
     transforms: Query<&Transform>,
 ) {
     let event = trigger.event();
+
+    let Ok(transform) = transforms.get(event.sphere) else {
+        return;
+    };
     commands.insert_resource(FreezeLocation {
         sphere: event.sphere,
-        location: transforms.get(event.sphere).unwrap().translation,
+        location: transform.translation,
     });
     state.set(GameState::TimeFreeze);
 }

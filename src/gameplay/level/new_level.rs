@@ -98,7 +98,7 @@ fn observe_level_completion(
     let remaining_balls_count = sensor_balls.iter().count() + markable_balls.iter().count();
 
     if remaining_balls_count == 0 {
-        #[cfg(all(not(feature = "web"), not(feature = "webgpu")))]
+        #[cfg(not(feature = "web"))]
         commands.trigger(RadialBackdropPulse);
         commands.spawn((
             AudioPlayer::new(sfx.level_complete_sfx.clone()),

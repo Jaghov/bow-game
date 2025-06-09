@@ -1,8 +1,6 @@
-##  Code to copy for usage
+# Bolf
 
-```
-#[cfg_attr(feature = "hot", bevy_simple_subsecond_system::prelude::hot)]
-```
+golf, but with a bow
 
 ## Ball types
 
@@ -18,14 +16,3 @@ crashes into other balls and breaks at the end of the turn
 pulls balls close to it
 - Absorber Ball
 A bouncy ball that will absorb the other balls' capabilities on impact
-
-
-## TODOs
-- Animate normal despawn (with sounds)
-- Animate backdrop on level start and finish
-- Animate walls during the screen transition period
-- Animate spheres upon entering a level
-
-
-## Credits to add
-quiver: https://kubuz520.itch.io/low-polly-bow-arrow-and-quiver

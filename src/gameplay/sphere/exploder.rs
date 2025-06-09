@@ -134,7 +134,9 @@ fn light_fuse(
     assets: Res<ExploderAssets>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    let (exploder, current_fuse, has_indicator) = exploders.get_mut(trigger.target()).unwrap();
+    let Ok((exploder, current_fuse, has_indicator)) = exploders.get_mut(trigger.target()) else {
+        return;
+    };
 
     if current_fuse {
         return;
@@ -169,8 +171,12 @@ fn animate_indicator(
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     for (fuse, indicator) in ignited_exploders {
-        let indicator = indicators.get(indicator.0).unwrap();
-        let material = materials.get_mut(indicator).unwrap();
+        let Ok(indicator) = indicators.get(indicator.0) else {
+            continue;
+        };
+        let Some(material) = materials.get_mut(indicator) else {
+            continue;
+        };
         let color: Color = match fuse {
             Some(fuse) => match fuse.countdown {
                 3 => YELLOW.into(),
