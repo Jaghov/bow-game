@@ -111,6 +111,13 @@ fn spawn_items(
         .with_scale(Vec3::splat(0.5)),
         SceneRoot(bow_assets.scene.clone()),
     ));
+    commands.spawn((
+        Prop,
+        Transform::from_xyz(BLOCK_LEN * 7. - 3.2, BLOCK_LEN * 4., 1. - BACKDROP_OFFSET)
+            .with_rotation(Quat::from_euler(EulerRot::XYX, FRAC_PI_2, FRAC_PI_2, 0.0)),
+        SceneRoot(title.model.clone()),
+    ));
+
     for i in (0..5) {
         let offset = i as f32 * 0.2;
         let transform = Transform::from_xyz(
