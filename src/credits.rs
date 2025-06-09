@@ -1,11 +1,6 @@
 //! A credits screen that can be accessed from the title screen.
 
-use bevy::{
-    color::palettes::tailwind::{SKY_300, SKY_900},
-    ecs::spawn::SpawnIter,
-    prelude::*,
-    ui::Val::*,
-};
+use bevy::{color::palettes::tailwind::SKY_900, ecs::spawn::SpawnIter, prelude::*, ui::Val::*};
 
 use crate::{Screen, theme::widgets};
 
