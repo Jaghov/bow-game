@@ -257,8 +257,10 @@ fn despawn_on_arrow_collision(
     let Ok(sphere_collider) = colliders.get(trigger.target()) else {
         return;
     };
-
-    commands.entity(sphere_collider.body).trigger(DestroySphere);
+    let Ok(mut entity) = commands.get_entity(sphere_collider.body) else {
+        return;
+    };
+    entity.trigger(DestroySphere);
 }
 
 fn despawn_on_bouncyball_collision(
@@ -278,9 +280,14 @@ fn despawn_on_bouncyball_collision(
     if spheres.get(collider.body).is_err() {
         return;
     }
-    let parent = colliders.get(trigger.target()).unwrap().body;
+    let Ok(parent) = colliders.get(trigger.target()) else {
+        return;
+    };
 
-    commands.entity(parent).trigger(DestroySphere);
+    let Ok(mut entity) = commands.get_entity(parent.body) else {
+        return;
+    };
+    entity.trigger(DestroySphere);
 }
 
 // simple observer that will just handle the hit by explosion
@@ -293,6 +300,8 @@ fn despawn_on_hit_by_explosion(
     if absorbers.get(trigger.target()).is_ok() {
         return;
     };
-
-    commands.entity(trigger.target()).trigger(DestroySphere);
+    let Ok(mut entity) = commands.get_entity(trigger.target()) else {
+        return;
+    };
+    entity.trigger(DestroySphere);
 }
