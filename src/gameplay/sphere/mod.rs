@@ -255,9 +255,11 @@ fn despawn_on_arrow_collision(
         warn!("collided, not with arrow");
         return;
     }
-    let parent = colliders.get(trigger.target()).unwrap().body;
+    let Ok(sphere_collider) = colliders.get(trigger.target()) else {
+        return;
+    };
 
-    commands.entity(parent).trigger(DestroySphere);
+    commands.entity(sphere_collider.body).trigger(DestroySphere);
 }
 
 fn despawn_on_bouncyball_collision(
