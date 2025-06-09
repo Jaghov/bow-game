@@ -38,11 +38,7 @@ fn insert_bouncy(
     }
 
     commands
-        .insert((
-            Dominance(-1),
-            Restitution::PERFECTLY_ELASTIC,
-            Friction::ZERO,
-        ))
+        .insert((Restitution::PERFECTLY_ELASTIC, Friction::ZERO))
         .observe(on_multiply)
         .observe(despawn_arrow_on_contact)
         .observe(increase_velocity_on_collision)
