@@ -13,7 +13,10 @@ use crate::{
 
 use super::Sphere;
 use avian3d::prelude::*;
-use bevy::{color::palettes::tailwind::YELLOW_500, prelude::*, scene::SceneInstanceReady};
+use bevy::{
+    color::palettes::tailwind::YELLOW_500, ecs::entity_disabling::Disabled, prelude::*,
+    scene::SceneInstanceReady,
+};
 use bevy_mod_outline::OutlineVolume;
 
 pub(super) fn plugin(app: &mut App) {
@@ -33,13 +36,13 @@ pub(super) fn plugin(app: &mut App) {
 }
 
 #[derive(Component)]
-struct MarkedForRemoval;
+struct MarkForImmediateRemoval;
 
 fn marked_for_removal_cleanup(
     mut commands: Commands,
-    entities: Query<Entity, With<MarkedForRemoval>>,
+    entities: Query<(Entity, Has<Disabled>), With<MarkForImmediateRemoval>>,
 ) {
-    for entity in entities {
+    for (entity, _) in entities {
         commands.entity(entity).try_despawn();
     }
 }
@@ -68,7 +71,7 @@ struct Gib;
 fn destroy_sphere(
     trigger: Trigger<DestroySphere>,
     absorber: Query<(), With<Absorber>>,
-    marked: Query<(), With<MarkedForRemoval>>,
+    marked: Query<(), With<MarkForImmediateRemoval>>,
     mut commands: Commands,
     meshes: Res<GibMeshes>,
     transforms: Query<(&Transform, &MeshMaterial3d<StandardMaterial>)>,
@@ -108,9 +111,11 @@ fn destroy_sphere(
         ))
     }
 
-    commands
-        .entity(trigger.target())
-        .insert((Visibility::Hidden, MarkedForRemoval));
+    commands.entity(trigger.target()).insert((
+        Visibility::Hidden,
+        Disabled,
+        MarkForImmediateRemoval,
+    ));
     commands.spawn_batch(meshes_to_spawn);
 }
 fn tick_being_destroyed(mut being_destroyed: Query<&mut BeingDestroyed>, time: Res<Time>) {
