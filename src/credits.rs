@@ -1,23 +1,34 @@
 //! A credits screen that can be accessed from the title screen.
 
-use bevy::{ecs::spawn::SpawnIter, prelude::*, ui::Val::*};
+use bevy::{
+    color::palettes::tailwind::{SKY_300, SKY_900},
+    ecs::spawn::SpawnIter,
+    prelude::*,
+    ui::Val::*,
+};
 
 use crate::{Screen, theme::widgets};
 
-pub(super) fn plugin(app: &mut App) {
-    app.add_systems(OnEnter(Screen::Credits), spawn_credits_screen);
+#[derive(SubStates, Debug, Hash, PartialEq, Eq, Clone, Copy, Default, Reflect)]
+#[source(Screen = Screen::Title)]
+#[states(scoped_entities)]
+pub enum CreditsState {
+    #[default]
+    None,
+    View,
+}
 
-    // we do this soon
-    // app.register_type::<CreditsMusic>();
-    // app.load_resource::<CreditsMusic>();
-    // app.add_systems(OnEnter(Screen::Credits), start_credits_music);
-    // app.add_systems(OnExit(Screen::Credits), stop_credits_music);
+pub(super) fn plugin(app: &mut App) {
+    app.add_sub_state::<CreditsState>();
+    app.add_systems(OnEnter(CreditsState::View), spawn_credits_screen);
 }
 
 fn spawn_credits_screen(mut commands: Commands) {
     commands.spawn((
         widgets::ui_root("Credits Screen"),
-        StateScoped(Screen::Credits),
+        BackgroundColor(SKY_900.into()),
+        StateScoped(CreditsState::View),
+        GlobalZIndex(4),
         children![
             widgets::header("Created by"),
             created_by(),
@@ -30,12 +41,18 @@ fn spawn_credits_screen(mut commands: Commands) {
 
 fn created_by() -> impl Bundle {
     grid(vec![
-        ["Joseph Aghoghovbia (radifire)", "Absolutely knackered"],
-        ["Daniel Gallups (dsgallups)", "Howdy-doo"],
-        ["Anas (Duck165)", "Hating on Jungle"],
+        [
+            "Daniel Gallups (dsgallups)",
+            "Level design, gameplay, invariant substates, wasm crashes",
+        ],
+        [
+            "Joseph Aghoghovbia (radifire)",
+            "Level animations, SFX implementations, gameplay",
+        ],
+        ["Adelaide Ellicott", "All Music, Sound Effects"],
         [
             "Shane Jones (Pluggerman)",
-            "Is that a lever or are you just happy to see me?",
+            "Bow animation, Bolf model, Arrows, Modeling",
         ],
     ])
 }
@@ -46,10 +63,8 @@ fn assets() -> impl Bundle {
             "Bevy logo",
             "All rights reserved by the Bevy Foundation, permission granted for splash screen use when unmodified",
         ],
-        ["BGM", "Music provided by Duck165"],
-        ["Rewind SFX", "CC0 by Zapslat"],
-        ["Button SFX", "CC0 by Jaszunio15"],
-        ["Button SFX", "CC0 by Jaszunio15"],
+        ["Level Completion SFX", "Anas (Duck165)"],
+        ["Bow Model", "CC3.0 by Zsky via poly.pizza"],
     ])
 }
 
@@ -81,35 +96,9 @@ fn grid(content: Vec<[&'static str; 2]>) -> impl Bundle {
     )
 }
 
-fn enter_title_screen(_: Trigger<Pointer<Click>>, mut next_screen: ResMut<NextState<Screen>>) {
-    next_screen.set(Screen::Title);
+fn enter_title_screen(
+    _: Trigger<Pointer<Click>>,
+    mut next_screen: ResMut<NextState<CreditsState>>,
+) {
+    next_screen.set(CreditsState::None);
 }
-
-// #[derive(Resource, Asset, Clone, Reflect)]
-// #[reflect(Resource)]
-// struct CreditsMusic {
-//     #[dependency]
-//     handle: Handle<AudioSource>,
-//     entity: Option<Entity>,
-// }
-
-// impl FromWorld for CreditsMusic {
-//     fn from_world(world: &mut World) -> Self {
-//         let assets = world.resource::<AssetServer>();
-//         Self {
-//             handle: assets.load("audio/music/Monkeys Spinning Monkeys.ogg"),
-//             entity: None,
-//         }
-//     }
-// }
-
-// fn start_credits_music(mut commands: Commands, mut credits_music: ResMut<CreditsMusic>) {
-//     let handle = credits_music.handle.clone();
-//     credits_music.entity = Some(commands.spawn(music(handle)).id());
-// }
-
-// fn stop_credits_music(mut commands: Commands, mut credits_music: ResMut<CreditsMusic>) {
-//     if let Some(entity) = credits_music.entity.take() {
-//         commands.entity(entity).despawn();
-//     }
-// }

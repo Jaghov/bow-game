@@ -37,10 +37,10 @@ fn main() -> AppExit {
                 primary_window: Window {
                     title: "Bolf".to_string(),
                     fit_canvas_to_parent: true,
-                    position: WindowPosition::Centered(MonitorSelection::Index(1)),
                     resolution: WindowResolution::new(1920., 1080.),
                     // might need to adjust this for WASM
                     mode: WindowMode::Windowed,
+                    //mode: WindowMode::BorderlessFullscreen(MonitorSelection::Primary),
                     // Tells wasm not to override default event handling, like F5 and Ctrl+R
                     prevent_default_event_handling: false,
                     //mode: WindowMode::BorderlessFullscreen(MonitorSelection::Primary),
@@ -101,7 +101,6 @@ pub enum Screen {
     Splash,
     Loading,
     Title,
-    Credits,
     Transition,
     Gameplay,
 }

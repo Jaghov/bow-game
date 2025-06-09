@@ -1,5 +1,6 @@
 use crate::{
     Screen,
+    credits::CreditsState,
     settings::SettingsState,
     theme::{interaction::OnPress, widgets},
 };
@@ -45,8 +46,11 @@ fn transition_to_gameplay(_trigger: Trigger<OnPress>, mut next_screen: ResMut<Ne
     next_screen.set(Screen::Transition);
 }
 
-fn enter_credits_screen(_trigger: Trigger<OnPress>, mut next_screen: ResMut<NextState<Screen>>) {
-    next_screen.set(Screen::Credits);
+fn enter_credits_screen(
+    _trigger: Trigger<OnPress>,
+    mut next_screen: ResMut<NextState<CreditsState>>,
+) {
+    next_screen.set(CreditsState::View);
 }
 
 fn enter_settings(_: Trigger<OnPress>, mut settings: ResMut<NextState<SettingsState>>) {
