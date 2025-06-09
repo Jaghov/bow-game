@@ -1,6 +1,6 @@
 [tasks.web]
 command = "bevy"
-args = ["run", "--features", "web", "web"]
+args = ["run", "--features", "web", "--release", "web"]
 
 
 [tasks.build-web]

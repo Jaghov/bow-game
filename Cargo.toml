@@ -81,6 +81,11 @@ bevy_simple_subsecond_system = { version = "0.1.11", optional = true }
 rand_chacha = "0.9.0"
 bevy_mod_outline = "0.10.0"
 bevy_tweening = "0.13.0"
+# Compile low-severity logs out of web builds for performance.
+tracing = { version = "0.1", features = [
+    "max_level_debug",
+    "release_max_level_warn",
+] }
 
 [target.wasm32-unknown-unknown.dependencies]
 getrandom = { version = "0.3", features = ["wasm_js"] }

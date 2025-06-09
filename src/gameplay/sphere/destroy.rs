@@ -28,7 +28,20 @@ pub(super) fn plugin(app: &mut App) {
                 (despawn_destroyed, limit_gib_population).in_set(GameSet::Update),
             ),
         )
+        .add_systems(PostUpdate, marked_for_removal_cleanup)
         .add_systems(Last, yoink_gib_meshes);
+}
+
+#[derive(Component)]
+struct MarkedForRemoval;
+
+fn marked_for_removal_cleanup(
+    mut commands: Commands,
+    entities: Query<Entity, With<MarkedForRemoval>>,
+) {
+    for entity in entities {
+        commands.entity(entity).try_despawn();
+    }
 }
 
 #[derive(Event)]
@@ -55,6 +68,7 @@ struct Gib;
 fn destroy_sphere(
     trigger: Trigger<DestroySphere>,
     absorber: Query<(), With<Absorber>>,
+    marked: Query<(), With<MarkedForRemoval>>,
     mut commands: Commands,
     meshes: Res<GibMeshes>,
     transforms: Query<(&Transform, &MeshMaterial3d<StandardMaterial>)>,
@@ -62,6 +76,10 @@ fn destroy_sphere(
     // absorbers are the exception and will be custom despawned.
     // you would ideally attach this listener to all balls but ehh why
     if absorber.get(trigger.target()).is_ok() {
+        return;
+    }
+
+    if marked.get(trigger.target()).is_ok() {
         return;
     }
 
@@ -90,7 +108,9 @@ fn destroy_sphere(
         ))
     }
 
-    commands.entity(trigger.target()).try_despawn();
+    commands
+        .entity(trigger.target())
+        .insert((Visibility::Hidden, MarkedForRemoval));
     commands.spawn_batch(meshes_to_spawn);
 }
 fn tick_being_destroyed(mut being_destroyed: Query<&mut BeingDestroyed>, time: Res<Time>) {
