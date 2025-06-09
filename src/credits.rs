@@ -29,6 +29,8 @@ fn spawn_credits_screen(mut commands: Commands) {
             created_by(),
             widgets::header("Assets"),
             assets(),
+            widgets::header("Notable Mentions"),
+            notable_mentions(),
             widgets::button("Back", enter_title_screen),
         ],
     ));
@@ -47,9 +49,16 @@ fn created_by() -> impl Bundle {
         ["Adelaide Ellicott", "All Music, Sound Effects"],
         [
             "Shane Jones (Pluggerman)",
-            "Bow animation, Bolf model, Arrows, Modeling",
+            "Bow animation, Bolf model, Bolf balls, Arrows, Modeling",
         ],
     ])
+}
+
+fn notable_mentions() -> impl Bundle {
+    grid(vec![[
+        "Jan Hohenheim",
+        "Mentioned bows in the bevy #offtopic channel, debugging support",
+    ]])
 }
 
 fn assets() -> impl Bundle {
