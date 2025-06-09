@@ -1,4 +1,4 @@
-use std::fmt;
+use std::{f32::consts::FRAC_PI_4, fmt};
 
 use bevy::prelude::*;
 
@@ -156,6 +156,7 @@ impl Levels {
         //         sphere!(Normal, 40., 15.),
         //     ],
         // ));
+        //
 
         // simple first level
         levels.insert(LevelProps::new(
@@ -313,6 +314,67 @@ impl Levels {
                 sphere!(Normal, 29., -24.),
                 sphere!(Normal, 33., -24.),
                 sphere!(Normal, 35., -23.),
+            ],
+        ));
+
+        levels.insert(LevelProps::new(
+            3,
+            vec![
+                horz!(4., -7., 8.),
+                horz!(2., -7., 6.),
+                vert!(8., -5., 3.),
+                vert!(6., -3., 1.),
+                WallBuilder::block_rot(3., 6., 44.5, 20.5, FRAC_PI_4),
+                WallBuilder::block_rot(3., 6., 44.5, -26.5, -FRAC_PI_4),
+                horz!(-3., 4., 5.),
+                horz!(-5., 4., 7.),
+                horz!(-6., 0., 4.),
+                horz!(-2., 0., 4.),
+                vert!(-1., -6., -2.),
+            ],
+            vec![
+                sphere!(Bouncy, 0., 18.),
+                sphere!(Bouncy, 6., 18.),
+                sphere!(Bouncy, 12., 18.),
+                sphere!(Bouncy, 18., 18.),
+                sphere!(Bouncy, 24., 18.),
+                sphere!(Normal, 42., 0.),
+                sphere!(Bouncy, 42., 6.),
+                sphere!(Bouncy, 42., -6.),
+                sphere!(Bouncy, 42., -12.),
+                sphere!(Normal, 0., 0.),
+                sphere!(Bouncy, 24., -24.),
+                sphere!(Multiplier, 18., -24.),
+                sphere!(Multiplier, 15., -24.),
+                sphere!(Multiplier, 12., -24.),
+                sphere!(Normal, 9., -24.),
+                sphere!(Normal, 9., -21.),
+                sphere!(Normal, 9., -27.),
+                sphere!(Normal, 9., -30.),
+                sphere!(Normal, 9., -18.),
+                sphere!(Normal, 12., -27.),
+                sphere!(Normal, 12., -21.),
+                sphere!(Normal, 12., -18.),
+                sphere!(Normal, 12., -30.),
+                sphere!(Normal, 15., -27.),
+                sphere!(Normal, 15., -21.),
+                sphere!(Normal, 15., -18.),
+                sphere!(Normal, 15., -30.),
+                sphere!(Normal, 6., -24.),
+                sphere!(Normal, 6., -21.),
+                sphere!(Normal, 6., -27.),
+                sphere!(Normal, 6., -30.),
+                sphere!(Normal, 6., -18.),
+                sphere!(Normal, 3., -24.),
+                sphere!(Normal, 3., -21.),
+                sphere!(Normal, 3., -27.),
+                sphere!(Normal, 3., -30.),
+                sphere!(Normal, 3., -18.),
+                sphere!(Normal, 0., -24.),
+                sphere!(Normal, 0., -21.),
+                sphere!(Normal, 0., -27.),
+                sphere!(Normal, 0., -30.),
+                sphere!(Normal, 0., -18.),
             ],
         ));
 

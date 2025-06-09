@@ -12,8 +12,6 @@ mod dev;
 mod gameplay;
 mod hdr_hack;
 mod loading;
-#[cfg(feature = "particles")]
-mod particles;
 mod rand;
 mod settings;
 mod splash;
@@ -92,9 +90,6 @@ fn main() -> AppExit {
 
     #[cfg(feature = "dev")]
     app.add_plugins(dev::plugin);
-
-    #[cfg(feature = "particles")]
-    app.add_plugins(particles::plugin);
 
     app.run()
 }

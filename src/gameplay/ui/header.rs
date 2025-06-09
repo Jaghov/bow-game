@@ -2,7 +2,10 @@ use std::time::Duration;
 
 use bevy::color::palettes::tailwind::GRAY_700;
 
-use crate::gameplay::{level::Level, sphere::Sphere};
+use crate::gameplay::{
+    level::Level,
+    sphere::{MarkedForDeletion, MustMark, Sphere},
+};
 
 use super::*;
 
@@ -34,11 +37,12 @@ fn tick_bctimer(mut state: ResMut<BallCountState>, time: Res<Time>) {
 }
 
 fn update_ball_count(
-    balls: Query<(), With<Sphere>>,
+    sensor_balls: Query<(), (With<Sphere>, Without<MustMark>)>,
+    markable_balls: Query<(), (With<MustMark>, Without<MarkedForDeletion>)>,
     mut ball_count: Single<&mut Text, With<BallCountText>>,
     mut state: ResMut<BallCountState>,
 ) {
-    let count = balls.iter().count() as i32;
+    let count = (sensor_balls.iter().count() + markable_balls.iter().count()) as i32;
 
     if state.count == count {
         return;

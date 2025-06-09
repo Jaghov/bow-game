@@ -2,13 +2,18 @@ use avian3d::prelude::*;
 use bevy::prelude::*;
 
 use crate::{
-    gameplay::sphere::{Absorber, FromMultiply, ShouldMultiply, Sphere, SphereAssets},
+    gameplay::{
+        arrow::{Arrow, NockedOn},
+        level::Walls,
+        sphere::{Absorber, FromMultiply, MustMark, ShouldMultiply, Sphere, SphereAssets},
+    },
     third_party::avian3d::GameLayer,
     world::GAME_PLANE,
 };
 
 #[derive(Component, Default)]
 #[require(Sphere)]
+#[require(MustMark)]
 pub struct Bouncy;
 
 pub(super) fn plugin(app: &mut App) {
@@ -33,13 +38,57 @@ fn insert_bouncy(
     }
 
     commands
-        .insert((
-            Dominance(-1),
-            Restitution::PERFECTLY_ELASTIC,
-            Friction::ZERO,
-        ))
+        .insert((Restitution::PERFECTLY_ELASTIC, Friction::ZERO))
         .observe(on_multiply)
+        .observe(despawn_arrow_on_contact)
+        .observe(increase_velocity_on_collision)
         .observe(super::despawn_on_hit_by_explosion);
+}
+
+fn despawn_arrow_on_contact(
+    trigger: Trigger<OnCollisionStart>,
+    mut commands: Commands,
+    absorbers: Query<(), With<Absorber>>,
+    arrows: Query<(), (With<Arrow>, Without<NockedOn>)>,
+    colliders: Query<&ColliderOf>,
+) {
+    if absorbers.get(trigger.target()).is_ok() {
+        return;
+    };
+
+    let event = trigger.event();
+    let Ok(collider) = colliders.get(event.collider) else {
+        return;
+    };
+    if arrows.get(collider.body).is_err() {
+        return;
+    }
+    commands.entity(collider.body).try_despawn();
+}
+
+fn increase_velocity_on_collision(
+    trigger: Trigger<OnCollisionStart>,
+    valid_colliders: Query<(), (Without<NockedOn>, Without<Walls>)>,
+    colliders: Query<&ColliderOf>,
+    mut velocity: Query<&mut LinearVelocity>,
+) {
+    let event = trigger.event();
+    let Ok(collider) = colliders.get(event.collider) else {
+        return;
+    };
+    if valid_colliders.get(collider.body).is_ok() {
+        return;
+    }
+
+    let Ok(ball_collider) = colliders.get(trigger.target()) else {
+        return;
+    };
+
+    let Ok(mut lvel) = velocity.get_mut(ball_collider.body) else {
+        return;
+    };
+
+    lvel.0 *= 1.5;
 }
 
 fn on_multiply(

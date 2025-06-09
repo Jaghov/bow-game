@@ -74,6 +74,18 @@ impl WallBuilder {
             transform,
         }
     }
+    pub fn block_rot(x_len: f32, y_len: f32, x: f32, y: f32, rot: f32) -> Self {
+        let mesh = Cuboid::new(x_len, y_len, BLOCK_LEN);
+
+        let collider = Collider::cuboid(x_len, y_len, BLOCK_LEN);
+
+        let transform = Transform::from_xyz(x, y, 0.).with_rotation(Quat::from_rotation_z(rot));
+        Self {
+            mesh: WallMesh::Cuboid(mesh),
+            collider,
+            transform,
+        }
+    }
 }
 
 /// Values are automatically multiplied by block len

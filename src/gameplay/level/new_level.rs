@@ -11,9 +11,9 @@ use crate::{
         gameover::GameOverState,
         level::{
             Level, LevelState, Levels, SPHERE_START_PLANE, WALL_START_PLANE, WallMaterial,
-            WallMesh, Walls, sphere::SphereType, timer::LevelSetupTimer,
+            WallMesh, Walls, timer::LevelSetupTimer,
         },
-        sphere::Sphere,
+        sphere::{MarkedForDeletion, MustMark, Sphere},
     },
     settings::Settings,
     third_party::avian3d::GameLayer,
@@ -70,7 +70,8 @@ struct LevelCompletion {
 }
 fn observe_level_completion(
     mut commands: Commands,
-    balls: Query<&SphereType, With<Sphere>>,
+    sensor_balls: Query<(), (With<Sphere>, Without<MustMark>)>,
+    markable_balls: Query<(), (With<MustMark>, Without<MarkedForDeletion>)>,
     mut level: ResMut<Level>,
     mut next_state: ResMut<NextState<LevelState>>,
     backdrop_pulse: Res<RadialBackdropPulse>,
@@ -95,16 +96,7 @@ fn observe_level_completion(
         return;
     }
 
-    // Check if only bouncy, absorber, or gravity balls remain (these don't count toward completion)
-    let remaining_balls_count = balls
-        .iter()
-        .filter(|sphere_type| {
-            !matches!(
-                sphere_type,
-                SphereType::Bouncy | SphereType::Absorber | SphereType::Gravity
-            )
-        })
-        .count();
+    let remaining_balls_count = sensor_balls.iter().count() + markable_balls.iter().count();
 
     if remaining_balls_count == 0 {
         commands.run_system(backdrop_pulse.0);

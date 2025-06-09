@@ -9,13 +9,13 @@ mod items;
 const CAMERA_POSITION: Vec3 = Vec3::new(
     BLOCK_LEN * 7. + 5.5,
     BLOCK_LEN * 3. + 4.,
-    1. - BACKDROP_OFFSET,
+    2. - BACKDROP_OFFSET,
 );
 
 const CAMERA_LOOK_AT: Vec3 = Vec3::new(
-    BLOCK_LEN * 6. + 4.5,
+    BLOCK_LEN * 6. + 2.5,
     BLOCK_LEN * 4. + 3.,
-    -3. - BACKDROP_OFFSET,
+    -2. - BACKDROP_OFFSET,
 );
 
 pub(super) fn plugin(app: &mut App) {

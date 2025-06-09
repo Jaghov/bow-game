@@ -2,13 +2,14 @@ use avian3d::prelude::*;
 use bevy::prelude::*;
 
 use crate::{
-    gameplay::sphere::{Bouncy, Exploder, Multiplier, Sphere, SphereAssets},
+    gameplay::sphere::{Bouncy, Exploder, Multiplier, MustMark, Sphere, SphereAssets},
     third_party::avian3d::GameLayer,
 };
 
 /// WIP, need to fix a few systems
 #[derive(Component)]
 #[require(Sphere)]
+#[require(MustMark)]
 pub struct Absorber;
 
 pub(super) fn plugin(app: &mut App) {
