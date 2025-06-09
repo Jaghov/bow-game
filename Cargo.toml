@@ -17,15 +17,14 @@ dev = [
     "dep:bevy-inspector-egui",
     "dep:egui_dock",
     "dep:transform-gizmo-egui",
+    "bevy/sysinfo_plugin",
 ]
 dynamic_linking = ["bevy/dynamic_linking"]
-web = ["bevy/webgl2"]
-webgpu = ["bevy/webgpu"]
+web = []
+webgpu = ["web", "bevy/webgpu"]
 native = [
     "avian3d/simd",
     "avian3d/parallel",
-    "bevy/smaa_luts",
-    "bevy/sysinfo_plugin",
     "bevy/multi_threaded", # not useful for web
 ]
 # See https://github.com/TheBevyFlock/bevy_simple_subsecond_system for info on use
@@ -46,14 +45,12 @@ bevy = { version = "0.16", default-features = false, features = [
     "bevy_audio",
     "flac",
     "bevy_asset",
-    "bevy_animation",
     "bevy_color",
     "bevy_core_pipeline",
     "bevy_gilrs",
     "bevy_gizmos",
     "bevy_gltf",
     "bevy_input_focus",
-    "bevy_mesh_picking_backend",
     "bevy_pbr",
     "bevy_picking",
     "bevy_render",
@@ -64,16 +61,14 @@ bevy = { version = "0.16", default-features = false, features = [
     "bevy_ui_picking_backend",
     "bevy_window",
     "bevy_winit",
-    "custom_cursor",
     "default_font",
     "hdr",
-    "ktx2",
-    "multi_threaded",
     "png",
     "std",
-    "smaa_luts",
-    "std",
     "tonemapping_luts",
+    "x11",
+    "wayland",
+    "webgl2",
 ] }
 bitflags = "2.9.0"
 bevy_trauma_shake = "0.5.0"
@@ -87,44 +82,6 @@ rand_chacha = "0.9.0"
 bevy_mod_outline = "0.10.0"
 bevy_tweening = "0.13.0"
 
-[target.x86_64-unknown-linux-gnu.dependencies]
-bevy = { version = "0.16.1", default-features = false, features = [
-    "animation",
-    "bevy_audio",
-    "bevy_asset",
-    "bevy_animation",
-    "bevy_color",
-    "bevy_core_pipeline",
-    "bevy_gilrs",
-    "bevy_gizmos",
-    "bevy_gltf",
-    "bevy_input_focus",
-    "bevy_mesh_picking_backend",
-    "bevy_pbr",
-    "bevy_picking",
-    "bevy_render",
-    "bevy_scene",
-    "bevy_state",
-    "bevy_text",
-    "bevy_ui",
-    "bevy_ui_picking_backend",
-    "bevy_window",
-    "bevy_winit",
-    "custom_cursor",
-    "default_font",
-    "flac",
-    "hdr",
-    "ktx2",
-    "multi_threaded",
-    "png",
-    "smaa_luts",
-    "std",
-    "tonemapping_luts",
-    "webgl2",
-    "x11",
-    "wayland",
-] }
-
 [target.wasm32-unknown-unknown.dependencies]
 getrandom = { version = "0.3", features = ["wasm_js"] }
 
@@ -135,6 +92,9 @@ opt-level = 1
 [profile.dev.package."*"]
 opt-level = 3
 
+[profile.dev.package.wgpu-types]
+debug-assertions = false
+
 [lints.clippy]
 type-complexity = "allow"
 too-many-arguments = "allow"
@@ -143,16 +103,14 @@ double-parens = "allow"
 [lints.rust]
 unused_parens = "allow"
 
-# Also, no wasm-opt performed by trunk if not the release profile
 [profile.release]
-opt-level = "s"
-codegen-units = 1
-
-# this is what `release` should be
-[profile.release-dist]
-inherits = "release"
 opt-level = 3
 lto = "fat"
 codegen-units = 1
 strip = true
 panic = "abort"
+
+[profile.web-release]
+inherits = "release"
+opt-level = "s"
+codegen-units = 1

@@ -2,9 +2,19 @@
 command = "bevy"
 args = ["run", "--features", "web", "web"]
 
-[tasks.chrome]
+
+[tasks.build-web]
+command = "bevy"
+args = ["build", "--features", "web", "--release", "web"]
+
+[tasks.webgpu]
 command = "bevy"
 args = ["run", "--features", "webgpu", "web"]
+
+
+[tasks.build-webgpu]
+command = "bevy"
+args = ["build", "--features", "webgpu", "--release", "web"]
 
 
 [tasks.run]
@@ -24,18 +34,14 @@ command = "cargo"
 args = ["run", "--features", "dev dynamic_linking native"]
 
 
-[tasks.release]
+[tasks.build-release]
 command = "cargo"
-args = ["build", "--features", "native", "--profile", "release-dist"]
+args = ["build", "--features", "native", "--release"]
 
 
 [tasks.run-release]
 command = "cargo"
-args = ["run", "--features", "native", "--profile", "release-dist"]
-
-[tasks.brp]
-command = "cargo"
-args = ["run", "--features", "dev", "--bin", "brp"]
+args = ["run", "--features", "native", "--release"]
 
 [tasks.dhot]
 command = "dx"

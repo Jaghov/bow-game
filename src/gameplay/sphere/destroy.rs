@@ -125,10 +125,10 @@ fn spawn_gib_scene(mut commands: Commands, assets: Res<SphereAssets>) {
         );
 }
 
-#[cfg(all(not(feature = "web"), not(feature = "webgpu")))]
+#[cfg(not(feature = "web"))]
 const MAX_GIBS: usize = 600;
 
-#[cfg(any(feature = "web", feature = "webgpu"))]
+#[cfg(feature = "web")]
 const MAX_GIBS: usize = 100;
 
 #[derive(Resource, Default)]
