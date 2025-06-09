@@ -293,7 +293,6 @@ impl Levels {
                 sphere!(Bouncy, 42., 6.),
                 sphere!(Bouncy, 42., -6.),
                 sphere!(Bouncy, 42., -12.),
-                sphere!(Normal, 0., 0.),
                 sphere!(Bouncy, 24., -24.),
                 sphere!(Multiplier, 18., -24.),
                 sphere!(Multiplier, 15., -24.),
