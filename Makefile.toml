@@ -5,7 +5,16 @@ args = ["run", "--features", "web", "--release", "web", "--wasm-opt", "false"]
 
 [tasks.build-web]
 command = "bevy"
-args = ["build", "--features", "web", "--release", "web", "--wasm-opt", "false"]
+args = [
+    "build",
+    "--features",
+    "web",
+    "--release",
+    "web",
+    "--wasm-opt",
+    "false",
+    "--bundle",
+]
 
 [tasks.webgpu]
 command = "bevy"
