@@ -45,6 +45,7 @@ fn insert_bouncy(
         .observe(on_multiply)
         .observe(despawn_arrow_on_contact)
         .observe(increase_velocity_on_collision)
+        .observe(super::mark_for_deletion)
         .observe(super::despawn_on_hit_by_explosion);
 }
 

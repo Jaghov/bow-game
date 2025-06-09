@@ -35,7 +35,10 @@ pub use absorber::*;
 
 use crate::{
     asset_tracking::LoadResource,
-    gameplay::arrow::{Arrow, NockedOn},
+    gameplay::{
+        arrow::{Arrow, NockedOn},
+        level::Walls,
+    },
 };
 
 pub(super) fn plugin(app: &mut App) {
@@ -297,4 +300,33 @@ fn despawn_on_hit_by_explosion(
     };
 
     commands.entity(trigger.target()).trigger(DestroySphere);
+}
+
+#[derive(Component)]
+pub struct MarkedForDeletion;
+
+fn mark_for_deletion(
+    trigger: Trigger<OnCollisionStart>,
+    mut commands: Commands,
+    valid_colliders: Query<(), (Without<NockedOn>, Without<Walls>)>,
+    colliders: Query<&ColliderOf>,
+    marks: Query<&MarkedForDeletion>,
+) {
+    let Ok(ball_collider) = colliders.get(trigger.target()) else {
+        return;
+    };
+    if marks.get(ball_collider.body).is_ok() {
+        return;
+    }
+
+    let event = trigger.event();
+    let Ok(collider) = colliders.get(event.collider) else {
+        return;
+    };
+    if valid_colliders.get(collider.body).is_ok() {
+        return;
+    }
+    commands
+        .entity(ball_collider.body)
+        .insert(MarkedForDeletion);
 }
