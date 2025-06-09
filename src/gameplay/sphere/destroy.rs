@@ -3,6 +3,8 @@ use std::time::Duration;
 use crate::{
     gameplay::{
         GameSet,
+        arrow::NockedOn,
+        level::Walls,
         sphere::{Absorber, SphereAssets},
     },
     loading::LoadingState,
@@ -11,10 +13,12 @@ use crate::{
 
 use super::Sphere;
 use avian3d::prelude::*;
-use bevy::{prelude::*, scene::SceneInstanceReady};
+use bevy::{color::palettes::tailwind::YELLOW_500, prelude::*, scene::SceneInstanceReady};
+use bevy_mod_outline::OutlineVolume;
 
 pub(super) fn plugin(app: &mut App) {
     app.add_observer(add_destroyable_sphere)
+        .add_observer(handle_mark_balls)
         .init_resource::<GibMeshes>()
         .add_systems(OnEnter(LoadingState::Dependencies), spawn_gib_scene)
         .add_systems(
@@ -172,4 +176,46 @@ fn yoink_gib_meshes(
         gib_mesh_res.is_ready = true;
         commands.entity(*scene).despawn();
     }
+}
+
+#[derive(Component)]
+pub struct MarkedForDeletion;
+
+#[derive(Component, Default)]
+pub struct MustMark;
+
+fn handle_mark_balls(trigger: Trigger<OnAdd, MustMark>, mut commands: Commands) {
+    commands.entity(trigger.target()).observe(mark_for_deletion);
+}
+
+fn mark_for_deletion(
+    trigger: Trigger<OnCollisionStart>,
+    mut commands: Commands,
+    valid_colliders: Query<(), (Without<NockedOn>, Without<Walls>)>,
+    colliders: Query<&ColliderOf>,
+    marks: Query<&MarkedForDeletion>,
+    //mut meshes: ResMut,
+) {
+    let Ok(ball_collider) = colliders.get(trigger.target()) else {
+        return;
+    };
+    if marks.get(ball_collider.body).is_ok() {
+        return;
+    }
+
+    let event = trigger.event();
+    let Ok(collider) = colliders.get(event.collider) else {
+        return;
+    };
+    if valid_colliders.get(collider.body).is_err() {
+        return;
+    }
+    commands.entity(ball_collider.body).insert((
+        MarkedForDeletion,
+        OutlineVolume {
+            visible: true,
+            colour: YELLOW_500.into(),
+            width: 1.,
+        },
+    ));
 }

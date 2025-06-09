@@ -4,11 +4,10 @@ use avian3d::prelude::*;
 use bevy::{
     color::palettes::{
         css::{GREEN, ORANGE, YELLOW},
-        tailwind::{BLUE_400, YELLOW_500},
+        tailwind::BLUE_400,
     },
     prelude::*,
 };
-use bevy_mod_outline::*;
 
 mod normal;
 pub use normal::*;
@@ -36,10 +35,7 @@ pub use absorber::*;
 
 use crate::{
     asset_tracking::LoadResource,
-    gameplay::{
-        arrow::{Arrow, NockedOn},
-        level::Walls,
-    },
+    gameplay::arrow::{Arrow, NockedOn},
 };
 
 pub(super) fn plugin(app: &mut App) {
@@ -301,39 +297,4 @@ fn despawn_on_hit_by_explosion(
     };
 
     commands.entity(trigger.target()).trigger(DestroySphere);
-}
-
-#[derive(Component)]
-pub struct MarkedForDeletion;
-
-fn mark_for_deletion(
-    trigger: Trigger<OnCollisionStart>,
-    mut commands: Commands,
-    valid_colliders: Query<(), (Without<NockedOn>, Without<Walls>)>,
-    colliders: Query<&ColliderOf>,
-    marks: Query<&MarkedForDeletion>,
-    //mut meshes: ResMut,
-) {
-    let Ok(ball_collider) = colliders.get(trigger.target()) else {
-        return;
-    };
-    if marks.get(ball_collider.body).is_ok() {
-        return;
-    }
-
-    let event = trigger.event();
-    let Ok(collider) = colliders.get(event.collider) else {
-        return;
-    };
-    if valid_colliders.get(collider.body).is_err() {
-        return;
-    }
-    commands.entity(ball_collider.body).insert((
-        MarkedForDeletion,
-        OutlineVolume {
-            visible: true,
-            colour: YELLOW_500.into(),
-            width: 1.,
-        },
-    ));
 }

@@ -4,13 +4,14 @@ use bevy::prelude::*;
 use crate::{
     gameplay::{
         level::LevelState,
-        sphere::{Sphere, SphereAssets},
+        sphere::{MustMark, Sphere, SphereAssets},
     },
     third_party::avian3d::GameLayer,
 };
 
 #[derive(Component, Default)]
 #[require(Sphere)]
+#[require(MustMark)]
 pub struct GravitySphere;
 
 pub(super) fn plugin(app: &mut App) {

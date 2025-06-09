@@ -5,7 +5,7 @@ use crate::{
     gameplay::{
         arrow::{Arrow, NockedOn},
         level::Walls,
-        sphere::{Absorber, FromMultiply, ShouldMultiply, Sphere, SphereAssets},
+        sphere::{Absorber, FromMultiply, MustMark, ShouldMultiply, Sphere, SphereAssets},
     },
     third_party::avian3d::GameLayer,
     world::GAME_PLANE,
@@ -13,6 +13,7 @@ use crate::{
 
 #[derive(Component, Default)]
 #[require(Sphere)]
+#[require(MustMark)]
 pub struct Bouncy;
 
 pub(super) fn plugin(app: &mut App) {
@@ -45,7 +46,6 @@ fn insert_bouncy(
         .observe(on_multiply)
         .observe(despawn_arrow_on_contact)
         .observe(increase_velocity_on_collision)
-        .observe(super::mark_for_deletion)
         .observe(super::despawn_on_hit_by_explosion);
 }
 
