@@ -232,7 +232,9 @@ fn explode(
             };
             let body = collider.body;
             if body == entity {
-                commands.entity(entity).trigger(DestroySphere);
+                if let Ok(mut entity) = commands.get_entity(entity) {
+                    entity.trigger(DestroySphere);
+                }
                 continue;
             }
             commands.trigger_targets(

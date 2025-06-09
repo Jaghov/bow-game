@@ -120,7 +120,10 @@ fn multiply_explosion(
             ))
             .trigger(LightFuse(3));
     }
-    commands.trigger_targets(DestroySphere, trigger.target());
+    let Ok(mut entity) = commands.get_entity(trigger.target()) else {
+        return;
+    };
+    entity.trigger(DestroySphere);
 }
 
 /// An event that tells an observer to multiply with an array

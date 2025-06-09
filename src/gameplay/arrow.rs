@@ -360,7 +360,7 @@ fn reset_flight_time(mut timers: Query<&mut MaxFlightTime, (Changed<Arrow>, With
 fn despawn_arrows(mut commands: Commands, timers: Query<(Entity, &MaxFlightTime)>) {
     for (entity, timer) in timers {
         if timer.0.just_finished() {
-            commands.entity(entity).despawn();
+            commands.entity(entity).try_despawn();
         }
     }
 }
