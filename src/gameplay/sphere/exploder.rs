@@ -11,7 +11,7 @@ use crate::{
     gameplay::{
         GameSet, GameState,
         arrow::NockedOn,
-        sphere::{Absorber, DestroySphere, FromMultiply, Sphere, SphereAssets},
+        sphere::{Absorber, DestroySphere, FromAbsorberMultiply, Sphere, SphereAssets},
     },
     third_party::avian3d::GameLayer,
 };
@@ -208,7 +208,7 @@ impl HitByExplosion {
 
 fn explode(
     mut commands: Commands,
-    fuses: Query<(Entity, &Transform, Has<FromMultiply>, &Fuse)>,
+    fuses: Query<(Entity, &Transform, Has<FromAbsorberMultiply>, &Fuse)>,
     mut shake: Single<&mut Shake>,
     colliders: Query<&ColliderOf>,
     spatial_query: SpatialQuery,

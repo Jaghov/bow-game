@@ -5,7 +5,7 @@ use crate::{
     gameplay::{
         arrow::{Arrow, NockedOn},
         level::Walls,
-        sphere::{Absorber, FromMultiply, MustMark, ShouldMultiply, Sphere, SphereAssets},
+        sphere::{Absorber, FromAbsorberMultiply, MustMark, ShouldMultiply, Sphere, SphereAssets},
     },
     third_party::avian3d::GameLayer,
     world::GAME_PLANE,
@@ -119,7 +119,7 @@ fn on_multiply(
         commands.spawn((
             Name::new("Bouncy Replica"),
             Bouncy,
-            FromMultiply::default(),
+            FromAbsorberMultiply::default(),
             transform,
             LinearVelocity(velocity),
         ));
