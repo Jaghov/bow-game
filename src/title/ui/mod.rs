@@ -3,7 +3,10 @@ use std::path::Path;
 use crate::{
     Screen, asset_tracking::LoadResource, settings::Settings, theme::interaction::OnPress,
 };
-use bevy::prelude::{Val::*, *};
+use bevy::{
+    audio::PlaybackMode,
+    prelude::{Val::*, *},
+};
 
 mod actions;
 use actions::spawn_actions;
@@ -75,6 +78,7 @@ fn play_click_sound_on_button_click(
         AudioPlayer(click.click_sfx.clone()),
         PlaybackSettings {
             volume: settings.sfx,
+            mode: PlaybackMode::Remove,
             ..Default::default()
         },
     ));

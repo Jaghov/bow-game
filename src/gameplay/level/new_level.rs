@@ -74,7 +74,6 @@ fn observe_level_completion(
     markable_balls: Query<(), (With<MustMark>, Without<MarkedForDeletion>)>,
     mut level: ResMut<Level>,
     mut next_state: ResMut<NextState<LevelState>>,
-    backdrop_pulse: Res<RadialBackdropPulse>,
     mut level_completion: Local<LevelCompletion>,
     time: Res<Time>,
     sfx: Res<LevelAssets>,
@@ -99,11 +98,12 @@ fn observe_level_completion(
     let remaining_balls_count = sensor_balls.iter().count() + markable_balls.iter().count();
 
     if remaining_balls_count == 0 {
-        commands.run_system(backdrop_pulse.0);
+        #[cfg(all(not(feature = "web"), not(feature = "webgpu")))]
+        commands.trigger(RadialBackdropPulse);
         commands.spawn((
             AudioPlayer::new(sfx.level_complete_sfx.clone()),
             PlaybackSettings {
-                mode: bevy::audio::PlaybackMode::Once,
+                mode: bevy::audio::PlaybackMode::Despawn,
                 volume: settings.sfx,
                 // speed: random_range(0.9..1.1),
                 ..Default::default()

@@ -4,10 +4,7 @@ use avian3d::{
     math::PI,
     prelude::{Collider, CollisionLayers, RigidBody},
 };
-use bevy::{
-    audio::Volume, color::palettes::tailwind::GREEN_400, ecs::system::SystemId, math::ops::sin,
-    prelude::*,
-};
+use bevy::{audio::Volume, color::palettes::tailwind::GREEN_400, math::ops::sin, prelude::*};
 use bevy_tweening::{
     Animator, Delay, EaseMethod, Tween, TweenCompleted, lens::TransformPositionLens,
 };
@@ -27,13 +24,11 @@ pub fn plugin(app: &mut App) {
         // .add_systems(OnEnter(LevelState::Playing), breathing_background)
     ;
 
-    let backdrop_win = app.register_system(pulse_out_backdrop_on_win);
-
-    app.insert_resource(RadialBackdropPulse(backdrop_win));
+    app.add_observer(pulse_out_backdrop_on_win);
 }
 
-#[derive(Resource)]
-pub struct RadialBackdropPulse(pub SystemId);
+#[derive(Event)]
+pub struct RadialBackdropPulse;
 
 const PERIOD: f32 = 0.3;
 
@@ -128,6 +123,7 @@ fn sin_lerp(t: f32) -> f32 {
 }
 
 fn pulse_out_backdrop_on_win(
+    _: Trigger<RadialBackdropPulse>,
     mut commands: Commands,
     blocks: Query<(Entity, &mut Transform, &ZState)>,
 ) {
