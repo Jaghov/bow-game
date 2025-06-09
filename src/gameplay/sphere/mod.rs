@@ -4,10 +4,11 @@ use avian3d::prelude::*;
 use bevy::{
     color::palettes::{
         css::{GREEN, ORANGE, YELLOW},
-        tailwind::BLUE_400,
+        tailwind::{BLUE_400, YELLOW_500},
     },
     prelude::*,
 };
+use bevy_mod_outline::*;
 
 mod normal;
 pub use normal::*;
@@ -311,6 +312,7 @@ fn mark_for_deletion(
     valid_colliders: Query<(), (Without<NockedOn>, Without<Walls>)>,
     colliders: Query<&ColliderOf>,
     marks: Query<&MarkedForDeletion>,
+    //mut meshes: ResMut,
 ) {
     let Ok(ball_collider) = colliders.get(trigger.target()) else {
         return;
@@ -323,10 +325,15 @@ fn mark_for_deletion(
     let Ok(collider) = colliders.get(event.collider) else {
         return;
     };
-    if valid_colliders.get(collider.body).is_ok() {
+    if valid_colliders.get(collider.body).is_err() {
         return;
     }
-    commands
-        .entity(ball_collider.body)
-        .insert(MarkedForDeletion);
+    commands.entity(ball_collider.body).insert((
+        MarkedForDeletion,
+        OutlineVolume {
+            visible: true,
+            colour: YELLOW_500.into(),
+            width: 1.,
+        },
+    ));
 }
