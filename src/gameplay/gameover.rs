@@ -61,14 +61,14 @@ fn spawn_gameover_ui(mut commands: Commands, scorecard: Res<ScoreCard>) {
         total_par += course.course_par();
     }
 
-    let perfect_score = scorecard.iter().count() + 1;
+    let perfect_score = scorecard.iter().count();
     let diff = total_arrows_shot - total_par;
 
     let statement = if perf_score_enabled && total_arrows_shot as usize <= perfect_score {
         "HOLY !@#$, a perfect score! GG."
     } else {
         match diff {
-            (..-3) => "Impressive! You score was almost perfect!",
+            (..-3) => "Impressive! Your score was almost perfect!",
             (-3..-2) => "Now that's some aim!",
             (-2..0) => "Good eye!",
             0 => "Congrats! You met the expectation. Try again?",
