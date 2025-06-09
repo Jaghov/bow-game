@@ -9,7 +9,7 @@ use crate::{
         GameSet,
         bow::BowArrow,
         level::Walls,
-        sphere::{HitByExplosion, ShouldMultiply},
+        sphere::{FromAbsorberMultiply, HitByExplosion, ShouldMultiply},
     },
     third_party::avian3d::GameLayer,
     world::GAME_PLANE,
@@ -297,16 +297,17 @@ fn on_multiply(
             .with_rotation(rotation)
             .with_scale(arrow_trn.scale);
 
-        commands
-            .spawn((
-                Name::new("Cloned arrow"),
-                Arrow::default(),
-                transform,
-                LinearVelocity(velocity),
-                scene_root.clone(),
-            ))
-            .observe(on_multiply)
-            .observe(despawn_on_explosion);
+        let mut commands = commands.spawn((
+            Name::new("Cloned arrow"),
+            Arrow::default(),
+            transform,
+            LinearVelocity(velocity),
+            scene_root.clone(),
+        ));
+        commands.observe(on_multiply).observe(despawn_on_explosion);
+        if event.is_from_absorber {
+            commands.insert(FromAbsorberMultiply::default());
+        }
     }
 }
 
@@ -360,7 +361,7 @@ fn reset_flight_time(mut timers: Query<&mut MaxFlightTime, (Changed<Arrow>, With
 fn despawn_arrows(mut commands: Commands, timers: Query<(Entity, &MaxFlightTime)>) {
     for (entity, timer) in timers {
         if timer.0.just_finished() {
-            commands.entity(entity).despawn();
+            commands.entity(entity).try_despawn();
         }
     }
 }

@@ -13,8 +13,7 @@ pub enum SettingsState {
 pub(super) fn plugin(app: &mut App) {
     app.init_state::<SettingsState>();
     app.add_plugins(ui::plugin);
-    // CHANGE THIS
-    app.insert_resource(Settings::dan());
+    app.init_resource::<Settings>();
 }
 
 #[allow(dead_code)]
@@ -22,7 +21,6 @@ pub(super) fn plugin(app: &mut App) {
 pub struct Settings {
     pub sfx: Volume,
     pub music: Volume,
-    pub tutorials_enabled: bool,
     pub restart: KeyCode,
 
     #[cfg(feature = "dev")]
@@ -32,12 +30,12 @@ pub struct Settings {
 }
 
 impl Settings {
+    #[allow(dead_code)]
     fn dan() -> Self {
         Self {
             sfx: Volume::Linear(1.),
             music: Volume::Linear(0.),
             restart: KeyCode::KeyU,
-            tutorials_enabled: true,
             #[cfg(feature = "dev")]
             debug_toggle: KeyCode::KeyY,
             #[cfg(feature = "dev")]
@@ -51,7 +49,6 @@ impl Default for Settings {
         Self {
             sfx: Volume::Linear(1.),
             music: Volume::Linear(1.),
-            tutorials_enabled: true,
             restart: KeyCode::KeyR,
             #[cfg(feature = "dev")]
             debug_toggle: KeyCode::KeyF,

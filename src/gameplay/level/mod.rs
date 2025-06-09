@@ -108,55 +108,6 @@ pub struct Levels {
 impl Levels {
     pub fn init() -> Self {
         let mut levels = Levels::default();
-        // #[cfg(feature = "dev")]
-        // levels.insert(LevelProps::new(
-        //     9999,
-        //     vec![
-        //         vert!(8., -5., 5.),
-        //         horz!(6., -8., 8.),
-        //         vert!(-8., -5., 5.),
-        //         horz!(-6., -8., 8.),
-        //     ],
-        //     vec![
-        //         //gravity column
-        //         sphere!(Gravity, -40., 0.),
-        //         sphere!(Normal, -40., 5.),
-        //         sphere!(Multiplier, -40., -5.),
-        //         //absorber column
-        //         sphere!(Absorber, -30., 0.),
-        //         sphere!(Multiplier, -30., 5.),
-        //         sphere!(Exploder, -30., 10.),
-        //         sphere!(Bouncy, -30., 15.),
-        //         //exploder testing column
-        //         sphere!(Exploder, -20., 0.),
-        //         sphere!(Multiplier, -23., 5.),
-        //         sphere!(Multiplier, -23., -5.),
-        //         sphere!(Multiplier, -17., 5.),
-        //         sphere!(Multiplier, -17., -5.),
-        //         //others
-        //         sphere!(TimeFreeze, -10., 0.),
-        //         sphere!(Normal, 0., 0.),
-        //         // exploder column
-        //         sphere!(Exploder, 10., 0.),
-        //         sphere!(Exploder, 10., 5.),
-        //         sphere!(Exploder, 10., 10.),
-        //         sphere!(Normal, 8., 8.),
-        //         // bouncy column
-        //         sphere!(Bouncy, 20., 0.),
-        //         sphere!(Multiplier, 20., 5.),
-        //         sphere!(Normal, 20., 10.),
-        //         // bouncy timefreeze column
-        //         sphere!(Bouncy, 30., 0.),
-        //         sphere!(TimeFreeze, 30., 5.),
-        //         sphere!(Multiplier, 30., 10.),
-        //         // multiplier column
-        //         sphere!(Multiplier, 40., 0.),
-        //         sphere!(Multiplier, 40., 5.),
-        //         sphere!(Multiplier, 40., 10.),
-        //         sphere!(Normal, 40., 15.),
-        //     ],
-        // ));
-        //
 
         // simple first level
         levels.insert(LevelProps::new(
@@ -317,6 +268,7 @@ impl Levels {
             ],
         ));
 
+        //mayhem
         levels.insert(LevelProps::new(
             3,
             vec![
@@ -341,12 +293,11 @@ impl Levels {
                 sphere!(Normal, 42., 0.),
                 sphere!(Bouncy, 42., 6.),
                 sphere!(Bouncy, 42., -6.),
-                sphere!(Bouncy, 42., -12.),
-                sphere!(Normal, 0., 0.),
+                sphere!(Multiplier, 42., -12.),
                 sphere!(Bouncy, 24., -24.),
-                sphere!(Multiplier, 18., -24.),
+                sphere!(Bouncy, 18., -24.),
                 sphere!(Multiplier, 15., -24.),
-                sphere!(Multiplier, 12., -24.),
+                sphere!(Bouncy, 12., -24.),
                 sphere!(Normal, 9., -24.),
                 sphere!(Normal, 9., -21.),
                 sphere!(Normal, 9., -27.),
@@ -375,6 +326,54 @@ impl Levels {
                 sphere!(Normal, 0., -27.),
                 sphere!(Normal, 0., -30.),
                 sphere!(Normal, 0., -18.),
+            ],
+        ));
+
+        levels.insert(LevelProps::new(
+            3,
+            vec![
+                vert!(8., -5., 5.),
+                horz!(6., -8., 8.),
+                vert!(-8., -5., 5.),
+                horz!(-6., -8., 8.),
+            ],
+            vec![
+                //gravity column
+                sphere!(Gravity, -40., 0.),
+                sphere!(Normal, -40., 5.),
+                sphere!(Multiplier, -40., -5.),
+                //absorber column
+                sphere!(Absorber, -30., 0.),
+                sphere!(Multiplier, -30., 5.),
+                sphere!(Exploder, -30., 10.),
+                sphere!(Bouncy, -30., 15.),
+                //exploder testing column
+                sphere!(Exploder, -20., 0.),
+                sphere!(Multiplier, -23., 5.),
+                sphere!(Multiplier, -23., -5.),
+                sphere!(Multiplier, -17., 5.),
+                sphere!(Multiplier, -17., -5.),
+                //others
+                sphere!(TimeFreeze, -10., 0.),
+                sphere!(Normal, 0., 0.),
+                // exploder column
+                sphere!(Exploder, 10., 0.),
+                sphere!(Exploder, 10., 5.),
+                sphere!(Exploder, 10., 10.),
+                sphere!(Normal, 8., 8.),
+                // bouncy column
+                sphere!(Bouncy, 20., 0.),
+                sphere!(Multiplier, 20., 5.),
+                sphere!(Normal, 20., 10.),
+                // bouncy timefreeze column
+                sphere!(Bouncy, 30., 0.),
+                sphere!(TimeFreeze, 30., 5.),
+                sphere!(Multiplier, 30., 10.),
+                // multiplier column
+                sphere!(Multiplier, 40., 0.),
+                sphere!(Multiplier, 40., 5.),
+                sphere!(Multiplier, 40., 10.),
+                sphere!(Normal, 40., 15.),
             ],
         ));
 

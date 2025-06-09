@@ -16,7 +16,7 @@ pub(super) fn plugin(app: &mut App) {
     app.add_observer(insert_multiplier)
         .add_systems(
             Update,
-            (|mut timers: Query<&mut FromMultiply>, time: Res<Time>| {
+            (|mut timers: Query<&mut FromAbsorberMultiply>, time: Res<Time>| {
                 for mut timer in &mut timers {
                     timer.0.tick(time.delta());
                 }
@@ -25,10 +25,10 @@ pub(super) fn plugin(app: &mut App) {
         )
         .add_systems(
             PostUpdate,
-            |mut commands: Commands, timers: Query<(Entity, &FromMultiply)>| {
+            |mut commands: Commands, timers: Query<(Entity, &FromAbsorberMultiply)>| {
                 for (entity, timer) in timers {
                     if timer.0.finished() {
-                        commands.entity(entity).remove::<FromMultiply>();
+                        commands.entity(entity).remove::<FromAbsorberMultiply>();
                     }
                 }
             },
@@ -66,13 +66,13 @@ fn insert_multiplier(
 
 /// adds a cooldown to something multiplied so it won't multiply forever.
 #[derive(Component)]
-pub struct FromMultiply(Timer);
-impl FromMultiply {
+pub struct FromAbsorberMultiply(Timer);
+impl FromAbsorberMultiply {
     pub fn forever() -> Self {
         Self(Timer::new(Duration::MAX, TimerMode::Once))
     }
 }
-impl Default for FromMultiply {
+impl Default for FromAbsorberMultiply {
     fn default() -> Self {
         Self(Timer::new(Duration::from_secs(1), TimerMode::Once))
     }
@@ -115,12 +115,15 @@ fn multiply_explosion(
                 Name::new("Exploder Replica"),
                 Exploder,
                 Sensor,
-                FromMultiply::forever(),
+                FromAbsorberMultiply::forever(),
                 transform,
             ))
             .trigger(LightFuse(3));
     }
-    commands.trigger_targets(DestroySphere, trigger.target());
+    let Ok(mut entity) = commands.get_entity(trigger.target()) else {
+        return;
+    };
+    entity.trigger(DestroySphere);
 }
 
 /// An event that tells an observer to multiply with an array
@@ -129,6 +132,7 @@ fn multiply_explosion(
 /// NOTE: make sure you add `FromMultiply` to your duplicate!!
 #[derive(Event)]
 pub struct ShouldMultiply {
+    pub is_from_absorber: bool,
     /// the point of contact relative to the observer's collider
     pub local_point: Vec3,
     pub rot_offset: Vec<f32>,
@@ -136,7 +140,8 @@ pub struct ShouldMultiply {
 
 fn multiply_collider_on_hit(
     trigger: Trigger<OnCollisionStart>,
-    already_hit: Query<(), With<FromMultiply>>,
+    absorbers: Query<(), With<Absorber>>,
+    already_hit: Query<(), With<FromAbsorberMultiply>>,
     transforms: Query<&GlobalTransform>,
     mut commands: Commands,
     colliders: Query<&ColliderOf>,
@@ -169,8 +174,13 @@ fn multiply_collider_on_hit(
         deepest_contact.local_point2
     };
 
+    let is_from_absorber = colliders
+        .get(trigger.target())
+        .is_ok_and(|c| absorbers.get(c.body).is_ok());
+
     commands.trigger_targets(
         ShouldMultiply {
+            is_from_absorber,
             local_point: hit_trns.translation() + local_point,
             rot_offset: vec![35.0_f32.to_radians(), -35.0_f32.to_radians()],
         },

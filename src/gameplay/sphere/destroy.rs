@@ -125,6 +125,12 @@ fn spawn_gib_scene(mut commands: Commands, assets: Res<SphereAssets>) {
         );
 }
 
+#[cfg(all(not(feature = "web"), not(feature = "webgpu")))]
+const MAX_GIBS: usize = 600;
+
+#[cfg(any(feature = "web", feature = "webgpu"))]
+const MAX_GIBS: usize = 100;
+
 #[derive(Resource, Default)]
 pub struct GibMeshes {
     meshes: Vec<(Transform, Handle<Mesh>, Collider)>,
@@ -137,7 +143,7 @@ impl GibMeshes {
 }
 // this function makes sure an extreme number of gibs don't exist in the world, causing lag
 fn limit_gib_population(new_gibs: Query<Entity, With<Gib>>, mut commands: Commands) {
-    for gib in new_gibs.iter().skip(600) {
+    for gib in new_gibs.iter().skip(MAX_GIBS) {
         commands.entity(gib).try_despawn();
     }
 }
