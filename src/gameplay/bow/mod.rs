@@ -102,7 +102,7 @@ fn play_draw_on_ready_arrow(
     commands.spawn((
         AudioPlayer::new(assets.bow_draw.clone()),
         PlaybackSettings {
-            mode: bevy::audio::PlaybackMode::Once,
+            mode: bevy::audio::PlaybackMode::Despawn,
             speed: random_range(0.9..1.1), // Varied sfx speed to keep sounds more interesting
             volume: settings.sfx,
             ..Default::default()
@@ -119,7 +119,7 @@ fn play_shot_on_fire_arrow(
     commands.spawn((
         AudioPlayer::new(assets.bow_shoot.clone()),
         PlaybackSettings {
-            mode: bevy::audio::PlaybackMode::Once,
+            mode: bevy::audio::PlaybackMode::Despawn,
             speed: random_range(0.9..1.1),
             volume: settings.sfx,
             ..Default::default()
